@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "Cristaline Finance API",
+    "_postman_id": "finance-1234-abcd-5678-efgh-9876543210ab",
+    "description": "Postman collection for Cristaline Finance PR endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get all Finance PRs",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "http://localhost:5001/api/finance/prs",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","finance","prs"]
+        }
+      }
+    },
+    {
+      "name": "Add Finance Comment",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 115,\n  \"commented_by\": 2,\n  \"department\": \"AnyDepartment\",\n  \"comment\": \"Finance review completed.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5001/api/finance/pr/comment",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","finance","pr","comment"]
+        }
+      }
+    },
+    {
+      "name": "Update Finance Status",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 115,\n  \"new_status\": \"Finance Approved\",\n  \"old_status\": \"Pending Finance\",\n  \"updated_by\": 2,\n  \"department\": \"AnyDepartment\",\n  \"note\": \"All financial checks passed.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5001/api/finance/pr/status",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","finance","pr","status"]
+        }
+      }
+    }
+  ]
+}
