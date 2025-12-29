@@ -1,7 +1,7 @@
-import pool from "../config/db.js";
+import thirdDB from "../config/db.js";
 
 export const findAppUserBySTSId = async (stsId) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `SELECT * FROM app_employees WHERE sts_employee_id = $1`,
     [stsId]
   );
@@ -31,6 +31,6 @@ export const createAppUser = async (data) => {
 
 
 export const getAllEmployees = async () => {
-  const result = await pool.query(`SELECT * FROM app_employees ORDER BY id`);
+  const result = await thirdDB.query(`SELECT * FROM app_employees ORDER BY id`);
   return result.rows;
 };

@@ -1,4 +1,4 @@
-import pool from "../../config/db.js";
+import thirdDB from "../../config/db.js";
 
 export const createVendor = async (data) => {
   const query = `
@@ -7,7 +7,7 @@ export const createVendor = async (data) => {
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const result = await thirdDB.query(query, [
     data.vendor_name,
     data.contact_person,
     data.phone,
@@ -24,6 +24,8 @@ export const createVendor = async (data) => {
 };
 
 export const getVendors = async () => {
-  const result = await pool.query(`SELECT * FROM vendors ORDER BY vendor_id`);
+  const result = await thirdDB.query(
+    `SELECT * FROM vendors ORDER BY vendor_id`
+  );
   return result.rows;
 };

@@ -1,15 +1,15 @@
-import pool from "../config/db.js";
+import thirdDB from "../config/db.js";
 
 // ---------------- DEPARTMENTS ----------------
 export const getDepartments = async () => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `SELECT * FROM departments ORDER BY department_id`
   );
   return result.rows;
 };
 
 export const createDepartment = async (name) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `INSERT INTO departments (name) VALUES ($1) RETURNING *`,
     [name]
   );
@@ -18,7 +18,7 @@ export const createDepartment = async (name) => {
 
 // ---------------- EMPLOYEES WITH DEPARTMENTS ----------------
 export const getEmployeesWithDept = async () => {
-  const result = await pool.query(`
+  const result = await thirdDB.query(`
     SELECT 
       e.id, e.first_name, e.last_name, e.email, e.role,
       COALESCE(
@@ -42,7 +42,7 @@ export const getEmployeesWithDept = async () => {
 
 //calls all employees of single department
 export const getEmployeesByDepartment = async (departmentId) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `
     SELECT 
       e.id, e.first_name, e.last_name, e.email, e.role,
@@ -74,7 +74,7 @@ export const assignEmployeeDepartment = async (
   departmentId,
   permission = null
 ) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `INSERT INTO employee_departments (employee_id, department_id, permission)
      VALUES ($1, $2, $3)
      ON CONFLICT (employee_id, department_id) DO UPDATE
@@ -86,7 +86,7 @@ export const assignEmployeeDepartment = async (
 };
 
 export const unassignEmployeeDepartment = async (employeeId, departmentId) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `DELETE FROM employee_departments
      WHERE employee_id = $1 AND department_id = $2
      RETURNING *`,
@@ -101,7 +101,7 @@ export const assignOrUpdatePermission = async (
   departmentId,
   permission
 ) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `UPDATE employee_departments
      SET permission = $3
      WHERE employee_id = $1 AND department_id = $2
@@ -112,7 +112,7 @@ export const assignOrUpdatePermission = async (
 };
 
 export const unassignPermission = async (employeeId, departmentId) => {
-  const result = await pool.query(
+  const result = await thirdDB.query(
     `UPDATE employee_departments
      SET permission = NULL
      WHERE employee_id = $1 AND department_id = $2
