@@ -11,8 +11,6 @@ export const updateDepartmentStatuses = async (reqId, departmentStatuses) => {
 };
 
 
-
-
 export const fetchSubmittedPurchaseRequests = async () => {
   const query = `
     SELECT 

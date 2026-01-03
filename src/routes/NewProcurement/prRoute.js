@@ -28,4 +28,17 @@ router.get("/purchase-requests", prController.getAllPRsController);
 // GET PR by ID
 router.get("/purchase-requests/:id", prController.getPRByIdController);
 
+// Update department_statuses only (PR)
+router.put(
+  "/pr-requests/:id",
+  prController.updatePRRequest
+);
+
+// GET all PR requests with FINANCE APPROVED status
+router.get(
+  "/finance-approved-pr-requests",
+  prController.getFinanceApprovedPRRequests
+);
+
+
 export default router;
