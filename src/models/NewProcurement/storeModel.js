@@ -171,7 +171,7 @@ export const fetchFinanceApprovedStoreRequests = async () => {
       ) com ON com.item_vendor_id = iv.id
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
-    WHERE (pr.department_statuses -> -1 ->> 'department_status') = 'FINANCE APPROVED'
+    WHERE (pr.department_statuses -> -1 ->> 'department_status') = 'PR APPROVED'
     GROUP BY pr.id
     ORDER BY pr.updated_at DESC;
   `;

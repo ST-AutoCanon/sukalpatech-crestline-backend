@@ -84,3 +84,44 @@ export const getPRById = async (prId) => {
     throw err;
   }
 };
+
+/**
+ * Update PR (ONLY department status & comments)
+ * No vendor logic here
+ */
+export const updatePRRequest = async (reqId, userData) => {
+  try {
+    if (
+      userData.department_statuses &&
+      userData.department_statuses.length > 0
+    ) {
+      await purchaseRequestModel.updateDepartmentStatuses(
+        reqId,
+        userData.department_statuses
+      );
+    }
+
+    return {
+      success: true,
+      message: "Purchase Request updated successfully",
+    };
+  } catch (err) {
+    console.error("❌ Error updating Purchase Request:", err);
+    throw err;
+  }
+};
+
+
+/**
+ * Fetch ONLY PRs whose LATEST status = FINANCE APPROVED
+ * (For Finance / Procurement view)
+ */
+export const getFinanceApprovedPRs = async () => {
+  try {
+    const prs = await purchaseRequestModel.fetchFinanceApprovedPRs();
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching Finance Approved PRs:", err);
+    throw err;
+  }
+};

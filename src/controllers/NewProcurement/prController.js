@@ -103,3 +103,33 @@ export const getPRByIdController = async (req, res) => {
       });
   }
 };
+
+
+/**
+ * Update PR (ONLY department status & comments)
+ */
+export const updatePRRequest = async (req, res) => {
+  try {
+    const reqId = req.params.id;
+    const userData = req.body;
+
+    const result = await prService.updatePRRequest(reqId, userData);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error updating Purchase Request:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * Fetch ONLY Finance Approved PRs
+ */
+export const getFinanceApprovedPRRequests = async (req, res) => {
+  try {
+    const result = await prService.getFinanceApprovedPRs();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching Finance Approved PRs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
