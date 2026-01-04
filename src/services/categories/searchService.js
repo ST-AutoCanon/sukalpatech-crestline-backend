@@ -17,6 +17,13 @@ export async function searchCategories(query) {
           code: row.category_code,
         }
       : null,
+    product: row.product_id
+      ? {
+          id: row.product_id,
+          name: row.product_name,
+          code: row.product_code,
+        }
+      : null,
     variant: row.variant_id
       ? {
           id: row.variant_id,
@@ -44,5 +51,6 @@ export async function searchItems(query) {
     id: item.id,
     code: item.item_code,
     name: item.item_name,
+    vendors: item.vendors || [],
   }));
 }
