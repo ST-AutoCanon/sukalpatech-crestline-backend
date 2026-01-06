@@ -7,7 +7,7 @@ import app from "./app.js";
 import "./src/config/db.js"; // Cristaline DB
 import "./src/config/dbSecond.js"; // STS DB
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5004;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
