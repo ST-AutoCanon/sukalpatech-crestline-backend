@@ -8,4 +8,5 @@ router.get("/items/:id", itemController.getItem);
 router.get("/items", itemController.listItems);
 
 router.get("/search", searchController.searchItemsHandler);
+router.get("/tables", searchController.getTablesController);
 export default router;

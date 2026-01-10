@@ -27,6 +27,7 @@ export const createItemService = async (data) => {
   return await ItemModel.createItem({
     item_code,
     item_name: data.item_name,
+    qty: data.qty,
     vendors: data.vendors || [],
     root_category_id: data.root_category_id,
     category_id: data.category_id || null,

@@ -254,6 +254,7 @@ export async function searchItems(query) {
       i.item_code,
       i.item_name,
       i.product_id,
+      i.qty,
       COALESCE(
         json_agg(s.vendor_id) FILTER (WHERE s.vendor_id IS NOT NULL),
         '[]'
@@ -348,4 +349,19 @@ export async function searchItems(query) {
   }
 
   return [];
+}
+
+
+
+export async function getTables() {
+  const res = await thirdDB.query(`
+    SELECT
+      table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE'
+    ORDER BY table_name;
+  `);
+
+  return res.rows;
 }
