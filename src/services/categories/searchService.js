@@ -51,6 +51,27 @@ export async function searchItems(query) {
     id: item.id,
     code: item.item_code,
     name: item.item_name,
+    qty: item.qty,
     vendors: item.vendors || [],
   }));
+}
+
+
+export async function getAllTablesService() {
+  try {
+    const tables = await searchModel.getTables();
+
+    return {
+      success: true,
+      count: tables.length,
+      data: tables.map((t) => t.table_name),
+    };
+  } catch (error) {
+    console.error("Error fetching tables:", error);
+
+    throw {
+      success: false,
+      message: "Failed to fetch database tables",
+    };
+  }
 }

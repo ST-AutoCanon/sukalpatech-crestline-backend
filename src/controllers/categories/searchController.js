@@ -35,3 +35,12 @@ export const searchItemsHandler = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export async function getTablesController(req, res) {
+  try {
+    const result = await searchService.getAllTablesService();
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+}

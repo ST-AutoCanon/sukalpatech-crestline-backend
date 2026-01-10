@@ -37,7 +37,7 @@ import thirdDB from "../../config/dbThird.js";
 export const createItem = async (item) => {
   const query = `
     INSERT INTO items 
-      (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id, product_id)
+      (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id, product_id,qty,)
     VALUES ($1,$2,$3,$4,$5,$6,$7)
     RETURNING *;
   `;
@@ -50,6 +50,7 @@ export const createItem = async (item) => {
     item.variant_id || null,
     item.sub_variant_id || null,
     item.product_id || null,
+    item.qty ?? 0,
   ];
 
   const result = await thirdDB.query(query, values);
@@ -129,16 +130,19 @@ export const updateItem = async (id, item) => {
       category_id = $3,
       variant_id = $4,
       sub_variant_id = $5,
+      qty = $6,
       updated_at = NOW()
-    WHERE id = $6
+    WHERE id = $7
     RETURNING *;
   `;
+
   const values = [
     item.item_name,
     item.root_category_id,
     item.category_id || null,
     item.variant_id || null,
     item.sub_variant_id || null,
+    item.qty || 0,
     id,
   ];
 
@@ -146,10 +150,12 @@ export const updateItem = async (id, item) => {
 
   // Update vendors
   await thirdDB.query(`DELETE FROM items_suppliers WHERE item_id = $1`, [id]);
+
   if (item.vendors && item.vendors.length > 0) {
     const vendorValues = item.vendors
       .map((v) => `(${id}, ${v.vendor_id})`)
       .join(",");
+
     await thirdDB.query(
       `INSERT INTO items_suppliers (item_id, vendor_id) VALUES ${vendorValues}`
     );
@@ -157,6 +163,7 @@ export const updateItem = async (id, item) => {
 
   return result.rows[0];
 };
+
 
 
 // Delete
