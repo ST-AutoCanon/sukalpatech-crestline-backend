@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export async function getLastSubVariantCode() {
   const result = await thirdDB.query(

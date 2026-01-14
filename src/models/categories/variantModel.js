@@ -25,7 +25,7 @@
 //   return result.rows;
 // }
 
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export async function getLastVariantCode() {
   const result = await thirdDB.query(

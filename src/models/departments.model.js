@@ -1,4 +1,4 @@
-import thirdDB from "../config/db.js";
+import thirdDB from "../config/dbfirst.js";
 
 // ---------------- DEPARTMENTS ----------------
 export const getDepartments = async () => {
@@ -39,7 +39,6 @@ export const getEmployeesWithDept = async () => {
   return result.rows;
 };
 
-
 //calls all employees of single department
 export const getEmployeesByDepartment = async (departmentId) => {
   const result = await thirdDB.query(
@@ -65,8 +64,6 @@ export const getEmployeesByDepartment = async (departmentId) => {
 
   return result.rows;
 };
-
-
 
 // ---------------- ASSIGN / UNASSIGN DEPARTMENT ----------------
 export const assignEmployeeDepartment = async (

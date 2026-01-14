@@ -1,4 +1,4 @@
-import thirdDB from "../config/db.js";
+import thirdDB from "../config/dbfirst.js";
 
 export const findAppUserBySTSId = async (stsId) => {
   const result = await thirdDB.query(
@@ -28,7 +28,6 @@ export const createAppUser = async (data) => {
 
   return result.rows[0];
 };
-
 
 export const getAllEmployees = async () => {
   const result = await thirdDB.query(`SELECT * FROM app_employees ORDER BY id`);
