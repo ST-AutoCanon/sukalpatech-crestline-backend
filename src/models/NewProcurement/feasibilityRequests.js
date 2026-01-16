@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export const updateDepartmentStatuses = async (reqId, departmentStatuses) => {
   const query = `
@@ -9,7 +9,6 @@ export const updateDepartmentStatuses = async (reqId, departmentStatuses) => {
   `;
   await thirdDB.query(query, [JSON.stringify(departmentStatuses), reqId]);
 };
-
 
 export const fetchSubmittedPurchaseRequests = async () => {
   const query = `

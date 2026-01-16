@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export async function getLastRootCategoryCode() {
   const result = await thirdDB.query(
@@ -16,7 +16,6 @@ export async function insertRootCategory(code, name) {
   );
   return result.rows[0];
 }
-
 
 // Get all active root categories
 export async function getAllRootCategories() {

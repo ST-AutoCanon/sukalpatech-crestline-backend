@@ -1,8 +1,8 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 // export async function searchCategoriesHierarchy(query) {
 //   const searchQuery = `
-//     SELECT 
+//     SELECT
 //       rc.id AS root_id, rc.name AS root_name, rc.code AS root_code,
 //       c.id AS category_id, c.name AS category_name, c.code AS category_code,
 //       v.id AS variant_id, v.name AS variant_name, v.code AS variant_code,
@@ -11,7 +11,7 @@ import thirdDB from "../../config/dbThird.js";
 //     LEFT JOIN categories c ON c.root_category_id = rc.id
 //     LEFT JOIN variants v ON v.category_id = c.id
 //     LEFT JOIN sub_variants sv ON sv.variant_id = v.id
-//     WHERE 
+//     WHERE
 //       rc.name ILIKE $1 OR
 //       rc.code ILIKE $1 OR
 //       c.name ILIKE $1 OR
@@ -26,8 +26,6 @@ import thirdDB from "../../config/dbThird.js";
 //   const result = await thirdDB.query(searchQuery, [`%${query}%`]);
 //   return result.rows;
 // }
-
-
 
 export async function searchCategoriesHierarchy(query) {
   const searchQuery = `
@@ -79,7 +77,6 @@ export async function searchCategoriesHierarchy(query) {
   const result = await thirdDB.query(searchQuery, [`%${query}%`]);
   return result.rows;
 }
-
 
 // export async function searchItems(query) {
 //   const q = `%${query}%`;
@@ -158,10 +155,6 @@ export async function searchCategoriesHierarchy(query) {
 
 //   return [];
 // }
-
-
-
-
 
 // export async function searchItems(query) {
 //   const q = `%${query}%`;
@@ -242,8 +235,6 @@ export async function searchCategoriesHierarchy(query) {
 
 //   return [];
 // }
-
-
 
 export async function searchItems(query) {
   const q = `%${query}%`;
@@ -350,8 +341,6 @@ export async function searchItems(query) {
 
   return [];
 }
-
-
 
 export async function getTables() {
   const res = await thirdDB.query(`

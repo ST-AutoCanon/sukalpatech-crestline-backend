@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export const createVendorAttachment = async (attachment, vendorId) => {
   const query = `

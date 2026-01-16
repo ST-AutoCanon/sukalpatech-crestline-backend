@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 // export const createVendorComment = async (comment, vendorId) => {
 //   const query = `
@@ -25,8 +25,6 @@ export const createVendorComment = async (comment, vendorId, departmentId) => {
   await thirdDB.query(query, values);
 };
 
-
-
 // export const fetchCommentsByVendor = async (vendorId) => {
 //   const result = await thirdDB.query(
 //     `SELECT * FROM vendor_comments WHERE vendor_id = $1`,
@@ -41,5 +39,3 @@ export const fetchCommentsByVendor = async (vendorId) => {
   );
   return result.rows;
 };
-
-

@@ -1,38 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
-
-
-// export const createItem = async (item) => {
-//   // 1. Insert the item
-//   const query = `
-//     INSERT INTO items
-//       (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id)
-//     VALUES ($1,$2,$3,$4,$5,$6)
-//     RETURNING *;
-//   `;
-//   const values = [
-//     item.item_code,
-//     item.item_name,
-//     item.root_category_id,
-//     item.category_id || null,
-//     item.variant_id || null,
-//     item.sub_variant_id || null,
-//   ];
-
-//   const result = await thirdDB.query(query, values);
-//   const newItem = result.rows[0];
-
-//   // 2. Insert vendors into items_suppliers
-//   if (item.vendors && item.vendors.length > 0) {
-//     const vendorValues = item.vendors
-//       .map((v) => `(${newItem.id}, ${v.vendor_id})`)
-//       .join(",");
-//     await thirdDB.query(
-//       `INSERT INTO items_suppliers (item_id, vendor_id) VALUES ${vendorValues}`
-//     );
-//   }
-
-//   return newItem;
-// };
+import thirdDB from "../../config/dbfirst.js";
 
 export const createItem = async (item) => {
   const query = `
@@ -67,8 +33,6 @@ export const createItem = async (item) => {
 
   return newItem;
 };
-  
-
 
 export async function searchItems(query) {
   const sql = `
@@ -105,8 +69,6 @@ export async function searchItems(query) {
   return result.rows;
 }
 
-
-
 // Get by ID
 export const getItemById = async (id) => {
   const result = await thirdDB.query(`SELECT * FROM items WHERE id = $1`, [id]);
@@ -120,7 +82,6 @@ export const getLastItem = async () => {
   );
   return result.rows[0];
 };
-
 
 export const updateItem = async (id, item) => {
   const query = `
@@ -163,8 +124,6 @@ export const updateItem = async (id, item) => {
 
   return result.rows[0];
 };
-
-
 
 // Delete
 export const deleteItem = async (id) => {

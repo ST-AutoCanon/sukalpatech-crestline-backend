@@ -20,3 +20,32 @@ export const getVendorsController = async (req, res) => {
     res.status(500).json(apiResponse(false, error.message, null));
   }
 };
+
+/**
+ * Add single or multiple items for a specific vendor
+ */
+export const addItemsForVendorController = async (req, res) => {
+  try {
+    const { vendorId } = req.params; // vendorId from URL param
+    const items = req.body.items; // array or single item object from request body
+
+    if (!vendorId) {
+      return res.status(400).json(apiResponse(false, "Vendor ID is required", null));
+    }
+
+    if (!items || (Array.isArray(items) && !items.length)) {
+      return res.status(400).json(apiResponse(false, "No items provided", null));
+    }
+
+    const result = await service.addItemsForVendorService(Number(vendorId), items);
+
+    if (!result.success) {
+      return res.status(500).json(apiResponse(false, result.message, null));
+    }
+
+    res.json(apiResponse(true, "Items added for vendor", result.data));
+  } catch (error) {
+    console.log("Error adding items for vendor:", error);
+    res.status(500).json(apiResponse(false, error.message, null));
+  }
+};

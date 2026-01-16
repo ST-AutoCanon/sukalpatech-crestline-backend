@@ -1,5 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
-
+import thirdDB from "../../config/dbfirst.js";
 
 export const updateDepartmentStatuses = async (reqId, newStatuses) => {
   // 1️⃣ Fetch existing department_statuses
@@ -32,7 +31,6 @@ export const updateDepartmentStatuses = async (reqId, newStatuses) => {
   `;
   await thirdDB.query(updateQuery, [JSON.stringify(updatedStatuses), reqId]);
 };
-
 
 /**
  * Fetch all Finance PRs with APPROVED department status

@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbThird.js";
+import thirdDB from "../../config/dbfirst.js";
 
 export const createPurchaseRequest = async (prData) => {
   const query = `
@@ -20,7 +20,6 @@ export const createPurchaseRequest = async (prData) => {
   const result = await thirdDB.query(query, values);
   return result.rows[0].id;
 };
-
 
 // -------------------------------
 // Fetch All PRs
@@ -173,7 +172,6 @@ export const fetchPRById = async (prId) => {
   const result = await thirdDB.query(query, [prId]);
   return result.rows[0] || null;
 };
-
 
 export const fetchFinanceApprovedPRs = async () => {
   const query = `
