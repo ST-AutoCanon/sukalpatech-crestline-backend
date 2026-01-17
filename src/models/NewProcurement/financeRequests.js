@@ -101,7 +101,7 @@ export const fetchApprovedFinanceRequests = async () => {
       ) com ON com.item_vendor_id = iv.id
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
-    WHERE pr.department_statuses @> '[{"department_status": "APPROVED"}]'
+    WHERE pr.department_statuses @> '[{"department_status": "Feasibility APPROVED"}]'
     GROUP BY pr.id
     ORDER BY pr.updated_at DESC;
   `;

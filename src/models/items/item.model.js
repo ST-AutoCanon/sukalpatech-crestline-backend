@@ -3,8 +3,8 @@ import thirdDB from "../../config/dbfirst.js";
 export const createItem = async (item) => {
   const query = `
     INSERT INTO items 
-      (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id, product_id,qty,)
-    VALUES ($1,$2,$3,$4,$5,$6,$7)
+      (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id, product_id,qty)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
     RETURNING *;
   `;
 
