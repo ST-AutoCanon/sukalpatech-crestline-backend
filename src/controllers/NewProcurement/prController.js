@@ -3,12 +3,56 @@ import * as prService from "../../services/NewProcrument/prService.js";
 // -------------------------------
 // Create Purchase Request Controller (with attachments)
 // -------------------------------
+// export const createPRController = async (req, res) => {
+//   try {
+//     // Parse JSON from form-data field (if sending via form-data)
+//     const prData = req.body.data ? JSON.parse(req.body.data) : req.body;
+
+//     // Map uploaded files to vendors
+//     if (req.files && req.files.length > 0) {
+//       let fileIndex = 0;
+//       for (let item of prData.items) {
+//         if (!item.vendors) continue;
+//         for (let vendor of item.vendors) {
+//           vendor.attachments = vendor.attachments || [];
+//           if (fileIndex < req.files.length) {
+//             const file = req.files[fileIndex];
+//             vendor.attachments.push({
+//               file_name: file.originalname,
+//               file_path: file.filename, // only filename
+//               uploaded_by: prData.requested_by,
+//               uploaded_at: new Date().toISOString(),
+//             });
+//             fileIndex++;
+//           }
+//         }
+//       }
+//     }
+
+//     const result = await prService.createNewPR(prData);
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Purchase Request created successfully",
+//       prId: result.prId,
+//     });
+//   } catch (err) {
+//     console.error("❌ Controller Error:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to create Purchase Request",
+//       error: err.message,
+//     });
+//   }
+// };
+
 export const createPRController = async (req, res) => {
   try {
-    // Parse JSON from form-data field (if sending via form-data)
     const prData = req.body.data ? JSON.parse(req.body.data) : req.body;
 
-    // Map uploaded files to vendors
+    // 🔥 ENSURE requested_by is a number
+    prData.requested_by = Number(prData.requested_by) || req.user?.id || 1;
+
     if (req.files && req.files.length > 0) {
       let fileIndex = 0;
       for (let item of prData.items) {
@@ -19,8 +63,8 @@ export const createPRController = async (req, res) => {
             const file = req.files[fileIndex];
             vendor.attachments.push({
               file_name: file.originalname,
-              file_path: file.filename, // only filename
-              uploaded_by: prData.requested_by,
+              file_path: file.filename,
+              uploaded_by: prData.requested_by, // ✅ numeric
               uploaded_at: new Date().toISOString(),
             });
             fileIndex++;
@@ -45,6 +89,7 @@ export const createPRController = async (req, res) => {
     });
   }
 };
+
 
 // -------------------------------
 // Create PR Controller for JSON testing (no attachments)
