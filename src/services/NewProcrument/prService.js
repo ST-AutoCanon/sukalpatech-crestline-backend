@@ -125,3 +125,31 @@ export const getFinanceApprovedPRs = async () => {
     throw err;
   }
 };
+
+/**
+ * Fetch ONLY PRs whose LATEST status = FINANCE REJECTED
+ * (For Finance / Procurement view)
+ */
+export const getFinanceRejectedPRs = async () => {
+  try {
+    const prs = await purchaseRequestModel.fetchFinanceRejectedPRs();
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching Finance Rejected PRs:", err);
+    throw err;
+  }
+};
+
+/**
+ * Fetch ONLY PRs whose LATEST status = FINANCE PENDING
+ * (For Finance / Procurement view)
+ */
+export const getFinancePendingPRs = async () => {
+  try {
+    const prs = await purchaseRequestModel.fetchFinancePendingPRs();
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching Finance Pending PRs:", err);
+    throw err;
+  }
+};

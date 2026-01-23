@@ -39,6 +39,16 @@ router.get(
   "/finance-approved-pr-requests",
   prController.getFinanceApprovedPRRequests
 );
+// GET Rejected PR requests with FINANCE APPROVED status
+router.get(
+  "/finance-rejected-pr-requests",
+  prController.getFinanceRejectedPRRequests
+);
 
+// GET Pending PR requests with FINANCE APPROVED status
+router.get(
+  "/finance-pending-pr-requests",
+  prController.getFinancePendingPRRequests
+);
 
 export default router;

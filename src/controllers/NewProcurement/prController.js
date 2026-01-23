@@ -133,3 +133,27 @@ export const getFinanceApprovedPRRequests = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+/**
+ * Fetch ONLY Finance Rejected PRs
+ */
+export const getFinanceRejectedPRRequests = async (req, res) => {
+  try {
+    const result = await prService.getFinanceRejectedPRs();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching Finance Rejected PRs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+/**
+ * Fetch ONLY Finance Pending PRs
+ */
+export const getFinancePendingPRRequests = async (req, res) => {
+  try {
+    const result = await prService.getFinancePendingPRs();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching Finance Pending PRs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
