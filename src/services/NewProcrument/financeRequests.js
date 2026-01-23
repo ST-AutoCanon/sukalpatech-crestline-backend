@@ -32,3 +32,22 @@ export const getApprovedFinanceRequests = async () => {
   }
 };
 
+export const getRejectedFinanceRequests = async () => {
+  try {
+    const prs = await financeModel.fetchRejectedFinanceRequests();
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching rejected Finance requests:", err);
+    throw err;
+  }
+};
+
+export const getPendingFinanceRequests = async () => {
+  try {
+    const prs = await financeModel.fetchPendingFinanceRequests();
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching pending Finance requests:", err);
+    throw err;
+  }
+};

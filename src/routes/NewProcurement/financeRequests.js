@@ -11,5 +11,16 @@ router.get(
   "/approved-finance-requests",
   financeController.getApprovedFinanceRequests
 );
+// GET all rejected finance requests
+router.get(
+  "/rejected-finance-requests",
+  financeController.getRejectedFinanceRequests
+);
+
+// GET all Pending finance requests
+router.get(
+  "/pending-finance-requests",
+  financeController.getPendingFinanceRequests
+);
 
 export default router;

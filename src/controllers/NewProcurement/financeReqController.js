@@ -23,3 +23,22 @@ export const getApprovedFinanceRequests = async (req, res) => {
   }
 };
 
+export const getRejectedFinanceRequests = async (req, res) => {
+  try {
+    const result = await financeService.getRejectedFinanceRequests();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching rejected Finance requests:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getPendingFinanceRequests = async (req, res) => {
+  try {
+    const result = await financeService.getPendingFinanceRequests();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching pending Finance requests:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
