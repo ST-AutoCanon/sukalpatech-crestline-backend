@@ -12,6 +12,41 @@ export const getVendorsService = async () => {
   return { success: true, data: vendors };
 };
 
+export const updateVendorService = async (vendor_id, data) => {
+  if (!vendor_id) {
+    return { success: false, message: "Vendor ID is required" };
+  }
+
+  if (!data.vendor_name) {
+    return { success: false, message: "Vendor name is required" };
+  }
+
+  const updatedVendor = await model.updateVendor(vendor_id, data);
+
+  if (!updatedVendor) {
+    return { success: false, message: "Vendor not found" };
+  }
+
+  return { success: true, data: updatedVendor };
+};
+
+
+
+export const deleteVendorService = async (vendor_id) => {
+  if (!vendor_id) {
+    return { success: false, message: "Vendor ID is required" };
+  }
+
+  const deletedVendor = await model.deleteVendor(vendor_id);
+
+  if (!deletedVendor) {
+    return { success: false, message: "Vendor not found" };
+  }
+
+  return { success: true, message: "Vendor deleted successfully" };
+};
+
+
 /**
  * Add one or multiple items for a specific vendor
  * @param {number} vendorId - ID of the vendor

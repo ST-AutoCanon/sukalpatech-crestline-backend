@@ -21,6 +21,40 @@ export const getVendorsController = async (req, res) => {
   }
 };
 
+export const updateVendorController = async (req, res) => {
+  try {
+    const { vendor_id } = req.params;
+    const result = await service.updateVendorService(vendor_id, req.body);
+
+    if (!result.success) {
+      return res.status(400).json(apiResponse(false, result.message, null));
+    }
+
+    res.json(apiResponse(true, "Vendor updated successfully", result.data));
+  } catch (error) {
+    console.log("Error updating vendor:", error);
+    res.status(500).json(apiResponse(false, error.message, null));
+  }
+};
+
+
+export const deleteVendorController = async (req, res) => {
+  try {
+    const { vendor_id } = req.params;
+    const result = await service.deleteVendorService(vendor_id);
+
+    if (!result.success) {
+      return res.status(404).json(apiResponse(false, result.message, null));
+    }
+
+    res.json(apiResponse(true, "Vendor deleted successfully", null));
+  } catch (error) {
+    console.log("Error deleting vendor:", error);
+    res.status(500).json(apiResponse(false, error.message, null));
+  }
+};
+
+
 /**
  * Add single or multiple items for a specific vendor
  */
