@@ -1,11 +1,6 @@
 import thirdDB from "../../config/dbfirst.js";
 
 export const createVendor = async (data) => {
-  const info = await thirdDB.query(
-    "SELECT current_database(), inet_server_addr(), inet_server_port()"
-  );
-  console.log("DB INFO:", info.rows);
-
   const query = `
     INSERT INTO vendors 
     (
@@ -46,6 +41,49 @@ export const createVendor = async (data) => {
     data.bank_branch || null,
     data.account_number || null,
     data.ifsc_code || null,
+  ]);
+
+  return result.rows[0];
+};
+
+
+export const updateVendor = async (vendor_id, data) => {
+  const query = `
+    UPDATE vendors
+    SET
+      vendor_name = $1,
+      contact_person = $2,
+      phone = $3,
+      email = $4,
+      gst_number = $5,
+      pan_number = $6,
+      address = $7,
+      rating = $8,
+      status = $9,
+      bank_name = $10,
+      bank_branch = $11,
+      account_number = $12,
+      ifsc_code = $13,
+      updated_at = NOW()
+    WHERE vendor_id = $14
+    RETURNING *
+  `;
+
+  const result = await thirdDB.query(query, [
+    data.vendor_name,
+    data.contact_person,
+    data.phone,
+    data.email,
+    data.gst_number,
+    data.pan_number,
+    data.address,
+    data.rating || 0,
+    data.status || "active",
+    data.bank_name || null,
+    data.bank_branch || null,
+    data.account_number || null,
+    data.ifsc_code || null,
+    vendor_id,
   ]);
 
   return result.rows[0];
