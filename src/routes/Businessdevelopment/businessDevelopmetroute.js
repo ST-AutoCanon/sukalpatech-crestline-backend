@@ -4,7 +4,8 @@ import {
   getAllBD, 
   submitToFeasibility, 
   getPendingFeasibility, 
-  feasibilityReview 
+  feasibilityReview ,
+  bdUpdate
 } from "../../controllers/Businessdevelopment/businessDevelopment.js";
 import {upload} from "../../config/multer.js";
 
@@ -18,5 +19,7 @@ router.patch("/:id/submit", submitToFeasibility);
 // Feasibility APIs
 router.get("/feasibility/pending", getPendingFeasibility);
 router.patch("/feasibility/:id/review", feasibilityReview);
+// BD Team Update
+router.patch("/:id/bd-update", bdUpdate);
 
 export default router;

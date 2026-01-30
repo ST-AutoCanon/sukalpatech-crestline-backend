@@ -76,3 +76,17 @@ export const feasibilityReview = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+export const bdUpdate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { bd_status, bd_comments } = req.body;
+
+    const data = await BDService.bdUpdate(id, bd_status, bd_comments);
+
+    res.json({ success: true, message: "BD updated successfully", data });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+

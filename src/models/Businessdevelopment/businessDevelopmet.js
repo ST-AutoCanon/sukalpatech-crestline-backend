@@ -38,7 +38,7 @@ const BusinessDevelopmentModel = {
 
     const values = [
       data.bd_status || "DRAFT",
-      data.bd_comments ||null,
+      data.bd_comments || null,
       data.description,
       data.priority,
       data.required_date,
@@ -139,6 +139,21 @@ const BusinessDevelopmentModel = {
     );
     return rows[0];
   },
+
+  // BD UPDATE (after feasibility approval)
+  updateBD: async (id, bd_status, bd_comments) => {
+    const { rows } = await db.query(
+      `UPDATE business_development
+       SET bd_status = $1,
+           bd_comments = $2
+       WHERE id = $3
+       RETURNING *`,
+      [bd_status, bd_comments, id]
+    );
+
+    return rows[0];
+  },
+
 };
 
 // ✅ Export as ESM default

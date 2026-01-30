@@ -32,12 +32,27 @@ const BusinessDevelopmentService = {
   },
 
   feasibilityReview: async (id, feasibility_status, feasibility_comments) => {
-    const allowed = ["APPROVED", "REJECTED", "NEEDS_CHANGES"];
-    if (!allowed.includes(feasibility_status)) {
-      throw new Error("Invalid feasibility status");
-    }
-    return await BDModel.feasibilityReview(id, feasibility_status, feasibility_comments);
+  const allowed = ["APPROVED", "REJECTED", "PENDING"];
+  if (!allowed.includes(feasibility_status.trim().toUpperCase())) {
+    throw new Error("Invalid feasibility status");
+  }
+  return await BDModel.feasibilityReview(
+    id,
+    feasibility_status.trim().toUpperCase(),
+    feasibility_comments
+  );
+},
+
+  bdUpdate: async (id, bd_status, bd_comments) => {
+   const bd = await BDModel.findById(id);
+if (!bd) throw new Error("Business request not found");
+
+    
+
+
+    return await BDModel.updateBD(id, bd_status, bd_comments);
   },
 };
+
 
 export default BusinessDevelopmentService; // ✅ ESM default export
