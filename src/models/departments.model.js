@@ -26,7 +26,8 @@ export const getEmployeesWithDept = async () => {
           json_build_object(
             'id', d.department_id,
             'name', d.name,
-            'permission', ed.permission
+            'permission', ed.permission,
+             'category', ed.category
           )
         ) FILTER (WHERE d.department_id IS NOT NULL), '[]'
       ) AS departments
@@ -49,7 +50,8 @@ export const getEmployeesByDepartment = async (departmentId) => {
         json_build_object(
           'id', d.department_id,
           'name', d.name,
-          'permission', ed.permission
+          'permission', ed.permission,
+          'category', ed.category
         )
       ) AS departments
     FROM app_employees e
@@ -69,15 +71,17 @@ export const getEmployeesByDepartment = async (departmentId) => {
 export const assignEmployeeDepartment = async (
   employeeId,
   departmentId,
-  permission = null
+  permission = null,
+  category=null,
 ) => {
   const result = await thirdDB.query(
     `INSERT INTO employee_departments (employee_id, department_id, permission)
      VALUES ($1, $2, $3)
      ON CONFLICT (employee_id, department_id) DO UPDATE
-     SET permission = EXCLUDED.permission
+     SET permission = EXCLUDED.permission,
+     category = EXCLUDED.category
      RETURNING *`,
-    [employeeId, departmentId, permission]
+    [employeeId, departmentId, permission,category]
   );
   return result.rows[0];
 };
@@ -96,14 +100,15 @@ export const unassignEmployeeDepartment = async (employeeId, departmentId) => {
 export const assignOrUpdatePermission = async (
   employeeId,
   departmentId,
-  permission
+  permission,
+  category
 ) => {
   const result = await thirdDB.query(
     `UPDATE employee_departments
      SET permission = $3
      WHERE employee_id = $1 AND department_id = $2
      RETURNING *`,
-    [employeeId, departmentId, permission]
+    [employeeId, departmentId, permission,category]
   );
   return result.rows[0];
 };

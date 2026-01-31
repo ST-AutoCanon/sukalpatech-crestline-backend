@@ -34,13 +34,14 @@ export const listEmployeesByDepartmentController = async (req, res) => {
 // ---------------- ASSIGN / UNASSIGN DEPARTMENT ----------------
 export const assignEmployeeDeptController = async (req, res) => {
   const { id } = req.params;
-  const { department_id, permission } = req.body;
+  const { department_id, permission,category } = req.body;
   const result = await service.assignEmployeeDept(
     id,
     department_id,
-    permission
+    permission,
+    category
   );
-  res.json(apiResponse(result.success, "Department assigned", result.data));
+  res.json(apiResponse(result.success, "Department and approval category assigned", result.data));
 };
 
 export const unassignEmployeeDeptController = async (req, res) => {
@@ -53,11 +54,21 @@ export const unassignEmployeeDeptController = async (req, res) => {
 // ---------------- ASSIGN / UPDATE / UNASSIGN PERMISSION ----------------
 export const assignOrUpdatePermissionController = async (req, res) => {
   const { id } = req.params;
-  const { department_id, permission } = req.body;
+  const { department_id, permission,category } = req.body;
+
+  const allowedCategories = ['LOW', 'MEDIUM', 'HIGH'];
+if (category && !allowedCategories.includes(category)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid approval category"
+  });
+}
+
   const result = await service.assignOrUpdateDeptPermission(
     id,
     department_id,
-    permission
+    permission,
+    category
   );
   res.json(
     apiResponse(result.success, "Permission assigned/updated", result.data)

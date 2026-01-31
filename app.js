@@ -15,6 +15,7 @@ import itemsRoutes from "./src/routes/items/item.routes.js";
 import newBDBuisnessDevelopmentRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import newBDfeasibilityRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import businessDevelopmentRoutes from "./src/routes/Businessdevelopment/businessDevelopmetroute.js";
+
 import path from "path";
 const app = express();
 
@@ -40,6 +41,8 @@ app.use("/api/new-store", newStoreRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/business-development", businessDevelopmentRoutes);
+
+
 //test---->
 app.get("/", (req, res) => {
   res.send("Cristaline API is running...");
