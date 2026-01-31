@@ -29,14 +29,16 @@ export const listEmployeesByDepartment = async (departmentId) => {
 export const assignEmployeeDept = async (
   employeeId,
   departmentId,
-  permission = null
+  permission = null,
+  category=null
 ) => {
   if (!employeeId || !departmentId)
     return { success: false, message: "Missing IDs" };
   const data = await model.assignEmployeeDepartment(
     employeeId,
     departmentId,
-    permission
+    permission,
+    category
   );
   return { success: true, data };
 };
@@ -51,14 +53,21 @@ export const unassignEmployeeDept = async (employeeId, departmentId) => {
 export const assignOrUpdateDeptPermission = async (
   employeeId,
   departmentId,
-  permission
+  permission,
+  category
 ) => {
   if (!employeeId || !departmentId || !permission)
     return { success: false, message: "Missing data" };
+
+  if (category && !['LOW', 'MEDIUM', 'HIGH'].includes(category)) {
+    return { success: false, message: "Invalid approval category" };
+  }
+
   const data = await model.assignOrUpdatePermission(
     employeeId,
     departmentId,
-    permission
+    permission,
+    category
   );
   return { success: true, data };
 };
