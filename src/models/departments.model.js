@@ -75,8 +75,8 @@ export const assignEmployeeDepartment = async (
   category=null,
 ) => {
   const result = await thirdDB.query(
-    `INSERT INTO employee_departments (employee_id, department_id, permission)
-     VALUES ($1, $2, $3)
+    `INSERT INTO employee_departments (employee_id, department_id, permission,category)
+     VALUES ($1, $2, $3,$4)
      ON CONFLICT (employee_id, department_id) DO UPDATE
      SET permission = EXCLUDED.permission,
      category = EXCLUDED.category
@@ -105,7 +105,8 @@ export const assignOrUpdatePermission = async (
 ) => {
   const result = await thirdDB.query(
     `UPDATE employee_departments
-     SET permission = $3
+     SET permission = $3,
+     category = $4
      WHERE employee_id = $1 AND department_id = $2
      RETURNING *`,
     [employeeId, departmentId, permission,category]
