@@ -104,6 +104,19 @@ export const getPRByIdController = async (req, res) => {
   }
 };
 
+export const updateFullPRController = async (req, res) => {
+  try {
+    const prId = req.params.id;
+    const prData = req.body;
+    const result = await prService.updateFullPR(prId, prData);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error in full PR update controller:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 
 /**
  * Update PR (ONLY department status & comments)
@@ -154,6 +167,16 @@ export const getFinancePendingPRRequests = async (req, res) => {
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getPRsByStoreCategoryController = async (req, res) => {
+  try {
+    const result = await prService.getPRsByStoreCategory();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching categorized PRs:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

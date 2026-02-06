@@ -11,8 +11,8 @@ export const findAppUserBySTSId = async (stsId) => {
 export const createAppUser = async (data) => {
   const query = `
     INSERT INTO app_employees 
-      (sts_employee_id, first_name, last_name, email, role, permissions, department_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+      (sts_employee_id, first_name, last_name, email, role, permissions, department_id,category)
+    VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
     RETURNING *
   `;
 
@@ -24,6 +24,7 @@ export const createAppUser = async (data) => {
     data.role,
     data.permissions,
     data.department_id,
+    data.category
   ]);
 
   return result.rows[0];

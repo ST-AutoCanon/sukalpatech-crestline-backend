@@ -110,7 +110,7 @@ export const updatePRRequest = async (reqId, userData) => {
     throw err;
   }
 };
-  
+
 
 /**
  * Fetch ONLY PRs whose LATEST status = FINANCE APPROVED
@@ -150,6 +150,59 @@ export const getFinancePendingPRs = async () => {
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
+    throw err;
+  }
+};
+
+export const updateFullPR = async (prId, prData) => {
+  try {
+    await purchaseRequestModel.updateFullPR(prId, prData);
+    return { success: true, message: "PR updated successfully" };
+  } catch (err) {
+    console.error("❌ Error updating full PR:", err);
+    throw err;
+  }
+};
+
+export const getPRsByStoreCategory = async () => {
+  try {
+    const allPRs = await getAllPRs();
+
+    const categorizedPRs = {
+      "PR Raised": [],
+      Pending: [],
+      Rejected: [],
+      Completed: [],
+    };
+
+    allPRs.data.forEach((pr) => {
+      const storeStatuses = (pr.department_statuses || [])
+        .filter((ds) => ds.department === "STORE")
+        .sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at));
+
+      const latestStatus = storeStatuses.at(-1)?.department_status;
+
+      switch (latestStatus) {
+        case "STORE_PENDING":
+          categorizedPRs.Pending.push(pr);
+          break;
+
+        case "STORE_REJECTED":
+          categorizedPRs.Rejected.push(pr);
+          break;
+
+        case "STORE_APPROVED":
+          categorizedPRs.Completed.push(pr);
+          break;
+
+        default:
+          categorizedPRs["PR Raised"].push(pr); // CREATED or no store action
+      }
+    });
+
+    return { success: true, data: categorizedPRs };
+  } catch (err) {
+    console.error("❌ Error categorizing PRs by store status:", err);
     throw err;
   }
 };

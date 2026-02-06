@@ -17,7 +17,7 @@ export const loginController = async (req, res) => {
     // 🔹 Generate JWT token
     const user = result.data.user;
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role,category: user.category },
       JWT_SECRET,
       { expiresIn: "1h" }
     );

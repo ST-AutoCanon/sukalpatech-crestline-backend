@@ -355,6 +355,180 @@ export const fetchFinanceRejectedPRs = async () => {
 };
 
 
+// -------------------------------
+// Update Full Purchase Request
+// -------------------------------
+export const updateFullPR = async (prId, prData) => {
+  // 1️⃣ Update main PR fields
+  const updatePRQuery = `
+    UPDATE purchase_requests
+    SET
+      department = $1,
+      requested_by = $2,
+      description = $3,
+      priority = $4,
+      required_date = $5,
+      remarks = $6,
+      updated_at = NOW()
+    WHERE id = $7
+  `;
+  const prValues = [
+    prData.department,
+    prData.requested_by,
+    prData.description,
+    prData.priority,
+    prData.required_date,
+    prData.remarks,
+    prId,
+  ];
+  await thirdDB.query(updatePRQuery, prValues);
+
+  // 2️⃣ Update or Insert Items
+  for (const item of prData.items) {
+    let itemId;
+
+    if (item.id) {
+      // Existing item → update
+      const updateItemQuery = `
+        UPDATE purchase_items
+        SET item_code = $1, item_name = $2, quantity_required = $3
+        WHERE id = $4
+      `;
+      await thirdDB.query(updateItemQuery, [
+        item.item_code,
+        item.item_name,
+        item.quantity_required,
+        item.id,
+      ]);
+      itemId = item.id;
+    } else {
+      // New item → insert
+      const insertItemQuery = `
+        INSERT INTO purchase_items (purchase_request_id, item_code, item_name, quantity_required)
+        VALUES ($1,$2,$3,$4)
+        RETURNING id
+      `;
+      const res = await thirdDB.query(insertItemQuery, [
+        prId,
+        item.item_code,
+        item.item_name,
+        item.quantity_required,
+      ]);
+      itemId = res.rows[0].id;
+    }
+
+    // 3️⃣ Update or Insert Vendors
+    if (item.vendors) {
+      for (const vendor of item.vendors) {
+        let vendorId;
+
+        if (vendor.id) {
+          // Existing vendor → update
+          const updateVendorQuery = `
+            UPDATE item_vendors
+            SET vendor_id = $1, status = $2, unit_price = $3, total_price = $4, quotation_validity_date = $5, vendor_status_updated_by = $6
+            WHERE id = $7
+          `;
+          await thirdDB.query(updateVendorQuery, [
+            vendor.vendor_id,
+            vendor.status,
+            vendor.unit_price,
+            vendor.total_price,
+            vendor.quotation_validity_date,
+            vendor.vendor_status_updated_by,
+            vendor.id,
+          ]);
+          vendorId = vendor.id;
+        } else {
+          // New vendor → insert
+          const insertVendorQuery = `
+            INSERT INTO item_vendors
+            (purchase_item_id, vendor_id, status, unit_price, total_price, quotation_validity_date, vendor_status_updated_by)
+            VALUES ($1,$2,$3,$4,$5,$6,$7)
+            RETURNING id
+          `;
+          const res = await thirdDB.query(insertVendorQuery, [
+            itemId,
+            vendor.vendor_id,
+            vendor.status,
+            vendor.unit_price,
+            vendor.total_price,
+            vendor.quotation_validity_date,
+            vendor.vendor_status_updated_by,
+          ]);
+          vendorId = res.rows[0].id;
+        }
+
+        // 4️⃣ Update / Insert Attachments
+        if (vendor.attachments) {
+          for (const att of vendor.attachments) {
+            if (att.id) {
+              // Existing attachment → update
+              const updateAttQuery = `
+                UPDATE vendor_attachments
+                SET file_name = $1, file_path = $2, uploaded_by = $3, uploaded_at = $4
+                WHERE id = $5
+              `;
+              await thirdDB.query(updateAttQuery, [
+                att.file_name,
+                att.file_path.replace(/^.*[\\\/]/, ""),
+                att.uploaded_by,
+                att.uploaded_at,
+                att.id,
+              ]);
+            } else {
+              // New attachment → insert
+              const insertAttQuery = `
+                INSERT INTO vendor_attachments (item_vendor_id, file_name, file_path, uploaded_by, uploaded_at)
+                VALUES ($1,$2,$3,$4,$5)
+              `;
+              await thirdDB.query(insertAttQuery, [
+                vendorId,
+                att.file_name,
+                att.file_path.replace(/^.*[\\\/]/, ""),
+                att.uploaded_by,
+                att.uploaded_at,
+              ]);
+            }
+          }
+        }
+
+        // 5️⃣ Update / Insert Comments
+        if (vendor.comments) {
+          for (const com of vendor.comments) {
+            if (com.id) {
+              const updateComQuery = `
+                UPDATE vendor_comments
+                SET commented_by = $1, comment = $2, commented_at = $3
+                WHERE id = $4
+              `;
+              await thirdDB.query(updateComQuery, [
+                com.commented_by,
+                com.comment,
+                com.commented_at,
+                com.id,
+              ]);
+            } else {
+              const insertComQuery = `
+                INSERT INTO vendor_comments (item_vendor_id, commented_by, comment, commented_at)
+                VALUES ($1,$2,$3,$4)
+              `;
+              await thirdDB.query(insertComQuery, [
+                vendorId,
+                com.commented_by,
+                com.comment,
+                com.commented_at,
+              ]);
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+
+
 export const fetchFinancePendingPRs = async () => {
   const query = `
     SELECT 

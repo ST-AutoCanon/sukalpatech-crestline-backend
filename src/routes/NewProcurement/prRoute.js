@@ -51,4 +51,14 @@ router.get(
   prController.getFinancePendingPRRequests
 );
 
+// PUT route for full PR update
+router.put("/purchase-requests/full/:id", prController.updateFullPRController);
+
+// Get PRs grouped by store status (PR Raised, Pending, Rejected, Completed)
+router.get(
+  "/purchase-requests/by-store-category",
+  prController.getPRsByStoreCategoryController
+);
+
+
 export default router;

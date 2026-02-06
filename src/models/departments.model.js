@@ -26,8 +26,7 @@ export const getEmployeesWithDept = async () => {
           json_build_object(
             'id', d.department_id,
             'name', d.name,
-            'permission', ed.permission,
-             'category', ed.category
+            'permission', ed.permission
           )
         ) FILTER (WHERE d.department_id IS NOT NULL), '[]'
       ) AS departments
@@ -50,8 +49,7 @@ export const getEmployeesByDepartment = async (departmentId) => {
         json_build_object(
           'id', d.department_id,
           'name', d.name,
-          'permission', ed.permission,
-          'category', ed.category
+          'permission', ed.permission
         )
       ) AS departments
     FROM app_employees e
@@ -71,17 +69,15 @@ export const getEmployeesByDepartment = async (departmentId) => {
 export const assignEmployeeDepartment = async (
   employeeId,
   departmentId,
-  permission = null,
-  category=null,
+  permission = null
 ) => {
   const result = await thirdDB.query(
-    `INSERT INTO employee_departments (employee_id, department_id, permission,category)
-     VALUES ($1, $2, $3,$4)
+    `INSERT INTO employee_departments (employee_id, department_id, permission)
+     VALUES ($1, $2, $3)
      ON CONFLICT (employee_id, department_id) DO UPDATE
-     SET permission = EXCLUDED.permission,
-     category = EXCLUDED.category
+     SET permission = EXCLUDED.permission
      RETURNING *`,
-    [employeeId, departmentId, permission,category]
+    [employeeId, departmentId, permission]
   );
   return result.rows[0];
 };
@@ -100,16 +96,14 @@ export const unassignEmployeeDepartment = async (employeeId, departmentId) => {
 export const assignOrUpdatePermission = async (
   employeeId,
   departmentId,
-  permission,
-  category
+  permission
 ) => {
   const result = await thirdDB.query(
     `UPDATE employee_departments
-     SET permission = $3,
-     category = $4
+     SET permission = $3
      WHERE employee_id = $1 AND department_id = $2
      RETURNING *`,
-    [employeeId, departmentId, permission,category]
+    [employeeId, departmentId, permission]
   );
   return result.rows[0];
 };

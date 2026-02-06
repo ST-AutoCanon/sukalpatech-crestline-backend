@@ -41,4 +41,5 @@ router.get(
 // Search
 router.get("/search", searchController.searchCategoriesHandler);
 
+router.get("/all", searchController.getTablesController);
 export default router;
