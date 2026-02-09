@@ -15,6 +15,18 @@ const BusinessDevelopmentService = {
   getBDById: async (id) => {
     return await BDModel.findById(id);
   },
+  updateBD: async (id, payload) => {
+    const bd = await BDModel.findById(id);
+    if (!bd) throw new Error("Business request not found");
+
+    // Optional rule: block edits after submission
+    if (bd.bd_status !== "DRAFT" && bd.bd_status !== "CREATED") {
+      throw new Error("Only DRAFT / CREATED requests can be edited");
+    }
+
+    return await BDModel.updateBD(id, payload);
+  },
+  
 
   submitToFeasibility: async (id) => {
     const bd = await BDModel.findById(id);

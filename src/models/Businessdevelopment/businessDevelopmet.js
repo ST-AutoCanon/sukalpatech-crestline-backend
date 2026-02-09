@@ -117,6 +117,31 @@ const BusinessDevelopmentModel = {
     );
     return rows[0];
   },
+  // UPDATE FULL EDITABLE BD (Edit Modal Save)
+updateEditableBD: async (id, payload) => {
+  const keys = Object.keys(payload);
+
+  if (keys.length === 0) {
+    throw new Error("No fields provided for update");
+  }
+
+  const values = Object.values(payload);
+
+  const setClause = keys
+    .map((key, index) => `${key} = $${index + 1}`)
+    .join(", ");
+
+  const query = `
+    UPDATE business_development
+    SET ${setClause}
+    WHERE id = $${keys.length + 1}
+    RETURNING *
+  `;
+
+  const { rows } = await db.query(query, [...values, id]);
+  return rows[0];
+},
+
 
   // GET PENDING FEASIBILITY REQUESTS
   getPendingFeasibility: async () => {

@@ -31,3 +31,21 @@ export const getSubmittedPurchaseRequests = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const updateFullFeasibilityRequest = async (req, res) => {
+  try {
+    const reqId = req.params.id;
+    const userData = req.body;
+
+    // Call service to update feasibility request
+    const result = await feasibilityService.updateFeasibilityReq(
+      reqId,
+      userData
+    );
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error updating Feasibility Request:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

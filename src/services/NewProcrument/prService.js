@@ -164,45 +164,12 @@ export const updateFullPR = async (prId, prData) => {
   }
 };
 
-export const getPRsByStoreCategory = async () => {
+export const getAllPRsByStatus = async (status) => {
   try {
-    const allPRs = await getAllPRs();
-
-    const categorizedPRs = {
-      "PR Raised": [],
-      Pending: [],
-      Rejected: [],
-      Completed: [],
-    };
-
-    allPRs.data.forEach((pr) => {
-      const storeStatuses = (pr.department_statuses || [])
-        .filter((ds) => ds.department === "STORE")
-        .sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at));
-
-      const latestStatus = storeStatuses.at(-1)?.department_status;
-
-      switch (latestStatus) {
-        case "STORE_PENDING":
-          categorizedPRs.Pending.push(pr);
-          break;
-
-        case "STORE_REJECTED":
-          categorizedPRs.Rejected.push(pr);
-          break;
-
-        case "STORE_APPROVED":
-          categorizedPRs.Completed.push(pr);
-          break;
-
-        default:
-          categorizedPRs["PR Raised"].push(pr); // CREATED or no store action
-      }
-    });
-
-    return { success: true, data: categorizedPRs };
+    const prs = await purchaseRequestModel.fetchPRsByStatus(status);
+    return { success: true, data: prs };
   } catch (err) {
-    console.error("❌ Error categorizing PRs by store status:", err);
-    throw err;
+    console.error("❌ Error fetching PRs by status:", err);
+    return { success: false, error: "Failed to fetch PRs" };
   }
 };

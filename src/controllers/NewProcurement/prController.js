@@ -1,4 +1,7 @@
 import * as prService from "../../services/NewProcrument/prService.js";
+// prController.js
+import { getAllPRsByStatus } from '../../services/NewProcrument/prService.js'; // adjust path as needed
+
 
 // -------------------------------
 // Create Purchase Request Controller (with attachments)
@@ -171,12 +174,26 @@ export const getFinancePendingPRRequests = async (req, res) => {
   }
 };
 
-export const getPRsByStoreCategoryController = async (req, res) => {
+
+export const getAllPRsByStatusController = async (req, res) => {
   try {
-    const result = await prService.getPRsByStoreCategory();
-    res.status(200).json(result);
+    const statusParam = req.params.status;
+
+    // Map frontend "Completed" to backend "APPROVED"
+    const status =
+      statusParam.toUpperCase() === "COMPLETED"
+        ? "APPROVED"
+        : statusParam.toUpperCase();
+
+    const result = await getAllPRsByStatus(status);
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, message: result.error });
+    }
+
+    return res.json({ success: true, data: result.data });
   } catch (err) {
-    console.error("❌ Error fetching categorized PRs:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("❌ Error in controller:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

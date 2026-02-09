@@ -34,3 +34,16 @@ export const getAllEmployees = async () => {
   const result = await thirdDB.query(`SELECT * FROM app_employees ORDER BY id`);
   return result.rows;
 };
+
+//update category
+export const updateEmployeeCategory = async (employeeId, category) => {
+  const query = `
+    UPDATE app_employees
+    SET category = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+  `;
+
+  const result = await thirdDB.query(query, [category, employeeId]);
+  return result.rows[0];
+};

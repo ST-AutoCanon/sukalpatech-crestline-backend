@@ -83,3 +83,108 @@ export const fetchSubmittedPurchaseRequests = async () => {
   const result = await thirdDB.query(query);
   return result.rows;
 };
+
+
+export const updateFullPR = async (reqId, data, userId) => {
+  // 1️⃣ Update purchase_requests table
+  const prQuery = `
+    UPDATE purchase_requests
+    SET description = $1,
+        priority = $2,
+        required_date = $3,
+        remarks = $4,
+        updated_at = NOW()
+    WHERE id = $5
+  `;
+  await thirdDB.query(prQuery, [
+    data.description,
+    data.priority,
+    data.required_date,
+    data.remarks,
+    reqId,
+  ]);
+
+  // 2️⃣ Update each item
+  for (const item of data.items) {
+    const itemQuery = `
+      UPDATE purchase_items
+      SET item_code = $1,
+          item_name = $2,
+          quantity_required = $3
+      WHERE id = $4
+    `;
+    await thirdDB.query(itemQuery, [
+      item.item_code,
+      item.item_name,
+      item.quantity_required,
+      item.id,
+    ]);
+
+    // 3️⃣ Update vendors for this item
+    for (const vendor of item.vendors) {
+      const vendorQuery = `
+        UPDATE item_vendors
+        SET vendor_id = $1,
+            unit_price = $2,
+            total_price = $3,
+            quotation_validity_date = $4,
+            status = $5,
+            vendor_status_updated_by = $6
+        WHERE id = $7
+      `;
+      await thirdDB.query(vendorQuery, [
+        vendor.vendor_id,
+        vendor.unit_price,
+        vendor.unit_price * item.quantity_required,
+        vendor.quotation_validity_date,
+        vendor.status || "CREATED",
+        userId,
+        vendor.id,
+      ]);
+
+      // 4️⃣ Upsert attachments
+      if (vendor.attachments && vendor.attachments.length > 0) {
+        for (const att of vendor.attachments) {
+          if (att.id) {
+            // update existing
+            await thirdDB.query(
+              `UPDATE vendor_attachments
+               SET file_name=$1, file_path=$2, uploaded_at=NOW(), uploaded_by=$3
+               WHERE id=$4`,
+              [att.file_name, att.file_path, userId, att.id]
+            );
+          } else {
+            // insert new
+            await thirdDB.query(
+              `INSERT INTO vendor_attachments(item_vendor_id, file_name, file_path, uploaded_by, uploaded_at)
+               VALUES ($1,$2,$3,$4,NOW())`,
+              [vendor.id, att.file_name, att.file_path, userId]
+            );
+          }
+        }
+      }
+
+      // 5️⃣ Upsert comments
+      if (vendor.comments && vendor.comments.length > 0) {
+        for (const comment of vendor.comments) {
+          if (comment.id) {
+            await thirdDB.query(
+              `UPDATE vendor_comments
+               SET comment=$1, commented_at=NOW(), commented_by=$2
+               WHERE id=$3`,
+              [comment.comment, userId, comment.id]
+            );
+          } else {
+            await thirdDB.query(
+              `INSERT INTO vendor_comments(item_vendor_id, comment, commented_by, commented_at)
+               VALUES ($1,$2,$3,NOW())`,
+              [vendor.id, comment.comment, userId]
+            );
+          }
+        }
+      }
+    }
+  }
+
+  return { success: true };
+};

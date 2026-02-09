@@ -1,5 +1,5 @@
 import express from "express";
-import { getEmployeesController } from "../controllers/admin.controller.js";
+import { getEmployeesController, updateCategory } from "../controllers/admin.controller.js";
 import { auth } from "../middleware/auth.js";
 
 const adminRouter = express.Router();
@@ -16,5 +16,9 @@ adminRouter.use(auth);
 
 // Get all employees (admin only)
 adminRouter.get("/employees", adminOnly, getEmployeesController);
+adminRouter.put("/employees/:id/category", auth,updateCategory);
+
 
 export default adminRouter;
+
+//update category
