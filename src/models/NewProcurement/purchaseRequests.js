@@ -383,7 +383,43 @@ export const updateFullPR = async (prId, prData) => {
   ];
   await thirdDB.query(updatePRQuery, prValues);
 
-  // 2️⃣ Update or Insert Items
+  // 2️⃣ Update or Insert Department Statuses
+  if (prData.department_statuses) {
+    for (const ds of prData.department_statuses) {
+      if (ds.id) {
+        // Existing → update
+        const updateDSQuery = `
+          UPDATE department_statuses
+          SET department_status = $1,
+              department_comment = $2,
+              status_updated_by = $3,
+              updated_at = NOW()
+          WHERE id = $4
+        `;
+        await thirdDB.query(updateDSQuery, [
+          ds.department_status,
+          ds.department_comment,
+          ds.status_updated_by,
+          ds.id,
+        ]);
+      } else {
+        // New → insert
+        const insertDSQuery = `
+          INSERT INTO department_statuses
+          (purchase_request_id, department_status, department_comment, status_updated_by, updated_at)
+          VALUES ($1,$2,$3,$4,NOW())
+        `;
+        await thirdDB.query(insertDSQuery, [
+          prId,
+          ds.department_status,
+          ds.department_comment,
+          ds.status_updated_by,
+        ]);
+      }
+    }
+  }
+
+  // 3️⃣ Update or Insert Items
   for (const item of prData.items) {
     let itemId;
 
@@ -417,7 +453,7 @@ export const updateFullPR = async (prId, prData) => {
       itemId = res.rows[0].id;
     }
 
-    // 3️⃣ Update or Insert Vendors
+    // 4️⃣ Update or Insert Vendors
     if (item.vendors) {
       for (const vendor of item.vendors) {
         let vendorId;
@@ -426,7 +462,8 @@ export const updateFullPR = async (prId, prData) => {
           // Existing vendor → update
           const updateVendorQuery = `
             UPDATE item_vendors
-            SET vendor_id = $1, status = $2, unit_price = $3, total_price = $4, quotation_validity_date = $5, vendor_status_updated_by = $6
+            SET vendor_id = $1, status = $2, unit_price = $3, total_price = $4,
+                quotation_validity_date = $5, vendor_status_updated_by = $6
             WHERE id = $7
           `;
           await thirdDB.query(updateVendorQuery, [
@@ -459,11 +496,10 @@ export const updateFullPR = async (prId, prData) => {
           vendorId = res.rows[0].id;
         }
 
-        // 4️⃣ Update / Insert Attachments
+        // 5️⃣ Update / Insert Attachments
         if (vendor.attachments) {
           for (const att of vendor.attachments) {
             if (att.id) {
-              // Existing attachment → update
               const updateAttQuery = `
                 UPDATE vendor_attachments
                 SET file_name = $1, file_path = $2, uploaded_by = $3, uploaded_at = $4
@@ -477,7 +513,6 @@ export const updateFullPR = async (prId, prData) => {
                 att.id,
               ]);
             } else {
-              // New attachment → insert
               const insertAttQuery = `
                 INSERT INTO vendor_attachments (item_vendor_id, file_name, file_path, uploaded_by, uploaded_at)
                 VALUES ($1,$2,$3,$4,$5)
@@ -493,7 +528,7 @@ export const updateFullPR = async (prId, prData) => {
           }
         }
 
-        // 5️⃣ Update / Insert Comments
+        // 6️⃣ Update / Insert Comments
         if (vendor.comments) {
           for (const com of vendor.comments) {
             if (com.id) {
@@ -526,6 +561,7 @@ export const updateFullPR = async (prId, prData) => {
     }
   }
 };
+
 
 
 

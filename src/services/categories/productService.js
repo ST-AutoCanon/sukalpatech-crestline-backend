@@ -10,3 +10,10 @@ export async function createProduct(name, category_id) {
 export async function fetchProductsByCategory(category_id) {
   return await productModel.getProductsByCategory(category_id);
 }
+
+export const fetchAllProducts = async () => {
+  // adjust to your DB query method
+  const categories = await db.query("SELECT * FROM Products"); 
+  return categories.rows;
+};
+

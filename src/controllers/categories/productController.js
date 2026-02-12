@@ -39,3 +39,12 @@ export const getProductsByCategory = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+export const getAllProducts = async (req, res) => {
+  try {
+    const data = await categoryService.fetchAllProducts(); // new service function
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error("Fetch All Categories Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

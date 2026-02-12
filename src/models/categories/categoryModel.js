@@ -24,3 +24,81 @@ export async function getCategoriesByRoot(root_id) {
   );
   return result.rows;
 }
+
+export async function getAllCategories() {
+  const result = await thirdDB.query(
+    "SELECT c.id, c.code, c.name, r.id AS root_id, r.name AS root_name FROM categories c LEFT JOIN root_categories r ON c.root_category_id = r.id ORDER BY c.id"
+  );
+  return result.rows;
+}
+
+/* ================= PRODUCT ================= */
+export async function getAllProducts() {
+  const result = await thirdDB.query(
+    `SELECT p.id, p.name, p.category_id, c.name AS category_name, r.name AS root_name
+     FROM products p
+     LEFT JOIN categories c ON p.category_id = c.id
+     LEFT JOIN root_categories r ON c.root_category_id = r.id
+     ORDER BY p.id`
+  );
+  return result.rows;
+}
+
+/* ================= VARIANT ================= */
+export async function getAllVariants() {
+  const result = await thirdDB.query(
+    `SELECT v.id, v.name, v.product_id, p.name AS product_name, c.name AS category_name, r.name AS root_name
+     FROM variants v
+     LEFT JOIN products p ON v.product_id = p.id
+     LEFT JOIN categories c ON p.category_id = c.id
+     LEFT JOIN root_categories r ON c.root_category_id = r.id
+     ORDER BY v.id`
+  );
+  return result.rows;
+}
+
+/* ================= SUB-VARIANT ================= */
+export async function getAllSubVariants() {
+  const result = await thirdDB.query(
+    `SELECT s.id, s.name, s.variant_id, v.name AS variant_name, p.name AS product_name, c.name AS category_name, r.name AS root_name
+     FROM sub_variants s
+     LEFT JOIN variants v ON s.variant_id = v.id
+     LEFT JOIN products p ON v.product_id = p.id
+     LEFT JOIN categories c ON p.category_id = c.id
+     LEFT JOIN root_categories r ON c.root_category_id = r.id
+     ORDER BY s.id`
+  );
+  return result.rows;
+}
+
+/* ================= FULL HIERARCHY (TABLE VIEW) ================= */
+export async function getFullHierarchy() {
+  const result = await thirdDB.query(`
+    SELECT 
+      r.id   AS root_id,
+      r.name AS root_name,
+
+      c.id   AS category_id,
+      c.code AS category_code,
+      c.name AS category_name,
+
+      p.id   AS product_id,
+      p.name AS product_name,
+
+      v.id   AS variant_id,
+      v.name AS variant_name,
+
+      s.id   AS sub_variant_id,
+      s.name AS sub_variant_name
+
+    FROM root_categories r
+    LEFT JOIN categories c ON c.root_category_id = r.id
+    LEFT JOIN products p ON p.category_id = c.id
+    LEFT JOIN variants v ON v.product_id = p.id
+    LEFT JOIN sub_variants s ON s.variant_id = v.id
+
+    ORDER BY r.id, c.id, p.id, v.id, s.id
+  `);
+
+  return result.rows;
+}

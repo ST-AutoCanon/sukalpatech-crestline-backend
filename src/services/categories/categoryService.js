@@ -10,3 +10,13 @@ export async function createCategory(name, root_category_id) {
 export async function fetchCategoriesByRoot(root_id) {
   return await categoryModel.getCategoriesByRoot(root_id);
 }
+
+export async function getFullHierarchy() {
+  try {
+    const data = await categoryModel.getFullHierarchy();
+    return data;
+  } catch (error) {
+    console.error("Service Error - getFullHierarchy:", error);
+    throw error;
+  }
+}

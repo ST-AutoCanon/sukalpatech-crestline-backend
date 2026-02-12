@@ -23,3 +23,8 @@ export async function createVariant(name, product_id) {
 export async function fetchVariantsByProduct(product_id) {
   return await variantModel.getVariantsByProduct(product_id);
 }
+export const fetchAllVariants = async () => {
+  // adjust to your DB query method
+  const categories = await db.query("SELECT * FROM variants"); 
+  return categories.rows;
+};
