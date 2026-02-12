@@ -38,3 +38,13 @@ export const getSubVariantsByVariantHandler = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const getAllSubVariants = async (req, res) => {
+  try {
+    const data = await subVariantService.fetchAllSubVariants();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error("Fetch All Subvariants Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

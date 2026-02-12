@@ -10,3 +10,8 @@ export async function createSubVariant(name, variant_id) {
 export async function fetchSubVariantsByVariant(variant_id) {
   return await subVariantModel.getSubVariantsByVariant(variant_id);
 }
+export const fetchAllSubVariants = async () => {
+  // adjust to your DB query method
+  const categories = await db.query("SELECT * FROM sub_variants"); 
+  return categories.rows;
+};

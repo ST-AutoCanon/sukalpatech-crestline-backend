@@ -39,3 +39,22 @@ export const getCategoriesByRoot = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+
+
+export const getFullHierarchy = async (req, res) => {
+  try {
+    const data = await categoryService.getFullHierarchy();
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("Hierarchy Fetch Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};

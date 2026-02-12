@@ -110,7 +110,7 @@ export const updatePRRequest = async (reqId, userData) => {
     throw err;
   }
 };
-  
+
 
 /**
  * Fetch ONLY PRs whose LATEST status = FINANCE APPROVED
@@ -151,5 +151,25 @@ export const getFinancePendingPRs = async () => {
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
     throw err;
+  }
+};
+
+export const updateFullPR = async (prId, prData) => {
+  try {
+    await purchaseRequestModel.updateFullPR(prId, prData);
+    return { success: true, message: "PR updated successfully" };
+  } catch (err) {
+    console.error("❌ Error updating full PR:", err);
+    throw err;
+  }
+};
+
+export const getAllPRsByStatus = async (status) => {
+  try {
+    const prs = await purchaseRequestModel.fetchPRsByStatus(status);
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching PRs by status:", err);
+    return { success: false, error: "Failed to fetch PRs" };
   }
 };

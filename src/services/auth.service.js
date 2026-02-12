@@ -38,8 +38,9 @@ export const loginService = async (email, password) => {
       first_name: stsUser.first_name,
       last_name: stsUser.last_name,
       email: stsUser.email,
-      role: "employee", // default
-      permissions: ["view"], // default
+      role: stsUser.role, // default
+      permissions: stsUser.permissions, // default
+      category:stsUser.category,
       department_id: null, // admin assigns later
     });
   }

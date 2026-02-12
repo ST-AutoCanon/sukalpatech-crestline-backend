@@ -14,15 +14,7 @@ export const createDepartmentController = async (req, res) => {
 
 // ---------------- EMPLOYEES WITH DEPARTMENTS ----------------
 export const getEmployeesWithDeptController = async (req, res) => {
-  console.log("🔐 Logged-in User:", req.user);
-
   const result = await service.listEmployeesWithDepartments();
-
-  console.log(
-    "📦 Employees + Departments:",
-    JSON.stringify(result.data, null, 2)
-  );
-
   res.json(apiResponse(result.success, "Employees fetched", result.data));
 };
 
@@ -42,23 +34,13 @@ export const listEmployeesByDepartmentController = async (req, res) => {
 // ---------------- ASSIGN / UNASSIGN DEPARTMENT ----------------
 export const assignEmployeeDeptController = async (req, res) => {
   const { id } = req.params;
-  const { department_id, permission,category } = req.body;
-  console.log("🔐 Logged-in User (from JWT):", req.user);
-  console.log("📝 Assigning Department Data:", {
-    employeeId: id,
-    department_id,
-    permission,
-    category,
-  });
-
+  const { department_id, permission } = req.body;
   const result = await service.assignEmployeeDept(
     id,
     department_id,
-    permission,
-    category
+    permission
   );
-  console.log("✅ DB Result:", result.data);
-  res.json(apiResponse(result.success, "Department and approval category assigned", result.data));
+  res.json(apiResponse(result.success, "Department assigned", result.data));
 };
 
 export const unassignEmployeeDeptController = async (req, res) => {
@@ -71,21 +53,11 @@ export const unassignEmployeeDeptController = async (req, res) => {
 // ---------------- ASSIGN / UPDATE / UNASSIGN PERMISSION ----------------
 export const assignOrUpdatePermissionController = async (req, res) => {
   const { id } = req.params;
-  const { department_id, permission,category } = req.body;
-
-  const allowedCategories = ['LOW', 'MEDIUM', 'HIGH'];
-if (category && !allowedCategories.includes(category)) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid approval category"
-  });
-}
-
+  const { department_id, permission } = req.body;
   const result = await service.assignOrUpdateDeptPermission(
     id,
     department_id,
-    permission,
-    category
+    permission
   );
   res.json(
     apiResponse(result.success, "Permission assigned/updated", result.data)

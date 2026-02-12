@@ -1,4 +1,7 @@
 import * as prService from "../../services/NewProcrument/prService.js";
+// prController.js
+import { getAllPRsByStatus } from '../../services/NewProcrument/prService.js'; // adjust path as needed
+
 
 // -------------------------------
 // Create Purchase Request Controller (with attachments)
@@ -104,6 +107,19 @@ export const getPRByIdController = async (req, res) => {
   }
 };
 
+export const updateFullPRController = async (req, res) => {
+  try {
+    const prId = req.params.id;
+    const prData = req.body;
+    const result = await prService.updateFullPR(prId, prData);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error in full PR update controller:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 
 /**
  * Update PR (ONLY department status & comments)
@@ -155,5 +171,29 @@ export const getFinancePendingPRRequests = async (req, res) => {
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+export const getAllPRsByStatusController = async (req, res) => {
+  try {
+    const statusParam = req.params.status;
+
+    // Map frontend "Completed" to backend "APPROVED"
+    const status =
+      statusParam.toUpperCase() === "COMPLETED"
+        ? "APPROVED"
+        : statusParam.toUpperCase();
+
+    const result = await getAllPRsByStatus(status);
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, message: result.error });
+    }
+
+    return res.json({ success: true, data: result.data });
+  } catch (err) {
+    console.error("❌ Error in controller:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

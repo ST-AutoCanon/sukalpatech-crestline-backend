@@ -90,3 +90,44 @@ export const bdUpdate = async (req, res) => {
   }
 };
 
+export const updateBD = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const files = req.files || [];
+
+    let attachments;
+
+    // If new files uploaded → process them
+    if (files.length > 0) {
+      attachments = files.map(file => ({
+        filename: file.filename,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+      }));
+    }
+
+    const payload = {
+      ...req.body,
+    };
+
+    // Attachments only if uploaded
+    if (attachments) {
+      payload.attachments = JSON.stringify(attachments);
+    }
+
+    const data = await BDService.updateBD(id, payload);
+
+    res.json({
+      success: true,
+      message: "BD updated successfully",
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

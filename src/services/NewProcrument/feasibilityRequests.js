@@ -73,3 +73,17 @@ export const getSubmittedPurchaseRequests = async () => {
     throw err;
   }
 };
+
+// frontend service: feasibilityRequests.js
+export const updateFULLFeasibilityRequest = async (id, data) => {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/feasibility/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+

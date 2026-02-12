@@ -80,3 +80,13 @@ export const getVariantsByProductHandler = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const getAllVariants = async (req, res) => {
+  try {
+    const data = await variantService.fetchAllVariants();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error("Fetch All Variants Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

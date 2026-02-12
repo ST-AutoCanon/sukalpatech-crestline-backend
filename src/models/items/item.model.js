@@ -125,6 +125,19 @@ export const updateItem = async (id, item) => {
   return result.rows[0];
 };
 
+
+export const getItems = async () => {
+  const result = await thirdDB.query(`
+    SELECT i.id, i.item_code, i.item_name, i.qty,
+      ARRAY_REMOVE(ARRAY_AGG(isup.vendor_id), NULL) AS vendors
+    FROM items i
+    LEFT JOIN items_suppliers isup ON i.id = isup.item_id
+    GROUP BY i.id
+    ORDER BY i.id DESC
+  `);
+  return result.rows;
+};
+
 // Delete
 export const deleteItem = async (id) => {
   await thirdDB.query(`DELETE FROM items WHERE id = $1`, [id]);

@@ -14,6 +14,9 @@ router.get(
   "/submitted-requests",
   feasibilityController.getSubmittedPurchaseRequests
 );
-
+router.put(
+  "/feasibility-requests/:id",
+  feasibilityController.updateFullFeasibilityRequest
+);
 
 export default router;

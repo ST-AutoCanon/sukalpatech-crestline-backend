@@ -1,6 +1,8 @@
 import express from "express";
 import * as prController from "../../controllers/NewProcurement/prController.js";
 import { getVendorsController } from "../../controllers/vendor/vendor.controller.js";
+import { getAllPRsByStatusController } from "../../controllers/NewProcurement/prController.js";
+
 
 import { upload } from "../../config/multer.js";
 
@@ -50,5 +52,12 @@ router.get(
   "/finance-pending-pr-requests",
   prController.getFinancePendingPRRequests
 );
+
+// PUT route for full PR update
+router.put("/purchase-requests/full/:id", prController.updateFullPRController);
+
+// Get PRs grouped by store status (PR Raised, Pending, Rejected, Completed)
+router.get("/prs/status/:status", getAllPRsByStatusController);
+
 
 export default router;

@@ -11,8 +11,8 @@ export const findAppUserBySTSId = async (stsId) => {
 export const createAppUser = async (data) => {
   const query = `
     INSERT INTO app_employees 
-      (sts_employee_id, first_name, last_name, email, role, permissions, department_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+      (sts_employee_id, first_name, last_name, email, role, permissions, department_id,category)
+    VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
     RETURNING *
   `;
 
@@ -24,6 +24,7 @@ export const createAppUser = async (data) => {
     data.role,
     data.permissions,
     data.department_id,
+    data.category
   ]);
 
   return result.rows[0];
@@ -32,4 +33,17 @@ export const createAppUser = async (data) => {
 export const getAllEmployees = async () => {
   const result = await thirdDB.query(`SELECT * FROM app_employees ORDER BY id`);
   return result.rows;
+};
+
+//update category
+export const updateEmployeeCategory = async (employeeId, category) => {
+  const query = `
+    UPDATE app_employees
+    SET category = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+  `;
+
+  const result = await thirdDB.query(query, [category, employeeId]);
+  return result.rows[0];
 };
