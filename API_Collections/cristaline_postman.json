@@ -1,0 +1,136 @@
+{
+  "info": {
+    "name": "Cristaline Procurement API",
+    "_postman_id": "12345678-abcd-efgh-ijkl-1234567890ab",
+    "description": "Postman collection for Cristaline Procurement API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Vendor",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"vendor_name\":\"Acme Supplies\"}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/vendor", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","vendor"] }
+      }
+    },
+    {
+      "name": "Get All Vendors",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:5001/api/procurement/vendors", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","vendors"] }
+      }
+    },
+    {
+      "name": "Create PR",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prData\": {\n    \"project_name\": \"Project Alpha\",\n    \"requested_by\": 1,\n    \"requested_by_person\": \"Jane Smith\",\n    \"priority\": \"High\",\n    \"required_delivery_date\": \"2025-12-20\",\n    \"remarks\": \"Urgent request\",\n    \"status\": \"draft\",\n    \"requesting_department_id\": 2\n  },\n  \"items\": [{\"item_name\": \"Laptop\", \"quantity_required\": 5, \"expected_rate\": 1200}],\n  \"comments\": [{\"commented_by\": 1, \"comment\": \"Please approve quickly\"}],\n  \"attachments\": [{\"file_name\": \"specs.pdf\", \"file_path\": \"/uploads/specs.pdf\"}]\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/pr", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","pr"] }
+      }
+    },
+    {
+      "name": "Get All PRs",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:5001/api/procurement/prs", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","prs"] }
+      }
+    },
+    {
+      "name": "Add PR Item",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 21,\n  \"item_name\": \"Monitor\",\n  \"quantity_required\": 10,\n  \"expected_rate\": 250\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/pr/item", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","pr","item"] }
+      }
+    },
+    {
+      "name": "Add PR Comment",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 21,\n  \"commented_by\": 1,\n  \"comment\": \"Approved by manager\"\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/pr/comment", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","pr","comment"] }
+      }
+    },
+    {
+      "name": "Get PR Comments",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:5001/api/procurement/pr/21/comments", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","pr","21","comments"] }
+      }
+    },
+    {
+      "name": "Add PR Attachment",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 21,\n  \"file_name\": \"invoice.pdf\",\n  \"file_path\": \"/uploads/invoice.pdf\"\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/pr/attachment", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","pr","attachment"] }
+      }
+    },
+    {
+      "name": "Add PR Vendors",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 21,\n  \"vendor_ids\": [1, 5, 9]\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/vendor/add", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","vendor","add"] }
+      }
+    },
+    {
+      "name": "Get PR Vendors",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:5001/api/procurement/vendor/21", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","vendor","21"] }
+      }
+    },
+    {
+      "name": "Update PR",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-department", "value": "Procurement" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"project_name\": \"Updated Project Name for PR 21\",\n  \"priority\": \"High\",\n  \"remarks\": \"Updated remarks for testing\",\n  \"items\": [\n    { \"item_id\": 101, \"item_name\": \"Updated Item 1\", \"quantity_required\": \"20\" }\n  ],\n  \"comments\": [\n    { \"comment_id\": 201, \"comment\": \"Updated comment text\" }\n  ],\n  \"attachments\": [],\n  \"vendors\": [\n    { \"id\": 10, \"vendor_id\": 5 }\n  ]\n}"
+        },
+        "url": { "raw": "http://localhost:5001/api/procurement/21", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","21"] }
+      }
+    },
+    {
+      "name": "Delete PR",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-department", "value": "Procurement" }
+        ],
+        "url": { "raw": "http://localhost:5001/api/procurement/21", "protocol": "http", "host": ["localhost"], "port": "5001", "path": ["api","procurement","21"] }
+      }
+    }
+  ]
+}
