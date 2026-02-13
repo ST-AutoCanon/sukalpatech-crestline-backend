@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "Cristaline Feasibility API",
+    "_postman_id": "abcdef12-3456-7890-abcd-1234567890ab",
+    "description": "Postman collection for Feasibility PR APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Feasibility PRs",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "http://localhost:5001/api/feasibility/prs",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","feasibility","prs"]
+        }
+      }
+    },
+    {
+      "name": "Add Feasibility Comment",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 115,\n  \"commented_by\": 2,\n  \"department\": \"AnyDepartment\",\n  \"comment\": \"Feasibility review done.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5001/api/feasibility/pr/comment",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","feasibility","pr","comment"]
+        }
+      }
+    },
+    {
+      "name": "Update Feasibility Status",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pr_id\": 115,\n  \"new_status\": \"Feasibility Approved\",\n  \"old_status\": \"Feasibility Pending\",\n  \"updated_by\": 2,\n  \"department\": \"AnyDepartment\",\n  \"note\": \"Checked all items, approved.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5001/api/feasibility/pr/status",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api","feasibility","pr","status"]
+        }
+      }
+    }
+  ]
+}
