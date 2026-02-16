@@ -8,9 +8,7 @@ import * as vendorCommentModel from "../../models/NewProcurement/vendorComments.
 // Create New Purchase Request
 // -------------------------------
 
-
-
-export const createNewPR = async (prData) => {
+export const createNewPR = async (org_code, prData) => {
   try {
     // 0️⃣ Add default department update to the correct property
     prData.department_statuses = [
@@ -23,18 +21,26 @@ export const createNewPR = async (prData) => {
     ];
 
     // 1️⃣ Create PR
-    const prId = await purchaseRequestModel.createPurchaseRequest(prData);
+    const prId = await purchaseRequestModel.createPurchaseRequest(
+      org_code,
+      prData,
+    );
 
     // 2️⃣ Create Items
     for (const item of prData.items) {
-      const itemId = await purchaseItemModel.createPurchaseItem(item, prId);
+      const itemId = await purchaseItemModel.createPurchaseItem(
+        item,
+        prId,
+        org_code,
+      );
 
       // 3️⃣ Create Vendors
       if (item.vendors) {
         for (const vendor of item.vendors) {
           const vendorId = await itemVendorModel.createItemVendor(
             vendor,
-            itemId
+            itemId,
+            org_code,
           );
 
           // 4️⃣ Attachments
@@ -42,14 +48,22 @@ export const createNewPR = async (prData) => {
             for (const att of vendor.attachments) {
               // Only store the filename (remove folder path)
               att.file_path = att.file_path.replace(/^.*[\\\/]/, "");
-              await vendorAttachmentModel.createVendorAttachment(att, vendorId);
+              await vendorAttachmentModel.createVendorAttachment(
+                att,
+                vendorId,
+                org_code,
+              );
             }
           }
 
           // 5️⃣ Comments
           if (vendor.comments) {
             for (const com of vendor.comments) {
-              await vendorCommentModel.createVendorComment(com, vendorId);
+              await vendorCommentModel.createVendorComment(
+                com,
+                vendorId,
+                org_code,
+              );
             }
           }
         }
@@ -63,10 +77,9 @@ export const createNewPR = async (prData) => {
   }
 };
 
-
-export const getAllPRs = async () => {
+export const getAllPRs = async (org_code) => {
   try {
-    const prs = await purchaseRequestModel.fetchAllPRs();
+    const prs = await purchaseRequestModel.fetchAllPRs(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching all PRs:", err);
@@ -74,9 +87,9 @@ export const getAllPRs = async () => {
   }
 };
 
-export const getPRById = async (prId) => {
+export const getPRById = async (prId, org_code) => {
   try {
-    const pr = await purchaseRequestModel.fetchPRById(prId);
+    const pr = await purchaseRequestModel.fetchPRById(prId, org_code);
     if (!pr) return { success: false, message: "PR not found" };
     return { success: true, data: pr };
   } catch (err) {
@@ -89,7 +102,7 @@ export const getPRById = async (prId) => {
  * Update PR (ONLY department status & comments)
  * No vendor logic here
  */
-export const updatePRRequest = async (reqId, userData) => {
+export const updatePRRequest = async (reqId, userData, org_code) => {
   try {
     if (
       userData.department_statuses &&
@@ -97,7 +110,8 @@ export const updatePRRequest = async (reqId, userData) => {
     ) {
       await purchaseRequestModel.updateDepartmentStatuses(
         reqId,
-        userData.department_statuses
+        userData.department_statuses,
+        org_code,
       );
     }
 
@@ -116,9 +130,9 @@ export const updatePRRequest = async (reqId, userData) => {
  * Fetch ONLY PRs whose LATEST status = FINANCE APPROVED
  * (For Finance / Procurement view)
  */
-export const getFinanceApprovedPRs = async () => {
+export const getFinanceApprovedPRs = async (org_code) => {
   try {
-    const prs = await purchaseRequestModel.fetchFinanceApprovedPRs();
+    const prs = await purchaseRequestModel.fetchFinanceApprovedPRs(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Finance Approved PRs:", err);
@@ -130,9 +144,9 @@ export const getFinanceApprovedPRs = async () => {
  * Fetch ONLY PRs whose LATEST status = FINANCE REJECTED
  * (For Finance / Procurement view)
  */
-export const getFinanceRejectedPRs = async () => {
+export const getFinanceRejectedPRs = async (org_code) => {
   try {
-    const prs = await purchaseRequestModel.fetchFinanceRejectedPRs();
+    const prs = await purchaseRequestModel.fetchFinanceRejectedPRs(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Finance Rejected PRs:", err);
@@ -144,9 +158,9 @@ export const getFinanceRejectedPRs = async () => {
  * Fetch ONLY PRs whose LATEST status = FINANCE PENDING
  * (For Finance / Procurement view)
  */
-export const getFinancePendingPRs = async () => {
+export const getFinancePendingPRs = async (org_code) => {
   try {
-    const prs = await purchaseRequestModel.fetchFinancePendingPRs();
+    const prs = await purchaseRequestModel.fetchFinancePendingPRs(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
@@ -154,9 +168,9 @@ export const getFinancePendingPRs = async () => {
   }
 };
 
-export const updateFullPR = async (prId, prData) => {
+export const updateFullPR = async (prId, prData, org_code) => {
   try {
-    await purchaseRequestModel.updateFullPR(prId, prData);
+    await purchaseRequestModel.updateFullPR(prId, prData, org_code);
     return { success: true, message: "PR updated successfully" };
   } catch (err) {
     console.error("❌ Error updating full PR:", err);
@@ -164,9 +178,9 @@ export const updateFullPR = async (prId, prData) => {
   }
 };
 
-export const getAllPRsByStatus = async (status) => {
+export const getAllPRsByStatus = async (status, org_code) => {
   try {
-    const prs = await purchaseRequestModel.fetchPRsByStatus(status);
+    const prs = await purchaseRequestModel.fetchPRsByStatus(status, org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching PRs by status:", err);

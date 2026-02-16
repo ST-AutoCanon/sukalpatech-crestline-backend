@@ -1,4 +1,5 @@
-import thirdDB from "../../config/dbfirst.js";
+import thirdDB from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 // export const createVendorComment = async (comment, vendorId) => {
 //   const query = `
@@ -10,9 +11,17 @@ import thirdDB from "../../config/dbfirst.js";
 //   await thirdDB.query(query, values);
 // };
 
-export const createVendorComment = async (comment, vendorId, departmentId) => {
+export const createVendorComment = async (
+  comment,
+  vendorId,
+  departmentId,
+  org_code,
+) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   const query = `
-    INSERT INTO vendor_comments
+    INSERT INTO ${schema}.vendor_comments
       (item_vendor_id, commented_by, comment, department_id)
     VALUES ($1, $2, $3, $4)
   `;
@@ -32,10 +41,13 @@ export const createVendorComment = async (comment, vendorId, departmentId) => {
 //   );
 //   return result.rows;
 // };
-export const fetchCommentsByVendor = async (vendorId) => {
+export const fetchCommentsByVendor = async (vendorId, org_code) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   const result = await thirdDB.query(
-    `SELECT * FROM vendor_comments WHERE item_vendor_id = $1`,
-    [vendorId]
+    `SELECT * FROM ${schema}.vendor_comments WHERE item_vendor_id = $1`,
+    [vendorId],
   );
   return result.rows;
 };

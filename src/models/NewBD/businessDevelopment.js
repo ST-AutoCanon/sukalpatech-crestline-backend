@@ -1,11 +1,15 @@
-import db from "../../config/dbfirst.js";
+import db from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 // -------------------------------
 // Create new BD request
 // -------------------------------
-export const createBDRequest = async (data) => {
+export const createBDRequest = async (data, org_code) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   const query = `
-    INSERT INTO new_bus_body_building_request
+    INSERT INTO ${schema}.new_bus_body_building_request
     (
       applicant_company_name,
       contact_person_name,
@@ -73,13 +77,13 @@ export const createBDRequest = async (data) => {
   return result.rows[0].id;
 };
 
-
 // -------------------------------
 // Create initial status (CREATED) for the request
 // -------------------------------
-export const createInitialStatus = async (request_id, data) => {
+export const createInitialStatus = async (request_id, data, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    INSERT INTO bus_body_request_department_status
+    INSERT INTO ${schema}.bus_body_request_department_status
     (
       request_id,
       department_name,

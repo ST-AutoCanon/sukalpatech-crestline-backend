@@ -2,6 +2,9 @@ import * as productService from "../../services/categories/productService.js";
 
 export const createProduct = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { name, category_id } = req.body;
 
     if (!name || !category_id) {
@@ -11,7 +14,7 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    const data = await productService.createProduct(name, category_id);
+    const data = await productService.createProduct(name, category_id,org_code);
 
     res.status(201).json({
       success: true,
@@ -26,13 +29,16 @@ export const createProduct = async (req, res) => {
 
 export const getProductsByCategory = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const category_id = Number(req.query.category_id);
     if (!category_id)
       return res
         .status(400)
         .json({ message: "category_id query param is required" });
 
-    const data = await productService.fetchProductsByCategory(category_id);
+    const data = await productService.fetchProductsByCategory(category_id,org_code);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -41,7 +47,10 @@ export const getProductsByCategory = async (req, res) => {
 };
 export const getAllProducts = async (req, res) => {
   try {
-    const data = await categoryService.fetchAllProducts(); // new service function
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const data = await categoryService.fetchAllProducts(org_code); // new service function
     res.json({ success: true, data });
   } catch (err) {
     console.error("Fetch All Categories Error:", err);

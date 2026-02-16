@@ -1,28 +1,35 @@
 import express from "express";
-import { 
-  createBD, 
-  getAllBD, 
-  submitToFeasibility, 
-  getPendingFeasibility, 
-  feasibilityReview ,
+import {
+  createBD,
+  getAllBD,
+  submitToFeasibility,
+  getPendingFeasibility,
+  feasibilityReview,
   bdUpdate,
-  updateBD
+  updateBD,
 } from "../../controllers/Businessdevelopment/businessDevelopment.js";
-import {upload} from "../../config/multer.js";
+import { upload } from "../../config/multer.js";
+import { auth } from "../../middleware/auth.js"; // ✅ Import auth middleware
 
 const router = express.Router();
 
-// BD APIs
-router.post("/", upload.array("attachments"), createBD);
-router.get("/", getAllBD);
-router.patch("/:id/submit", submitToFeasibility);
+// -------------------------------
+// Business Development APIs
+// -------------------------------
+router.post("/", auth, upload.array("attachments"), createBD);
+router.get("/", auth, getAllBD);
+router.patch("/:id/submit", auth, submitToFeasibility);
 
+// -------------------------------
 // Feasibility APIs
-router.get("/feasibility/pending", getPendingFeasibility);
-router.patch("/feasibility/:id/review", feasibilityReview);
-// BD Team Update
-router.patch("/:id/bd-update", bdUpdate);
-router.patch("/:id", upload.array("attachments"), updateBD);
+// -------------------------------
+router.get("/feasibility/pending", auth, getPendingFeasibility);
+router.patch("/feasibility/:id/review", auth, feasibilityReview);
 
+// -------------------------------
+// BD Team Update
+// -------------------------------
+router.patch("/:id/bd-update", auth, bdUpdate);
+router.patch("/:id", auth, upload.array("attachments"), updateBD);
 
 export default router;

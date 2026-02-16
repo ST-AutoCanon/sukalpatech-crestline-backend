@@ -5,13 +5,17 @@ import * as feasibilityService from "../../services/NewProcrument/feasibilityReq
  */
 export const updateFeasibilityRequest = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const reqId = req.params.id;
     const userData = req.body;
 
     // Call service to update feasibility request
     const result = await feasibilityService.updateFeasibilityReq(
       reqId,
-      userData
+      userData,
+      org_code
     );
 
     res.status(200).json(result);
@@ -24,7 +28,10 @@ export const updateFeasibilityRequest = async (req, res) => {
 
 export const getSubmittedPurchaseRequests = async (req, res) => {
   try {
-    const result = await feasibilityService.getSubmittedPurchaseRequests();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const result = await feasibilityService.getSubmittedPurchaseRequests(org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching submitted purchase requests:", err);
@@ -34,13 +41,17 @@ export const getSubmittedPurchaseRequests = async (req, res) => {
 
 export const updateFullFeasibilityRequest = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const reqId = req.params.id;
     const userData = req.body;
 
     // Call service to update feasibility request
     const result = await feasibilityService.updateFeasibilityReq(
       reqId,
-      userData
+      userData,
+      org_code
     );
 
     res.status(200).json(result);

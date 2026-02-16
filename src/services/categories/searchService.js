@@ -1,7 +1,7 @@
 import * as searchModel from "../../models/categories/searchModel.js";
 
-export async function searchCategories(query) {
-  const results = await searchModel.searchCategoriesHierarchy(query);
+export async function searchCategories(query, org_code) {
+  const results = await searchModel.searchCategoriesHierarchy(query, org_code);
 
   // Optional: Transform into hierarchical JSON for frontend
   const hierarchy = results.map((row) => ({
@@ -44,8 +44,8 @@ export async function searchCategories(query) {
 }
 
 
-export async function searchItems(query) {
-  const items = await searchModel.searchItems(query);
+export async function searchItems(query, org_code) {
+  const items = await searchModel.searchItems(query, org_code);
 
   return items.map((item) => ({
     id: item.id,
@@ -57,9 +57,9 @@ export async function searchItems(query) {
 }
 
 
-export async function getAllTablesService() {
+export async function getAllTablesService(org_code) {
   try {
-    const tables = await searchModel.getTables();
+    const tables = await searchModel.getTables(org_code);
 
     return {
       success: true,

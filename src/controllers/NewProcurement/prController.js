@@ -6,10 +6,57 @@ import { getAllPRsByStatus } from '../../services/NewProcrument/prService.js'; /
 // -------------------------------
 // Create Purchase Request Controller (with attachments)
 // -------------------------------
+// export const createPRController = async (req, res) => {
+//   try {
+//     // Parse JSON from form-data field (if sending via form-data)
+//     const prData = req.body.data ? JSON.parse(req.body.data) : req.body;
+//     // ✅ Dynamic org_code from logged-in user token
+//     const org_code = req.user.org_code;
+
+//     // Map uploaded files to vendors
+//     if (req.files && req.files.length > 0) {
+//       let fileIndex = 0;
+//       for (let item of prData.items) {
+//         if (!item.vendors) continue;
+//         for (let vendor of item.vendors) {
+//           vendor.attachments = vendor.attachments || [];
+//           if (fileIndex < req.files.length) {
+//             const file = req.files[fileIndex];
+//             vendor.attachments.push({
+//               file_name: file.originalname,
+//               file_path: file.filename, // only filename
+//               uploaded_by: prData.requested_by,
+//               uploaded_at: new Date().toISOString(),
+//             });
+//             fileIndex++;
+//           }
+//         }
+//       }
+//     }
+
+//     const result = await prService.createNewPR(prData, org_code);
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Purchase Request created successfully",
+//       prId: result.prId,
+//     });
+//   } catch (err) {
+//     console.error("❌ Controller Error:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to create Purchase Request",
+//       error: err.message,
+//     });
+//   }
+// };
+
 export const createPRController = async (req, res) => {
   try {
     // Parse JSON from form-data field (if sending via form-data)
     const prData = req.body.data ? JSON.parse(req.body.data) : req.body;
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
 
     // Map uploaded files to vendors
     if (req.files && req.files.length > 0) {
@@ -32,7 +79,9 @@ export const createPRController = async (req, res) => {
       }
     }
 
-    const result = await prService.createNewPR(prData);
+    const result = await prService.createNewPR(org_code, prData);
+
+    // const result = await prService.createNewPR(prData);
 
     res.status(201).json({
       success: true,
@@ -54,8 +103,11 @@ export const createPRController = async (req, res) => {
 // -------------------------------
 export const createPRControllerJSON = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const prData = req.body; // attachments already included in payload
-    const result = await prService.createNewPR(prData);
+    const result = await prService.createNewPR(prData,org_code);
 
     res.status(201).json({
       success: true,
@@ -77,7 +129,10 @@ export const createPRControllerJSON = async (req, res) => {
 
 export const getAllPRsController = async (req, res) => {
   try {
-    const result = await prService.getAllPRs();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const result = await prService.getAllPRs(org_code);
     res.status(200).json(result);
   } catch (err) {
     res
@@ -92,8 +147,11 @@ export const getAllPRsController = async (req, res) => {
 
 export const getPRByIdController = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { id } = req.params;
-    const result = await prService.getPRById(id);
+    const result = await prService.getPRById(id,org_code);
     if (!result.success) return res.status(404).json(result);
     res.status(200).json(result);
   } catch (err) {
@@ -109,9 +167,12 @@ export const getPRByIdController = async (req, res) => {
 
 export const updateFullPRController = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const prId = req.params.id;
     const prData = req.body;
-    const result = await prService.updateFullPR(prId, prData);
+    const result = await prService.updateFullPR(prId, prData,org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error in full PR update controller:", err);
@@ -126,10 +187,13 @@ export const updateFullPRController = async (req, res) => {
  */
 export const updatePRRequest = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const reqId = req.params.id;
     const userData = req.body;
 
-    const result = await prService.updatePRRequest(reqId, userData);
+    const result = await prService.updatePRRequest(reqId, userData,org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error updating Purchase Request:", err);
@@ -142,7 +206,10 @@ export const updatePRRequest = async (req, res) => {
  */
 export const getFinanceApprovedPRRequests = async (req, res) => {
   try {
-    const result = await prService.getFinanceApprovedPRs();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const result = await prService.getFinanceApprovedPRs(org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching Finance Approved PRs:", err);
@@ -154,7 +221,10 @@ export const getFinanceApprovedPRRequests = async (req, res) => {
  */
 export const getFinanceRejectedPRRequests = async (req, res) => {
   try {
-    const result = await prService.getFinanceRejectedPRs();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const result = await prService.getFinanceRejectedPRs(org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching Finance Rejected PRs:", err);
@@ -166,7 +236,10 @@ export const getFinanceRejectedPRRequests = async (req, res) => {
  */
 export const getFinancePendingPRRequests = async (req, res) => {
   try {
-    const result = await prService.getFinancePendingPRs();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const result = await prService.getFinancePendingPRs(org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching Finance Pending PRs:", err);
@@ -177,6 +250,9 @@ export const getFinancePendingPRRequests = async (req, res) => {
 
 export const getAllPRsByStatusController = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const statusParam = req.params.status;
 
     // Map frontend "Completed" to backend "APPROVED"
@@ -185,7 +261,7 @@ export const getAllPRsByStatusController = async (req, res) => {
         ? "APPROVED"
         : statusParam.toUpperCase();
 
-    const result = await getAllPRsByStatus(status);
+    const result = await getAllPRsByStatus(status,org_code);
 
     if (!result.success) {
       return res.status(500).json({ success: false, message: result.error });

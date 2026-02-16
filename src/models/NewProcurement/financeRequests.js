@@ -1,10 +1,16 @@
-import thirdDB from "../../config/dbfirst.js";
+import thirdDB from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
-export const updateDepartmentStatuses = async (reqId, newStatuses) => {
+export const updateDepartmentStatuses = async (
+  reqId,
+  newStatuses,
+  org_code,
+) => {
   // 1️⃣ Fetch existing department_statuses
+  const schema = await getSchemaFromOrgCode(org_code);
   const fetchQuery = `
     SELECT department_statuses
-    FROM purchase_requests
+    FROM ${schema}.purchase_requests
     WHERE id = $1
   `;
   const result = await thirdDB.query(fetchQuery, [reqId]);
@@ -15,7 +21,7 @@ export const updateDepartmentStatuses = async (reqId, newStatuses) => {
     return !existingStatuses.some(
       (existing) =>
         existing.department_status === newStatus.department_status &&
-        existing.department_comment === newStatus.department_comment
+        existing.department_comment === newStatus.department_comment,
     );
   });
 
@@ -24,7 +30,7 @@ export const updateDepartmentStatuses = async (reqId, newStatuses) => {
 
   // 4️⃣ Update DB
   const updateQuery = `
-    UPDATE purchase_requests
+    UPDATE ${schema}.purchase_requests
     SET department_statuses = $1,
         updated_at = NOW()
     WHERE id = $2
@@ -36,7 +42,8 @@ export const updateDepartmentStatuses = async (reqId, newStatuses) => {
  * Fetch all Finance PRs with APPROVED department status
  * Includes items, vendors, attachments, and comments
  */
-export const fetchApprovedFinanceRequests = async () => {
+export const fetchApprovedFinanceRequests = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
     SELECT 
       pr.id,
@@ -58,8 +65,8 @@ export const fetchApprovedFinanceRequests = async () => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
-    FROM purchase_requests pr
-    LEFT JOIN purchase_items pi ON pi.purchase_request_id = pr.id
+    FROM ${schema}.purchase_requests pr
+    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -75,7 +82,7 @@ export const fetchApprovedFinanceRequests = async () => {
             'comments', COALESCE(com.comments, '[]'::jsonb)
           )
         ) AS vendors
-      FROM item_vendors iv
+      FROM ${schema}.item_vendors iv
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -85,7 +92,7 @@ export const fetchApprovedFinanceRequests = async () => {
             'uploaded_by', uploaded_by,
             'uploaded_at', uploaded_at
           )) AS attachments
-        FROM vendor_attachments
+        FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
       LEFT JOIN (
@@ -96,7 +103,7 @@ export const fetchApprovedFinanceRequests = async () => {
             'comment', comment,
             'commented_at', commented_at
           )) AS comments
-        FROM vendor_comments
+        FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
       GROUP BY iv.purchase_item_id
@@ -110,13 +117,14 @@ export const fetchApprovedFinanceRequests = async () => {
   return result.rows;
 };
 
-
-
 /**
  * Fetch all Finance PRs with APPROVED department status
  * Includes items, vendors, attachments, and comments
  */
-export const fetchRejectedFinanceRequests = async () => {
+export const fetchRejectedFinanceRequests = async (org_code) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   const query = `
     SELECT 
       pr.id,
@@ -138,8 +146,8 @@ export const fetchRejectedFinanceRequests = async () => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
-    FROM purchase_requests pr
-    LEFT JOIN purchase_items pi ON pi.purchase_request_id = pr.id
+    FROM ${schema}.purchase_requests pr
+    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -155,7 +163,7 @@ export const fetchRejectedFinanceRequests = async () => {
             'comments', COALESCE(com.comments, '[]'::jsonb)
           )
         ) AS vendors
-      FROM item_vendors iv
+      FROM ${schema}.item_vendors iv
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -165,7 +173,7 @@ export const fetchRejectedFinanceRequests = async () => {
             'uploaded_by', uploaded_by,
             'uploaded_at', uploaded_at
           )) AS attachments
-        FROM vendor_attachments
+        FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
       LEFT JOIN (
@@ -176,7 +184,7 @@ export const fetchRejectedFinanceRequests = async () => {
             'comment', comment,
             'commented_at', commented_at
           )) AS comments
-        FROM vendor_comments
+        FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
       GROUP BY iv.purchase_item_id
@@ -190,13 +198,14 @@ export const fetchRejectedFinanceRequests = async () => {
   return result.rows;
 };
 
-
-
 /**
  * Fetch all Finance PRs with APPROVED department status
  * Includes items, vendors, attachments, and comments
  */
-export const fetchPendingFinanceRequests = async () => {
+export const fetchPendingFinanceRequests = async (org_code) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   const query = `
     SELECT 
       pr.id,
@@ -218,8 +227,8 @@ export const fetchPendingFinanceRequests = async () => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
-    FROM purchase_requests pr
-    LEFT JOIN purchase_items pi ON pi.purchase_request_id = pr.id
+    FROM ${schema}.purchase_requests pr
+    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -235,7 +244,7 @@ export const fetchPendingFinanceRequests = async () => {
             'comments', COALESCE(com.comments, '[]'::jsonb)
           )
         ) AS vendors
-      FROM item_vendors iv
+      FROM ${schema}.item_vendors iv
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -245,7 +254,7 @@ export const fetchPendingFinanceRequests = async () => {
             'uploaded_by', uploaded_by,
             'uploaded_at', uploaded_at
           )) AS attachments
-        FROM vendor_attachments
+        FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
       LEFT JOIN (
@@ -256,7 +265,7 @@ export const fetchPendingFinanceRequests = async () => {
             'comment', comment,
             'commented_at', commented_at
           )) AS comments
-        FROM vendor_comments
+        FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
       GROUP BY iv.purchase_item_id

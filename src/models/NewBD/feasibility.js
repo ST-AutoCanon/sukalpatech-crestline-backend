@@ -1,11 +1,13 @@
-import db from "../../config/dbfirst.js";
+import db from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 // -------------------------------
 // Add a new status + comment
 // -------------------------------
-export const addFeasibilityStatus = async (requestId, data) => {
+export const addFeasibilityStatus = async (requestId, data, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    INSERT INTO bus_body_request_department_status
+    INSERT INTO ${schema}.bus_body_request_department_status
     (
       request_id,
       department_name,
@@ -34,10 +36,11 @@ export const addFeasibilityStatus = async (requestId, data) => {
 // -------------------------------
 // Fetch all statuses for a request
 // -------------------------------
-export const fetchFeasibilityStatuses = async (requestId) => {
+export const fetchFeasibilityStatuses = async (requestId, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
     SELECT id, status, comment, updated_by, updated_at
-    FROM bus_body_request_department_status
+    FROM ${schema}.bus_body_request_department_status
     WHERE request_id = $1
       AND department_name = 'Feasibility'
     ORDER BY updated_at ASC

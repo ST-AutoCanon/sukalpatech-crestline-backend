@@ -1,8 +1,10 @@
-import thirdDB from "../../config/dbfirst.js";
+import thirdDB from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
-export const createVendor = async (data) => {
+export const createVendor = async (data, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    INSERT INTO vendors 
+    INSERT INTO ${schema}.vendors 
     (
       vendor_name,
       contact_person,
@@ -46,10 +48,10 @@ export const createVendor = async (data) => {
   return result.rows[0];
 };
 
-
-export const updateVendor = async (vendor_id, data) => {
+export const updateVendor = async (vendor_id, data, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    UPDATE vendors
+    UPDATE ${schema}.vendors
     SET
       vendor_name = $1,
       contact_person = $2,
@@ -89,14 +91,18 @@ export const updateVendor = async (vendor_id, data) => {
   return result.rows[0];
 };
 
-export const getVendors = async () => {
+export const getVendors = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const result = await thirdDB.query(
-    `SELECT * FROM vendors ORDER BY vendor_id`
+    `SELECT * FROM ${schema}.vendors ORDER BY vendor_id`,
   );
   return result.rows;
 };
 
-export const addItemsForVendor = async (vendorId, items) => {
+export const addItemsForVendor = async (vendorId, items, org_code) => {
+  // ✅ Fetch schema automatically
+  const schema = await getSchemaFromOrgCode(org_code);
+
   if (!vendorId) throw new Error("Vendor ID is required");
   if (!items) return [];
 
@@ -127,7 +133,7 @@ export const addItemsForVendor = async (vendorId, items) => {
 
   // Insert items into the database
   const insertItemsQuery = `
-    INSERT INTO items 
+    INSERT INTO ${schema}.items 
       (item_code, item_name, root_category_id, category_id, variant_id, sub_variant_id, product_id, qty)
     VALUES ${itemValuesPlaceholders}
     RETURNING *;
@@ -143,8 +149,8 @@ export const addItemsForVendor = async (vendorId, items) => {
       .join(",");
 
     await thirdDB.query(
-      `INSERT INTO items_suppliers (item_id, vendor_id) VALUES ${vendorPlaceholders}`,
-      vendorParams
+      `INSERT INTO ${schema}.items_suppliers (item_id, vendor_id) VALUES ${vendorPlaceholders}`,
+      vendorParams,
     );
   }
 
