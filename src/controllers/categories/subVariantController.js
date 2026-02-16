@@ -2,6 +2,9 @@ import * as subVariantService from "../../services/categories/subVariantService.
 
 export const createSubVariant = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { name, variant_id } = req.body;
 
     if (!name || !variant_id) {
@@ -11,7 +14,7 @@ export const createSubVariant = async (req, res) => {
       });
     }
 
-    const data = await subVariantService.createSubVariant(name, variant_id);
+    const data = await subVariantService.createSubVariant(name, variant_id,org_code);
 
     res.status(201).json({
       success: true,
@@ -26,12 +29,15 @@ export const createSubVariant = async (req, res) => {
 
 export const getSubVariantsByVariantHandler = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const variant_id = Number(req.query.variant_id);
     if (!variant_id)
       return res
         .status(400)
         .json({ message: "variant_id query param is required" });
-    const data = await subVariantService.fetchSubVariantsByVariant(variant_id);
+    const data = await subVariantService.fetchSubVariantsByVariant(variant_id,org_code);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -41,7 +47,10 @@ export const getSubVariantsByVariantHandler = async (req, res) => {
 
 export const getAllSubVariants = async (req, res) => {
   try {
-    const data = await subVariantService.fetchAllSubVariants();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const data = await subVariantService.fetchAllSubVariants(org_code);
     res.json({ success: true, data });
   } catch (err) {
     console.error("Fetch All Subvariants Error:", err);

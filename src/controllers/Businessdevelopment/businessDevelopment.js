@@ -3,9 +3,11 @@ import BDService from "../../services/Businessdevelopment/businessDevelopment.js
 // CREATE BD
 export const createBD = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
     const files = req.files || [];
 
-    const attachments = files.map(file => ({
+    const attachments = files.map((file) => ({
       filename: file.filename,
       originalname: file.originalname,
       mimetype: file.mimetype,
@@ -14,16 +16,18 @@ export const createBD = async (req, res) => {
 
     // Merge form data with attachments
     const payload = {
-      ...req.body,                // <-- include all fields like applicant_name
+      ...req.body, // <-- include all fields like applicant_name
       attachments: JSON.stringify(attachments), // attachments as JSON
     };
 
     // Optional: validate required field
     if (!payload.applicant_name) {
-      return res.status(400).json({ success: false, message: "applicant_name is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "applicant_name is required" });
     }
 
-    const data = await BDService.createBD(payload);
+    const data = await BDService.createBD(payload,org_code);
 
     res.status(201).json({ success: true, data });
   } catch (error) {
@@ -36,7 +40,10 @@ export const createBD = async (req, res) => {
 // GET ALL BD
 export const getAllBD = async (req, res) => {
   try {
-    const data = await BDService.getAllBD();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const data = await BDService.getAllBD(org_code);
     res.json({ success: true, data });
   } catch (error) {
     console.error(error);
@@ -47,8 +54,11 @@ export const getAllBD = async (req, res) => {
 // SUBMIT TO FEASIBILITY
 export const submitToFeasibility = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { id } = req.params;
-    const data = await BDService.submitToFeasibility(id);
+    const data = await BDService.submitToFeasibility(id,org_code);
     res.json({ success: true, message: "Submitted to feasibility", data });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -58,7 +68,9 @@ export const submitToFeasibility = async (req, res) => {
 // GET PENDING FEASIBILITY
 export const getPendingFeasibility = async (req, res) => {
   try {
-    const data = await BDService.getPendingFeasibility();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+    const data = await BDService.getPendingFeasibility(org_code);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -68,9 +80,17 @@ export const getPendingFeasibility = async (req, res) => {
 // FEASIBILITY REVIEW
 export const feasibilityReview = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { id } = req.params;
     const { feasibility_status, feasibility_comments } = req.body;
-    const data = await BDService.feasibilityReview(id, feasibility_status, feasibility_comments);
+    const data = await BDService.feasibilityReview(
+      id,
+      feasibility_status,
+      feasibility_comments,
+      org_code
+    );
     res.json({ success: true, message: "Feasibility review completed", data });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -92,6 +112,9 @@ export const bdUpdate = async (req, res) => {
 
 export const updateBD = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { id } = req.params;
     const files = req.files || [];
 
@@ -99,7 +122,7 @@ export const updateBD = async (req, res) => {
 
     // If new files uploaded → process them
     if (files.length > 0) {
-      attachments = files.map(file => ({
+      attachments = files.map((file) => ({
         filename: file.filename,
         originalname: file.originalname,
         mimetype: file.mimetype,
@@ -116,7 +139,7 @@ export const updateBD = async (req, res) => {
       payload.attachments = JSON.stringify(attachments);
     }
 
-    const data = await BDService.updateBD(id, payload);
+    const data = await BDService.updateBD(id, payload,org_code);
 
     res.json({
       success: true,

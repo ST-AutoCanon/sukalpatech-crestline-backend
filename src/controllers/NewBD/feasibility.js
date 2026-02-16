@@ -4,11 +4,15 @@ import * as feasibilityService from "../../services/NewBD/feasibility.js";
 // Add a new status
 export const addFeasibilityStatusController = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { requestId } = req.params;
     const data = req.body; // { status, comment, updated_by }
     const result = await feasibilityService.updateFeasibilityStatus(
       requestId,
-      data
+      data,
+      org_code
     );
     res.status(201).json(result);
   } catch (err) {
@@ -20,10 +24,12 @@ export const addFeasibilityStatusController = async (req, res) => {
 // Get all statuses
 export const getFeasibilityStatusController = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { requestId } = req.params;
-    const result = await feasibilityService.getFeasibilityStatusHistory(
-      requestId
-    );
+    const result =
+      await feasibilityService.getFeasibilityStatusHistory(requestId,org_code);
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching feasibility statuses:", err);

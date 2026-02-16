@@ -1,26 +1,37 @@
 import express from "express";
 import * as financeController from "../../controllers/NewProcurement/financeReqController.js";
+import { auth } from "../../middleware/auth.js"; // ✅ Import auth middleware
 
 const router = express.Router();
 
-// Update department_statuses only
-router.put("/finance-requests/:id", financeController.updateFinanceRequest);
+// ---------------- PROTECTED ROUTES ----------------
 
-// GET all submitted finance requests
+// Update department_statuses only
+router.put(
+  "/finance-requests/:id",
+  auth, // ✅ Add auth
+  financeController.updateFinanceRequest,
+);
+
+// GET all submitted/approved finance requests
 router.get(
   "/approved-finance-requests",
-  financeController.getApprovedFinanceRequests
+  auth, // ✅ Add auth
+  financeController.getApprovedFinanceRequests,
 );
+
 // GET all rejected finance requests
 router.get(
   "/rejected-finance-requests",
-  financeController.getRejectedFinanceRequests
+  auth, // ✅ Add auth
+  financeController.getRejectedFinanceRequests,
 );
 
-// GET all Pending finance requests
+// GET all pending finance requests
 router.get(
   "/pending-finance-requests",
-  financeController.getPendingFinanceRequests
+  auth, // ✅ Add auth
+  financeController.getPendingFinanceRequests,
 );
 
 export default router;

@@ -26,28 +26,31 @@
 // }
 
 import thirdDB from "../../config/dbfirst.js";
-
-export async function getLastVariantCode() {
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
+export async function getLastVariantCode(org_code) {
+  const schema = await getSchemaFromOrgCode(org_code);
   const result = await thirdDB.query(
-    "SELECT code FROM variants ORDER BY id DESC LIMIT 1"
+    `SELECT code FROM ${schema}.variants ORDER BY id DESC LIMIT 1`,
   );
   return result.rows[0]?.code || null;
 }
 
-export async function insertVariant(code, name, product_id) {
+export async function insertVariant(code, name, product_id, org_code) {
+  const schema = await getSchemaFromOrgCode(org_code);
   const result = await thirdDB.query(
-    `INSERT INTO variants(code, name, product_id)
+    `INSERT INTO ${schema}.variants(code, name, product_id)
      VALUES ($1,$2,$3)
      RETURNING *`,
-    [code, name, product_id]
+    [code, name, product_id],
   );
   return result.rows[0];
 }
 
-export async function getVariantsByProduct(product_id) {
+export async function getVariantsByProduct(product_id, org_code) {
+  const schema = await getSchemaFromOrgCode(org_code);
   const result = await thirdDB.query(
-    "SELECT id, code, name FROM variants WHERE product_id=$1 AND is_active=true ORDER BY id",
-    [product_id]
+    `SELECT id, code, name FROM ${schema}.variants WHERE product_id=$1 AND is_active=true ORDER BY id`,
+    [product_id],
   );
   return result.rows;
 }

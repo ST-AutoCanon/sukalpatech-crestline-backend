@@ -2,7 +2,10 @@ import * as itemService from "../../services/items/item.service.js";
 
 export const createItem = async (req, res) => {
   try {
-    const item = await itemService.createItemService(req.body);
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const item = await itemService.createItemService(req.body,org_code);
     res.status(201).json({
       success: true,
       message: "Item created successfully",
@@ -20,7 +23,10 @@ export const createItem = async (req, res) => {
 
 export const getItem = async (req, res) => {
   try {
-    const item = await itemService.getItemById(req.params.id);
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const item = await itemService.getItemById(req.params.id,org_code);
     if (!item)
       return res
         .status(404)
@@ -38,7 +44,10 @@ export const getItem = async (req, res) => {
 
 export const listItems = async (req, res) => {
   try {
-    const items = await itemService.listItems();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const items = await itemService.listItems(org_code);
     res.json({ success: true, data: items });
   } catch (err) {
     console.error("List Items Error:", err);

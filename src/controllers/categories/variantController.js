@@ -43,6 +43,9 @@ import * as variantService from "../../services/categories/variantService.js";
 
 export const createVariant = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { name, product_id } = req.body;
 
     if (!name || !product_id) {
@@ -52,7 +55,7 @@ export const createVariant = async (req, res) => {
       });
     }
 
-    const data = await variantService.createVariant(name, product_id);
+    const data = await variantService.createVariant(name, product_id,org_code);
 
     res.status(201).json({
       success: true,
@@ -67,13 +70,16 @@ export const createVariant = async (req, res) => {
 
 export const getVariantsByProductHandler = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const product_id = Number(req.query.product_id);
     if (!product_id)
       return res
         .status(400)
         .json({ message: "product_id query param is required" });
 
-    const data = await variantService.fetchVariantsByProduct(product_id);
+    const data = await variantService.fetchVariantsByProduct(product_id,org_code);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -83,7 +89,10 @@ export const getVariantsByProductHandler = async (req, res) => {
 
 export const getAllVariants = async (req, res) => {
   try {
-    const data = await variantService.fetchAllVariants();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const data = await variantService.fetchAllVariants(org_code);
     res.json({ success: true, data });
   } catch (err) {
     console.error("Fetch All Variants Error:", err);

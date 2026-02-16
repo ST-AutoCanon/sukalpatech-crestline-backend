@@ -2,6 +2,9 @@ import * as categoryService from "../../services/categories/categoryService.js";
 
 export const createCategory = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const { name, root_category_id } = req.body;
 
     if (!name || !root_category_id) {
@@ -11,7 +14,7 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    const data = await categoryService.createCategory(name, root_category_id);
+    const data = await categoryService.createCategory(name, root_category_id,org_code);
 
     res.status(201).json({
       success: true,
@@ -27,12 +30,15 @@ export const createCategory = async (req, res) => {
 
 export const getCategoriesByRoot = async (req, res) => {
   try {
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
     const root_id = Number(req.query.root_id);
     if (!root_id)
       return res
         .status(400)
         .json({ message: "root_id query param is required" });
-    const data = await categoryService.fetchCategoriesByRoot(root_id);
+    const data = await categoryService.fetchCategoriesByRoot(root_id,org_code);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -44,7 +50,10 @@ export const getCategoriesByRoot = async (req, res) => {
 
 export const getFullHierarchy = async (req, res) => {
   try {
-    const data = await categoryService.getFullHierarchy();
+    // ✅ Dynamic org_code from logged-in user token
+    const org_code = req.user.org_code;
+
+    const data = await categoryService.getFullHierarchy(org_code);
 
     res.status(200).json({
       success: true,

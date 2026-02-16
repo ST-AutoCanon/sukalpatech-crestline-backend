@@ -1,5 +1,13 @@
 import express from "express";
-import { getEmployeesController, updateCategory } from "../controllers/admin.controller.js";
+// import { getEmployeesController, updateCategory } from "../controllers/admin.controller.js";
+
+import {
+  createEmployeeController,
+  getEmployeesController,
+  updateEmployeeController,
+  deleteEmployeeController,
+} from "../controllers/admin.controller.js";
+
 import { auth } from "../middleware/auth.js";
 
 const adminRouter = express.Router();
@@ -15,9 +23,15 @@ const adminOnly = (req, res, next) => {
 adminRouter.use(auth);
 
 // Get all employees (admin only)
-adminRouter.get("/employees", adminOnly, getEmployeesController);
-adminRouter.put("/employees/:id/category", auth,updateCategory);
+// adminRouter.get("/employees", adminOnly, getEmployeesController);
+// adminRouter.put("/employees/:id/category", auth,updateCategory);
 
+
+/* CRUD Routes */
+adminRouter.post("/employees", adminOnly, createEmployeeController);
+adminRouter.get("/employees", adminOnly, getEmployeesController);
+adminRouter.put("/employees/:id", adminOnly, updateEmployeeController);
+adminRouter.delete("/employees/:id", adminOnly, deleteEmployeeController);
 
 export default adminRouter;
 

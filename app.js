@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./src/routes/auth.routes.js";
 import departmentRoutes from "./src/routes/departments.routes.js";
-import adminRoutes from "./src/routes/admin.routes.js"
+import adminRoutes from "./src/routes/admin.routes.js";
 import vendorRoutes from "./src/routes/vendor/vendor.route.js";
 import newProcurementRoutes from "./src/routes/NewProcurement/prRoute.js";
 import newFeasibilityRoutes from "./src/routes/NewProcurement/feasibilityReqRoutes.js";
@@ -11,6 +11,8 @@ import newFinanceRoutes from "./src/routes/NewProcurement/financeRequests.js";
 import newStoreRoutes from "./src/routes/NewProcurement/storeRequestsRoutes.js";
 import categoriesRoutes from "./src/routes/categories/categoryRoutes.js";
 import itemsRoutes from "./src/routes/items/item.routes.js";
+import orgRoutes from "./src/routes/organisationAdmin.route.js";
+import orgRoutesgenric from "./src/routes/organisation.route.js";
 
 import newBDBuisnessDevelopmentRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import newBDfeasibilityRoutes from "./src/routes/NewBD/businessDevelopment.js";
@@ -19,10 +21,46 @@ import businessDevelopmentRoutes from "./src/routes/Businessdevelopment/business
 import path from "path";
 const app = express();
 
-app.use(cors());
+// app.use(cors());
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173", "http://localhost:5174"],
+//     credentials: true,
+//   }),
+// );
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://crestline.sts-test.site",
+  "https://sjaem.sts-test.site",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
 app.use(morgan("dev"));
 
+// ✅ ADD THIS HERE
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "frame-ancestors http://localhost:5173",
+  );
+  next();
+});
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -42,6 +80,8 @@ app.use("/api/categories", categoriesRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/business-development", businessDevelopmentRoutes);
 
+app.use("/api/organisations-admin", orgRoutes);
+app.use("/api/organisation", orgRoutesgenric);
 
 //test---->
 app.get("/", (req, res) => {

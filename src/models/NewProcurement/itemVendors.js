@@ -1,8 +1,10 @@
-import thirdDB from "../../config/dbfirst.js";
+import thirdDB from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
-export const createItemVendor = async (vendor, itemId) => {
+export const createItemVendor = async (vendor, itemId, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    INSERT INTO item_vendors
+    INSERT INTO ${schema}.item_vendors
       (purchase_item_id, vendor_id, unit_price, total_price, quotation_validity_date, status, vendor_status_updated_by)
     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id
   `;
@@ -19,17 +21,24 @@ export const createItemVendor = async (vendor, itemId) => {
   return result.rows[0].id;
 };
 
-export const fetchVendorsByItem = async (itemId) => {
+export const fetchVendorsByItem = async (itemId, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const result = await thirdDB.query(
-    `SELECT * FROM item_vendors WHERE purchase_item_id = $1`,
-    [itemId]
+    `SELECT * FROM ${schema}.item_vendors WHERE purchase_item_id = $1`,
+    [itemId],
   );
   return result.rows;
 };
 
-export const updateVendorStatus = async (vendorId, status, updatedBy) => {
+export const updateVendorStatus = async (
+  vendorId,
+  status,
+  updatedBy,
+  org_code,
+) => {
+  const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    UPDATE item_vendors
+    UPDATE ${schema}.item_vendors
     SET status = $1,
         vendor_status_updated_by = $2,
         updated_at = NOW()

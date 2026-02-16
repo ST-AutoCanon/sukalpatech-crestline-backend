@@ -5,43 +5,51 @@ import * as variantController from "../../controllers/categories/variantControll
 import * as subVariantController from "../../controllers/categories/subVariantController.js";
 import * as productController from "../../controllers/categories/productController.js";
 import * as searchController from "../../controllers/categories/searchController.js";
+import { auth } from "../../middleware/auth.js"; // ✅ Import auth middleware
 
 const router = express.Router();
 
+// -------------------------------
 // Root Category
+// -------------------------------
 router.get(
   "/root-category",
-  rootCategoryController.getAllRootCategoriesHandler
+  auth,
+  rootCategoryController.getAllRootCategoriesHandler,
 );
-router.post("/root-category", rootCategoryController.createRootCategory);
+router.post("/root-category", auth, rootCategoryController.createRootCategory);
 
+// -------------------------------
 // Category
-router.post("/category", categoryController.createCategory);
-router.get("/list", categoryController.getCategoriesByRoot);
+// -------------------------------
+router.post("/category", auth, categoryController.createCategory);
+router.get("/list", auth, categoryController.getCategoriesByRoot);
 
-// // Variant
-// router.post("/variant", variantController.createVariant);
-// router.get("/variants", variantController.getVariantsByCategoryHandler);
-
+// -------------------------------
 // Product (NEW)
-router.post("/product", productController.createProduct);
-router.get("/products", productController.getProductsByCategory);
+router.post("/product", auth, productController.createProduct);
+router.get("/products", auth, productController.getProductsByCategory);
 
-// Variant (UPDATED → depends on product)
-router.post("/variant", variantController.createVariant);
-router.get("/variants", variantController.getVariantsByProductHandler);
+// -------------------------------
+// Variant (depends on product)
+router.post("/variant", auth, variantController.createVariant);
+router.get("/variants", auth, variantController.getVariantsByProductHandler);
 
+// -------------------------------
 // Sub-Variant
-router.post("/sub-variant", subVariantController.createSubVariant);
+router.post("/sub-variant", auth, subVariantController.createSubVariant);
 router.get(
   "/sub-variants",
-  subVariantController.getSubVariantsByVariantHandler
+  auth,
+  subVariantController.getSubVariantsByVariantHandler,
 );
 
+// -------------------------------
 // Search
-router.get("/search", searchController.searchCategoriesHandler);
+router.get("/search", auth, searchController.searchCategoriesHandler);
 
-router.get("/hierarchy", categoryController.getFullHierarchy);
-
+// -------------------------------
+// Full hierarchy
+router.get("/hierarchy", auth, categoryController.getFullHierarchy);
 
 export default router;

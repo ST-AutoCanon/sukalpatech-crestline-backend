@@ -1,6 +1,6 @@
 import * as storeModel from "../../models/NewProcurement/storeModel.js";
 
-export const updateStoreReq = async (reqId, userData) => {
+export const updateStoreReq = async (reqId, userData, org_code) => {
   try {
     if (
       userData.department_statuses &&
@@ -8,7 +8,8 @@ export const updateStoreReq = async (reqId, userData) => {
     ) {
       await storeModel.updateDepartmentStatuses(
         reqId,
-        userData.department_statuses
+        userData.department_statuses,
+        org_code,
       );
     }
 
@@ -22,9 +23,9 @@ export const updateStoreReq = async (reqId, userData) => {
   }
 };
 
-export const getFinanceApprovedStoreRequests = async () => {
+export const getFinanceApprovedStoreRequests = async (org_code) => {
   try {
-    const prs = await storeModel.fetchFinanceApprovedStoreRequests();
+    const prs = await storeModel.fetchFinanceApprovedStoreRequests(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Store requests:", err);

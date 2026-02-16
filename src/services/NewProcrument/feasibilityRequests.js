@@ -4,7 +4,7 @@ import * as vendorCommentModel from "../../models/NewProcurement/vendorComments.
 
 
 
-export const updateFeasibilityReq = async (reqId, userData) => {
+export const updateFeasibilityReq = async (reqId, userData, org_code) => {
   try {
     // 1️⃣ Update department_statuses if provided
     if (
@@ -13,7 +13,8 @@ export const updateFeasibilityReq = async (reqId, userData) => {
     ) {
       await feasibilityRequestModel.updateDepartmentStatuses(
         reqId,
-        userData.department_statuses
+        userData.department_statuses,
+        org_code,
       );
     }
 
@@ -24,17 +25,17 @@ export const updateFeasibilityReq = async (reqId, userData) => {
           for (const vendor of item.vendors) {
             // ✅ Use vendor.id (item_vendor.id) instead of vendor.vendor_id
 
-
             // Update vendor status if provided
             if (vendor.status !== undefined) {
               await itemVendorModel.updateVendorStatus(
                 vendor.id, // corrected
                 vendor.status,
-                vendor.vendor_status_updated_by
+                vendor.vendor_status_updated_by,
+                org_code,
               );
             }
 
-            // Append new comments if any         
+            // Append new comments if any
             if (vendor.comments && vendor.comments.length > 0) {
               for (const comment of vendor.comments) {
                 // INSERT ONLY NEW COMMENT
@@ -42,12 +43,12 @@ export const updateFeasibilityReq = async (reqId, userData) => {
                   await vendorCommentModel.createVendorComment(
                     comment,
                     vendor.id,
-                    2
+                    2,
+                    org_code,
                   );
                 }
               }
             }
-
           }
         }
       }
@@ -63,10 +64,10 @@ export const updateFeasibilityReq = async (reqId, userData) => {
   }
 };
 
-export const getSubmittedPurchaseRequests = async () => {
+export const getSubmittedPurchaseRequests = async (org_code) => {
   try {
-    
-    const prs = await feasibilityRequestModel.fetchSubmittedPurchaseRequests();
+    const prs =
+      await feasibilityRequestModel.fetchSubmittedPurchaseRequests(org_code);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching submitted purchase requests:", err);
