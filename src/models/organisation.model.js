@@ -138,33 +138,9 @@ export const getOrganisations = async () => {
   const result = await db.query(
     "SELECT * FROM master.organisations ORDER BY id",
   );
-
+console.log("Fetched organisations:", result.rows);
   return result.rows;
 };
-
-/* Create admin employee */
-// export const createOrgAdmin = async (
-//   client,
-//   schemaName,
-//   admin
-// ) => {
-//   const {
-//     sts_employee_id,
-//     first_name,
-//     last_name,
-//     email,
-//     org_code,
-//   } = admin;
-
-//   await client.query(
-//     `
-//     INSERT INTO ${schemaName}.app_employees
-//     (sts_employee_id, first_name, last_name, email, role, permissions, org_code)
-//     VALUES ($1, $2, $3, $4, 'admin', ARRAY['*'], $5)
-//     `,
-//     [sts_employee_id, first_name, last_name, email, org_code]
-//   );
-// };
 
 /* Insert default departments while creating org */
 export const insertDefaultDepartments = async (
@@ -227,14 +203,14 @@ export const deleteDepartment = async (client, schemaName, department_name) => {
   );
 };
 
-export const getAllOrgCodes = async () => {
+export const getAllOrgCodesAndNames = async () => {
   const result = await db.query(
     `
-    SELECT org_code
+    SELECT org_code, name
     FROM master.organisations
     ORDER BY org_code ASC
     `,
   );
 
-  return result.rows;
+  return result.rows; // Each row will be { org_code: '...', name: '...' }
 };

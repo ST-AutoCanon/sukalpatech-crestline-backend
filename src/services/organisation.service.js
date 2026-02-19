@@ -121,7 +121,7 @@ export const registerOrganisation = async (
 /* List organisations (READ-ONLY) */
 export const listOrganisations = async () => {
   const orgs = await model.getOrganisations();
-
+console.log("Fetched organisations:", orgs);
   return {
     success: true,
     data: orgs,
@@ -198,21 +198,22 @@ export const removeDepartmentFromOrg = async (org_code, department_name) => {
   }
 };
 
-//fetch all org codes (for validation)
-export const fetchAllOrgCodes = async () => {
+
+// fetch all org codes and names (for validation)
+export const fetchAllOrgCodesAndNames = async () => {
   try {
-    const orgCodes = await model.getAllOrgCodes();
+    const orgs = await model.getAllOrgCodesAndNames(); // updated model function
 
     return {
       success: true,
-      data: orgCodes,
+      data: orgs, // array of { org_code, name }
     };
   } catch (error) {
-    console.error("Fetch Org Codes Error:", error);
+    console.error("Fetch Org Codes and Names Error:", error);
 
     return {
       success: false,
-      message: "Failed to fetch organisation codes",
+      message: "Failed to fetch organisation codes and names",
     };
   }
 };
