@@ -7,6 +7,7 @@ export const createVendorAttachment = async (
   org_code,
 ) => {
   // ✅ Fetch schema automatically
+  console.log("Creating attachment  org_code:", org_code);
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
@@ -20,6 +21,7 @@ export const createVendorAttachment = async (
     attachment.file_path,
     attachment.uploaded_by,
   ];
+  console.log("Values to insert:", values);
   await thirdDB.query(query, values);
 };
 

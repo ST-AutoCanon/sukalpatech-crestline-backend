@@ -154,14 +154,16 @@ export const removeDepartmentFromOrg = async (req, res) => {
   }
 };
 
-//get org codes
-export const getOrgCodes = async (req, res) => {
+
+
+// get org codes and names
+export const getOrgCodesAndNames = async (req, res) => {
   try {
-    const result = await service.fetchAllOrgCodes();
+    const result = await service.fetchAllOrgCodesAndNames(); // updated service function
 
     return res.status(result.success ? 200 : 400).json(result);
   } catch (error) {
-    console.error("Get Org Codes Controller Error:", error);
+    console.error("Get Org Codes and Names Controller Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -169,3 +171,4 @@ export const getOrgCodes = async (req, res) => {
     });
   }
 };
+

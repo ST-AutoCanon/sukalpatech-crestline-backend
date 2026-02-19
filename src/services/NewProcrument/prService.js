@@ -62,6 +62,7 @@ export const createNewPR = async (org_code, prData) => {
               await vendorCommentModel.createVendorComment(
                 com,
                 vendorId,
+                1, // Assuming department_id = 1 for initial comment
                 org_code,
               );
             }
