@@ -1,21 +1,21 @@
-const BDService = require("./businessDevelopment.service");
+import BusinessDevelopmentService from "./businessDevelopment.service.js";
 
 /**
  * Feasibility is calculated based on BD data
  * No DB table involved
  */
 const FeasibilityService = {
-  checkFeasibilityByBDId: async (bdId) => {
-    const bd = await BDService.getBDById(bdId);
+  async checkFeasibilityByBDId(bdId) {
+    const bd = await BusinessDevelopmentService.getBDById(bdId);
 
     if (!bd) {
       throw new Error("Business Development record not found");
     }
 
-    // 🔹 Example feasibility logic
     let feasible = true;
     let reason = "Feasible";
 
+    // Example feasibility rules
     if (bd.quantity > 1000) {
       feasible = false;
       reason = "Quantity too high";
@@ -35,4 +35,4 @@ const FeasibilityService = {
   },
 };
 
-module.exports = FeasibilityService;
+export default FeasibilityService;

@@ -102,18 +102,3 @@ export const updateEmployeeCategoryModel = async (
   return result.rows[0];
 };
 
-export const getApprovalLimitByCategory = async (category, orgCode) => {
-  const schema = await getSchemaFromOrgCode(orgCode);
-
-  const result = await thirdDB.query(
-    `SELECT ${category.toLowerCase()} AS limit
-     FROM ${schema}.category_limit
-     LIMIT 1`
-  );
-
-  if (!result.rows.length) {
-    throw new Error("Category limits not configured");
-  }
-
-  return result.rows[0].limit;
-};

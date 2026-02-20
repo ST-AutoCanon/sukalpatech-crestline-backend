@@ -45,10 +45,6 @@ import {
   updateEmployeeController,
   deleteEmployeeController,
   updateCategory,
-  approveRequest,
-  fetchCategoryLimits,
-  addCategoryLimitsController,
-  updateCategoryLimitsController
 } from "../controllers/admin.controller.js";
 
 import { auth } from "../middleware/auth.js";
@@ -75,17 +71,5 @@ adminRouter.delete("/employees/:id", adminOnly, deleteEmployeeController);
 /* ================= EMPLOYEE CATEGORY ================= */
 adminRouter.put("/employees/:id/category", auth, updateCategory);
 
-/* ================= CATEGORY LIMITS ================= */
-// Fetch current category limits
-adminRouter.get("/category-limits", adminOnly, fetchCategoryLimits);
-
-// Add new category limits
-adminRouter.post("/category-limits/add", adminOnly, addCategoryLimitsController);
-
-// Update existing category limits
-adminRouter.put("/category-limits/update", adminOnly, updateCategoryLimitsController);
-
-/* ================= APPROVAL ROUTE ================= */
-adminRouter.post("/approve", auth, approveRequest);
 
 export default adminRouter;
