@@ -3,8 +3,21 @@ import BDService from "../../services/Businessdevelopment/businessDevelopment.js
 // CREATE BD
 export const createBD = async (req, res) => {
   try {
-    // ✅ Dynamic org_code from logged-in user token
-    const org_code = req.user.org_code;
+
+    // ✅ Declare FIRST
+    const org_code = req.user?.org_code;
+
+    console.log("FULL REQ.USER:", req.user);
+    console.log("ORG CODE RECEIVED:", org_code);
+    console.log("BODY:", req.body);
+
+    if (!org_code) {
+      return res.status(400).json({
+        success: false,
+        message: "Org code missing from token",
+      });
+    }
+
     const files = req.files || [];
 
     const attachments = files.map((file) => ({
@@ -14,27 +27,29 @@ export const createBD = async (req, res) => {
       size: file.size,
     }));
 
-    // Merge form data with attachments
     const payload = {
-      ...req.body, // <-- include all fields like applicant_name
-      attachments: JSON.stringify(attachments), // attachments as JSON
+      ...req.body,
+      attachments: JSON.stringify(attachments),
     };
 
-    // Optional: validate required field
     if (!payload.applicant_name) {
-      return res
-        .status(400)
-        .json({ success: false, message: "applicant_name is required" });
+      return res.status(400).json({
+        success: false,
+        message: "applicant_name is required",
+      });
     }
+    const data = await BDService.createBD(org_code,payload);
 
-    const data = await BDService.createBD(payload,org_code);
+    console.log("line 41",org_code);
 
     res.status(201).json({ success: true, data });
+
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error creating BD:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 // GET ALL BD
@@ -98,17 +113,33 @@ export const feasibilityReview = async (req, res) => {
 };
 export const bdUpdate = async (req, res) => {
   try {
+    // ✅ Get org_code from logged-in user
+    const org_code = req.user.org_code;
+
     const { id } = req.params;
     const { bd_status, bd_comments } = req.body;
 
-    const data = await BDService.bdUpdate(id, bd_status, bd_comments);
+    const data = await BDService.bdUpdate(
+      id,
+      bd_status,
+      bd_comments,
+      org_code
+    );
 
-    res.json({ success: true, message: "BD updated successfully", data });
+    res.json({
+      success: true,
+      message: "BD updated successfully",
+      data,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ success: false, message: err.message });
+    console.error("❌ BD update error:", err);
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
+
 
 export const updateBD = async (req, res) => {
   try {

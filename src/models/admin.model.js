@@ -6,13 +6,13 @@ import { getSchemaFromOrgCode } from "./getSchemaFromOrgCode.js";
 export const createEmployeeModel = async (data, orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
 
-  const { first_name, last_name, email, password, role, status } = data;
+  const { first_name, last_name, email, password, role, category,status } = data;
 
   const result = await thirdDB.query(
     `INSERT INTO ${schema}.org_users
-     (first_name, last_name, email, password, role, status, org_code)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     RETURNING id, first_name, last_name, email, role, status, created_at`,
+     (first_name, last_name, email, password, role, status, category,org_code)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+     RETURNING id, first_name, last_name, email, role, status, category,created_at`,
     [
       first_name,
       last_name,
@@ -20,6 +20,7 @@ export const createEmployeeModel = async (data, orgCode) => {
       password,
       role || "employee",
       status || "active",
+      category,
       orgCode,
     ],
   );
@@ -32,7 +33,7 @@ export const getAllEmployeesModel = async (orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
 
   const result = await thirdDB.query(
-    `SELECT id, first_name, last_name, email, role, status, created_at
+    `SELECT id, first_name, last_name, email, role, status,category, created_at
      FROM ${schema}.org_users
      WHERE role = $1
      ORDER BY created_at DESC`,
@@ -46,7 +47,7 @@ export const getAllEmployeesModel = async (orgCode) => {
 export const updateEmployeeModel = async (id, data, orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
 
-  const { first_name, last_name, role, status } = data;
+  const { first_name, last_name, role, status,category } = data;
 
   const result = await thirdDB.query(
     `UPDATE ${schema}.org_users
@@ -54,10 +55,11 @@ export const updateEmployeeModel = async (id, data, orgCode) => {
          last_name  = COALESCE($2, last_name),
          role       = COALESCE($3, role),
          status     = COALESCE($4, status),
+         category   = COALESCE($5,category),
          updated_at = CURRENT_TIMESTAMP
-     WHERE id = $5
-     RETURNING id, first_name, last_name, email, role, status, updated_at`,
-    [first_name, last_name, role, status, id],
+     WHERE id = $6
+     RETURNING id, first_name, last_name, email, role, status, category,updated_at`,
+    [first_name, last_name, role, status,category, id],
   );
 
   return result.rows[0];
@@ -76,3 +78,27 @@ export const deleteEmployeeModel = async (id, orgCode) => {
 
   return result.rows[0];
 };
+
+export const updateEmployeeCategoryModel = async (
+  employeeId,
+  category,
+  orgCode
+) => {
+  const schema = await getSchemaFromOrgCode(orgCode);
+
+  const result = await thirdDB.query(
+    `UPDATE ${schema}.org_users
+     SET category = $1,
+         updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2
+     RETURNING id, first_name, last_name, email, role, status, category`,
+    [category, employeeId]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("Employee not found");
+  }
+
+  return result.rows[0];
+};
+

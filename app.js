@@ -13,6 +13,7 @@ import categoriesRoutes from "./src/routes/categories/categoryRoutes.js";
 import itemsRoutes from "./src/routes/items/item.routes.js";
 import orgRoutes from "./src/routes/organisationAdmin.route.js";
 import orgRoutesgenric from "./src/routes/organisation.route.js";
+import categorylimitRoutes from "./src/routes/categorylimit/categorylimit.route.js"
 
 import newBDBuisnessDevelopmentRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import newBDfeasibilityRoutes from "./src/routes/NewBD/businessDevelopment.js";
@@ -82,6 +83,8 @@ app.use("/api/business-development", businessDevelopmentRoutes);
 
 app.use("/api/organisations-admin", orgRoutes);
 app.use("/api/organisation", orgRoutesgenric);
+app.use("/api/categorylimit", categorylimitRoutes);
+
 
 //test---->
 app.get("/", (req, res) => {

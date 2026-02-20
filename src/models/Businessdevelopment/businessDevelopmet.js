@@ -1,10 +1,13 @@
-import db from "../../config/dbfirst.js"; // assuming dbfirst is ESM compatible
+import thirdDB from "../../config/dborg.js";
+import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 const BusinessDevelopmentModel = {
   // CREATE BD REQUEST
-  create: async (data) => {
+  create: async (data, org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+
     const query = `
-      INSERT INTO business_development (
+      INSERT INTO ${schema}.business_development (
          bd_status,
          bd_comments,
          description,
@@ -36,150 +39,148 @@ const BusinessDevelopmentModel = {
       RETURNING *;
     `;
 
+    const safe = (val) => (val === undefined || val === null || val === "" ? null : val);
+
     const values = [
       data.bd_status || "DRAFT",
-      data.bd_comments || null,
-      data.description,
-      data.priority,
-      data.required_date,
-      data.requested_by_department,
-      data.requested_by_person,
-      data.applicant_name,
-      data.contact_person,
-      data.mobile_number,
-      data.email,
-      data.address,
-      data.chassis_manufacturer,
-      data.chassis_model,
-      data.chassis_number,
-      data.engine_number,
-      data.wheelbase,
-      data.fuel_type,
-      data.body_type,
-      data.seating_capacity,
-      data.seat_type,
-      data.flooring_type,
-      data.interior_color,
-      data.body_material,
-      data.paint_color,
-      data.window_type,
-      data.door_type,
-      data.ac,
-      data.cctv,
-      data.gps,
-      data.fire_extinguisher,
-      data.emergency_exit,
-      data.led_board,
-      data.usb,
-      data.luggage_carrier,
-      data.wheelchair_access,
-      data.ais_compliant,
-      data.cmvr_compliant,
-      data.school_bus_safety,
-      data.state_transport_norms,
-      data.expected_delivery,
-      data.approximate_budget,
+      safe(data.bd_comments),
+      safe(data.description),
+      safe(data.priority),
+      safe(data.required_date),
+      safe(data.requested_by_department),
+      safe(data.requested_by_person),
+      safe(data.applicant_name),
+      safe(data.contact_person),
+      safe(data.mobile_number),
+      safe(data.email),
+      safe(data.address),
+      safe(data.chassis_manufacturer),
+      safe(data.chassis_model),
+      safe(data.chassis_number),
+      safe(data.engine_number),
+      safe(data.wheelbase),
+      safe(data.fuel_type),
+      safe(data.body_type),
+      safe(data.seating_capacity),
+      safe(data.seat_type),
+      safe(data.flooring_type),
+      safe(data.interior_color),
+      safe(data.body_material),
+      safe(data.paint_color),
+      safe(data.window_type),
+      safe(data.door_type),
+      safe(data.ac),
+      safe(data.cctv),
+      safe(data.gps),
+      safe(data.fire_extinguisher),
+      safe(data.emergency_exit),
+      safe(data.led_board),
+      safe(data.usb),
+      safe(data.luggage_carrier),
+      safe(data.wheelchair_access),
+      safe(data.ais_compliant),
+      safe(data.cmvr_compliant),
+      safe(data.school_bus_safety),
+      safe(data.state_transport_norms),
+      safe(data.expected_delivery),
+      safe(data.approximate_budget),
       data.attachments || [],
-      data.applicant_signature || "",
-      data.declaration_date || null,
-      data.place || "",
+      safe(data.applicant_signature),
+      safe(data.declaration_date),
+      safe(data.place),
     ];
 
-    const { rows } = await db.query(query, values);
+    const { rows } = await thirdDB.query(query, values);
     return rows[0];
   },
 
   // GET ALL BD
-  findAll: async () => {
-    const { rows } = await db.query(
-      "SELECT * FROM business_development ORDER BY id DESC"
-    );
+  findAll: async (org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+    const { rows } = await thirdDB.query(`SELECT * FROM ${schema}.business_development ORDER BY id DESC`);
     return rows;
   },
 
   // GET BY ID
-  findById: async (id) => {
-    const { rows } = await db.query(
-      "SELECT * FROM business_development WHERE id = $1",
-      [id]
-    );
+  findById: async (id, org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+    const { rows } = await thirdDB.query(`SELECT * FROM ${schema}.business_development WHERE id = $1`, [id]);
     return rows[0];
   },
 
   // UPDATE STATUS FOR SUBMIT TO FEASIBILITY
-  updateStatus: async (id, bd_status, feasibility_status) => {
-    const { rows } = await db.query(
-      `UPDATE business_development
-       SET bd_status=$1, feasibility_status=$2
-       WHERE id=$3
-       RETURNING *`,
+  updateStatus: async (id, bd_status, feasibility_status, org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+    const { rows } = await thirdDB.query(
+      `UPDATE ${schema}.business_development SET bd_status=$1, feasibility_status=$2 WHERE id=$3 RETURNING *`,
       [bd_status, feasibility_status, id]
     );
     return rows[0];
   },
-  // UPDATE FULL EDITABLE BD (Edit Modal Save)
-updateEditableBD: async (id, payload) => {
-  const keys = Object.keys(payload);
 
-  if (keys.length === 0) {
-    throw new Error("No fields provided for update");
-  }
+  // UPDATE FULL EDITABLE BD
+  updateEditableBD: async (id, payload, org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
 
-  const values = Object.values(payload);
+    const keys = Object.keys(payload);
+    if (!keys.length) throw new Error("No fields provided for update");
 
-  const setClause = keys
-    .map((key, index) => `${key} = $${index + 1}`)
-    .join(", ");
+    const values = Object.values(payload);
+    const setClause = keys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
+    const query = `UPDATE ${schema}.business_development SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`;
 
-  const query = `
-    UPDATE business_development
-    SET ${setClause}
-    WHERE id = $${keys.length + 1}
-    RETURNING *
-  `;
+    const { rows } = await thirdDB.query(query, [...values, id]);
+    return rows[0];
+  },
 
-  const { rows } = await db.query(query, [...values, id]);
-  return rows[0];
-},
-
-
-  // GET PENDING FEASIBILITY REQUESTS
-  getPendingFeasibility: async () => {
-    const { rows } = await db.query(
-      `SELECT * FROM business_development 
-       WHERE feasibility_status='PENDING'
-       ORDER BY id DESC`
+  // GET PENDING FEASIBILITY
+  getPendingFeasibility: async (org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+    const { rows } = await thirdDB.query(
+      `SELECT * FROM ${schema}.business_development WHERE feasibility_status='PENDING' ORDER BY id DESC`
     );
     return rows;
   },
 
   // FEASIBILITY REVIEW
-  feasibilityReview: async (id, feasibility_status, feasibility_comments) => {
-    const { rows } = await db.query(
-      `UPDATE business_development
-       SET feasibility_status=$1, feasibility_comments=$2
-       WHERE id=$3
-       RETURNING *`,
+  feasibilityReview: async (id, feasibility_status, feasibility_comments, org_code) => {
+    const schema = await getSchemaFromOrgCode(org_code);
+    const { rows } = await thirdDB.query(
+      `UPDATE ${schema}.business_development SET feasibility_status=$1, feasibility_comments=$2 WHERE id=$3 RETURNING *`,
       [feasibility_status, feasibility_comments, id]
     );
     return rows[0];
   },
 
-  // BD UPDATE (after feasibility approval)
-  updateBD: async (id, bd_status, bd_comments) => {
-    const { rows } = await db.query(
-      `UPDATE business_development
-       SET bd_status = $1,
-           bd_comments = $2
-       WHERE id = $3
-       RETURNING *`,
-      [bd_status, bd_comments, id]
-    );
+  
 
-    return rows[0];
-  },
+  // BD UPDATE (after feasibility approval)
+  updateBD: async (id, payload, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  for (const key in payload) {
+    fields.push(`${key} = $${index}`);
+    values.push(payload[key]);
+    index++;
+  }
+
+  values.push(id);
+
+  const { rows } = await thirdDB.query(
+    `UPDATE ${schema}.business_development 
+     SET ${fields.join(", ")} 
+     WHERE id = $${index} 
+     RETURNING *`,
+    values
+  );
+
+  return rows[0];
+},
 
 };
 
-// ✅ Export as ESM default
 export default BusinessDevelopmentModel;

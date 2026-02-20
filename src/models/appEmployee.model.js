@@ -13,8 +13,8 @@ export const createAppUser = async (data, orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
   const query = `
     INSERT INTO ${schema}.app_employees 
-      (sts_employee_id, first_name, last_name, email, role, permissions, department_id,org_code)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      (sts_employee_id, first_name, last_name, email, role, permissions, department_id,org_code,category)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9)
     RETURNING *
   `;
 
@@ -27,6 +27,7 @@ export const createAppUser = async (data, orgCode) => {
     data.permissions,
     data.department_id,
     data.org_code,
+    data.category
   ]);
 
   return result.rows[0];
@@ -99,16 +100,5 @@ export const updateEmployeeById = async (id, data, orgCode) => {
   return result.rows[0];
 };
 
-//update category
-export const updateEmployeeCategory = async (employeeId, category, orgCode) => {
-  const schema = await getSchemaFromOrgCode(orgCode);
-  const query = `
-    UPDATE ${schema}.app_employees
-    SET category = $1, updated_at = NOW()
-    WHERE id = $2
-    RETURNING *
-  `;
 
-  const result = await thirdDB.query(query, [category, employeeId]);
-  return result.rows[0];
-};
+
