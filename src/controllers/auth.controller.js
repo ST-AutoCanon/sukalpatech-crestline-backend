@@ -40,11 +40,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export const loginController = async (req, res) => {
   try {
-    const { email, password, org_code } = req.body;
+    const { email, password, org_code,category } = req.body;
 
     console.log("Login attempt for org_code:", org_code);
 
-    const result = await loginService(email, password, org_code);
+    const result = await loginService(email, password, org_code,category);
 
     if (!result.success) {
       return res.status(400).json(apiResponse(false, result.message));
@@ -70,6 +70,7 @@ export const loginController = async (req, res) => {
         email: user.email,
         role: user.role,
         org_code: org_code || null,
+        category:user.category
       },
       JWT_SECRET,
       { expiresIn: "1h" },
