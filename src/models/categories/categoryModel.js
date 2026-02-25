@@ -1,4 +1,4 @@
-import thirdDB from "../../config/dbfirst.js";
+import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 export async function getLastCategoryCode(org_code) {
   const schema = await getSchemaFromOrgCode(org_code);

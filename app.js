@@ -13,13 +13,14 @@ import categoriesRoutes from "./src/routes/categories/categoryRoutes.js";
 import itemsRoutes from "./src/routes/items/item.routes.js";
 import orgRoutes from "./src/routes/organisationAdmin.route.js";
 import orgRoutesgenric from "./src/routes/organisation.route.js";
-import categorylimitRoutes from "./src/routes/categorylimit/categorylimit.route.js"
+import categorylimitRoutes from "./src/routes/categorylimit/categorylimit.route.js";
 
 import newBDBuisnessDevelopmentRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import newBDfeasibilityRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import businessDevelopmentRoutes from "./src/routes/Businessdevelopment/businessDevelopmetroute.js";
 
 import path from "path";
+import cookieParser from "cookie-parser";
 const app = express();
 
 // app.use(cors());
@@ -32,6 +33,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://flowracle.sts-test.site/",
   "https://crestline.sts-test.site",
   "https://sjaem.sts-test.site",
 ];
@@ -52,13 +54,15 @@ app.use(
 );
 
 app.use(express.json());
+app.use(cookieParser()); // ✅ MUST ADD
 app.use(morgan("dev"));
 
 // ✅ ADD THIS HERE
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "frame-ancestors http://localhost:5173",
+    // "frame-ancestors http://localhost:5173 http://localhost:5174",
+    "frame-ancestors https://flowracle.sts-test.site/ https://crestline.sts-test.site https://sjaem.sts-test.site",
   );
   next();
 });
@@ -84,8 +88,6 @@ app.use("/api/business-development", businessDevelopmentRoutes);
 app.use("/api/organisations-admin", orgRoutes);
 app.use("/api/organisation", orgRoutesgenric);
 app.use("/api/categorylimit", categorylimitRoutes);
-
-
 //test---->
 app.get("/", (req, res) => {
   res.send("Cristaline API is running...");
