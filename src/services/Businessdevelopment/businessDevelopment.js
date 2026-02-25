@@ -90,14 +90,25 @@ const BusinessDevelopmentService = {
   // -----------------------------
   // Get All
   // -----------------------------
-  getAllBD: async (org_code) => {
-    try {
-      return await BDModel.findAll(org_code);
-    } catch (err) {
-      console.error("❌ Error fetching BD list:", err);
-      throw err;
-    }
-  },
+  // getAllBD: async (org_code) => {
+  //   try {
+  //     return await BDModel.findAll(org_code);
+  //   } catch (err) {
+  //     console.error("❌ Error fetching BD list:", err);
+  //     throw err;
+  //   }
+  // },
+  // -----------------------------
+// Get All (With Status Filter)
+// -----------------------------
+getAllBD: async (org_code, status) => {
+  try {
+    return await BDModel.findAll(org_code, status);
+  } catch (err) {
+    console.error("❌ Error fetching BD list:", err);
+    throw err;
+  }
+},
 
   // -----------------------------
   // Get By ID
@@ -190,7 +201,7 @@ feasibilityReview: async (id, feasibility_status, feasibility_comments, org_code
       id,
       cleanStatus,
       feasibility_comments,
-      org_code
+      org_code,
     );
   } catch (err) {
     console.error("❌ Error in feasibility review:", err);
@@ -202,21 +213,21 @@ feasibilityReview: async (id, feasibility_status, feasibility_comments, org_code
   // Update BD Status
   // -----------------------------
   bdUpdate: async (id, bd_status, bd_comments, org_code) => {
-    try {
-      const bd = await BDModel.findById(id, org_code);
-      if (!bd) throw new Error("Business request not found");
+  try {
+    const bd = await BDModel.findById(id, org_code);
+    if (!bd) throw new Error("Business request not found");
 
-      return await BDModel.updateBD(
-        id,
-        bd_status,
-        bd_comments,
-        org_code
-      );
-    } catch (err) {
-      console.error("❌ Error updating BD status:", err);
-      throw err;
-    }
-  },
-};
+    const payload = {
+      bd_status,
+      bd_comments,
+    };
+
+    return await BDModel.updateBD(id, payload, org_code);
+  } catch (err) {
+    console.error("❌ Error updating BD status:", err);
+    throw err;
+  }
+},
+}
 
 export default BusinessDevelopmentService;

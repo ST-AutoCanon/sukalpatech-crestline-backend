@@ -172,3 +172,43 @@ export const getOrgCodesAndNames = async (req, res) => {
   }
 };
 
+/* ---------------- Update Organisation ---------------- */
+export const updateOrg = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, org_code, admin, departments = [] } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Organisation ID is required" });
+    }
+
+    const result = await service.updateOrganisation(id, name, org_code, admin, departments);
+    return res.status(result.success ? 200 : 400).json(result);
+  } catch (error) {
+    console.error("Update Organisation Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+/* ---------------- Delete Organisation ---------------- */
+export const deleteOrg = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Organisation ID is required" });
+    }
+
+    const result = await service.deleteOrganisation(id);
+    return res.status(result.success ? 200 : 400).json(result);
+  } catch (error) {
+    console.error("Delete Organisation Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};

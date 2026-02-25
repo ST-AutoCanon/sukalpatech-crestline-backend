@@ -175,6 +175,7 @@ export const updateFullPR = async (prId, prData, org_code) => {
     return { success: true, message: "PR updated successfully" };
   } catch (err) {
     console.error("❌ Error updating full PR:", err);
+    console.log("Required Date Received:", prData.required_date);
     throw err;
   }
 };
@@ -186,5 +187,27 @@ export const getAllPRsByStatus = async (status, org_code) => {
   } catch (err) {
     console.error("❌ Error fetching PRs by status:", err);
     return { success: false, error: "Failed to fetch PRs" };
+  }
+};
+
+export const addVendorAttachment = async (
+  vendorId,
+  attachmentData,
+  org_code
+) => {
+  try {
+    // Remove folder path, store only filename
+    attachmentData.file_path = attachmentData.file_path.replace(/^.*[\\\/]/, "");
+
+    const result = await vendorAttachmentModel.createVendorAttachment(
+      attachmentData,
+      vendorId,
+      org_code
+    );
+
+    return result;
+  } catch (err) {
+    console.error("❌ Error adding vendor attachment:", err);
+    throw err;
   }
 };

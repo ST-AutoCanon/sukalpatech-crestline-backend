@@ -217,3 +217,63 @@ export const fetchAllOrgCodesAndNames = async () => {
     };
   }
 };
+
+/* ---------------- Update Organisation ---------------- */
+export const updateOrganisation = async (id, name, org_code, admin, selectedDepartments = []) => {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+
+    const org = await model.getOrganisationById(client, id);
+    if (!org) throw new Error("Organisation not found");
+
+    // Update organisation details
+    await model.updateOrganisation(client, id, name, org_code);
+
+    // Update admin if provided
+    if (admin) {
+      await model.updateOrgAdmin(client, org.schema_name, admin);
+    }
+
+    // Update departments: simple approach - delete all and insert selected
+    if (selectedDepartments.length) {
+      await model.clearDepartments(client, org.schema_name);
+      await model.insertDefaultDepartments(client, org.schema_name, selectedDepartments);
+    }
+
+    await client.query("COMMIT");
+
+    return { success: true, message: "Organisation updated successfully" };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Update Organisation Error:", error);
+    return { success: false, message: error.message };
+  } finally {
+    client.release();
+  }
+};
+
+/* ---------------- Delete Organisation ---------------- */
+export const deleteOrganisation = async (id) => {
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+
+    const org = await model.getOrganisationById(client, id);
+    if (!org) throw new Error("Organisation not found");
+
+    // Drop schema and organisation record
+    await model.dropOrgSchema(client, org.schema_name);
+    await model.deleteOrganisation(client, id);
+
+    await client.query("COMMIT");
+
+    return { success: true, message: "Organisation deleted successfully" };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Delete Organisation Error:", error);
+    return { success: false, message: error.message };
+  } finally {
+    client.release();
+  }
+};
