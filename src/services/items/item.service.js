@@ -9,6 +9,7 @@ const generateItemCode = async () => {
 
 // Create Item Service
 export const createItemService = async (data, org_code) => {
+    console.log("Creating org_code in service:", org_code);
   if (!data.root_category_id) {
     throw new Error("root_category_id is required");
   }

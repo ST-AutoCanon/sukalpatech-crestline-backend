@@ -1,6 +1,8 @@
 import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 export const createItem = async (item, org_code) => {
+  console.log("Creating item with org_code:");
+  console.log("org_code in schema:", org_code);
   const schema = await getSchemaFromOrgCode(org_code);
   const query = `
     INSERT INTO ${schema}.items 

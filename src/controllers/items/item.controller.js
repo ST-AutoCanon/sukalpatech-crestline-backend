@@ -5,7 +5,8 @@ export const createItem = async (req, res) => {
     // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
 
-    const item = await itemService.createItemService(req.body,org_code);
+      console.log("Creating org_code in controller:", org_code);
+    const item = await itemService.createItemService(req.body, org_code);
     res.status(201).json({
       success: true,
       message: "Item created successfully",
@@ -26,7 +27,7 @@ export const getItem = async (req, res) => {
     // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
 
-    const item = await itemService.getItemById(req.params.id,org_code);
+    const item = await itemService.getItemById(req.params.id, org_code);
     if (!item)
       return res
         .status(404)
