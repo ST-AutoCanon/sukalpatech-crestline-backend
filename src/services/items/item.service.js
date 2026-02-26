@@ -1,15 +1,14 @@
 import * as ItemModel from "../../models/items/item.model.js";
 
 // Generate ITEM-00001 style code
-const generateItemCode = async () => {
-  const last = await ItemModel.getLastItem();
+const generateItemCode = async (org_code) => {
+  const last = await ItemModel.getLastItem(org_code);
   const nextId = last ? last.id + 1 : 1;
   return `ITEM-${String(nextId).padStart(5, "0")}`;
 };
 
 // Create Item Service
 export const createItemService = async (data, org_code) => {
-    console.log("Creating org_code in service:", org_code);
   if (!data.root_category_id) {
     throw new Error("root_category_id is required");
   }

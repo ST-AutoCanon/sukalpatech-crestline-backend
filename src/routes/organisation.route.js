@@ -9,4 +9,5 @@ router.get("/org-codes", controller.getOrgCodesAndNames);
 // OR if you want authenticated users only:
 // router.get("/org-codes", auth, controller.getOrgCodes);
 
+
 export default router;

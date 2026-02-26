@@ -53,13 +53,28 @@ export const createBD = async (req, res) => {
 
 
 // GET ALL BD
+// export const getAllBD = async (req, res) => {
+//   try {
+//     // ✅ Dynamic org_code from logged-in user token
+//     const org_code = req.user.org_code;
+
+//     const data = await BDService.getAllBD(org_code);
+//     res.json({ success: true, data });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 export const getAllBD = async (req, res) => {
   try {
-    // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
+    const { status } = req.query;   // ✅ read filter
 
-    const data = await BDService.getAllBD(org_code);
+    const data = await BDService.getAllBD(org_code, status);
+
     res.json({ success: true, data });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });

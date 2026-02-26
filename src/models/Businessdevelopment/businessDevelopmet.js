@@ -95,11 +95,29 @@ const BusinessDevelopmentModel = {
   },
 
   // GET ALL BD
-  findAll: async (org_code) => {
-    const schema = await getSchemaFromOrgCode(org_code);
-    const { rows } = await thirdDB.query(`SELECT * FROM ${schema}.business_development ORDER BY id DESC`);
-    return rows;
-  },
+  // findAll: async (org_code) => {
+  //   const schema = await getSchemaFromOrgCode(org_code);
+  //   const { rows } = await thirdDB.query(`SELECT * FROM ${schema}.business_development ORDER BY id DESC`);
+  //   return rows;
+  // },
+  // GET ALL BD (WITH FILTER)
+findAll: async (org_code, status) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  let query = `SELECT * FROM ${schema}.business_development`;
+  let values = [];
+
+  // 🔥 Apply filter
+  if (status && status !== "ALL") {
+    query += ` WHERE bd_status = $1`;   // ⚠️ confirm column name
+    values.push(status);
+  }
+
+  query += ` ORDER BY id DESC`;
+
+  const { rows } = await thirdDB.query(query, values);
+  return rows;
+},
 
   // GET BY ID
   findById: async (id, org_code) => {

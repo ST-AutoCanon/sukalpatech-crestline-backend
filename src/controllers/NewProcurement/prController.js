@@ -125,6 +125,36 @@ export const createPRControllerJSON = async (req, res) => {
 };
 
 
+export const uploadVendorAttachmentController = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const org_code = req.user.org_code;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const savedAttachment = await prService.addVendorAttachment(
+      vendorId,
+      {
+        file_name: req.file.originalname,
+        file_path: req.file.filename,
+        uploaded_by: req.user.id,
+        uploaded_at: new Date().toISOString(),
+      },
+      org_code
+    );
+
+    res.status(200).json(savedAttachment);
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Upload failed" });
+  }
+};
+
+
+
 
 
 export const getAllPRsController = async (req, res) => {
