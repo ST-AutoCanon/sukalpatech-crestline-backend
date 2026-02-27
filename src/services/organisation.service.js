@@ -1,41 +1,4 @@
-// import * as model from "../models/organisation.model.js";
 
-// export const registerOrganisation = async (name, org_code) => {
-//   if (!name) {
-//     return { success: false, message: "Organisation name is required" };
-//   }
-//   if (!org_code) {
-//     return { success: false, message: "Organisation code is required" };
-//   }
-//   // Step 1: Generate schema name
-//   const lastId = await model.getLastOrgId();
-//   const schemaName = `org_${lastId + 1}`;
-
-//   // Step 2: Insert org record
-//   const org = await model.createOrganisation(name, schemaName, org_code);
-
-//   // Step 3: Create schema
-//   await model.createOrgSchema(schemaName);
-
-//   // Step 4: Copy template tables
-//   await model.copyTemplateTables(schemaName);
-
-//   return {
-//     success: true,
-//     message: "Organisation Registered Successfully",
-//     data: org,
-//   };
-// };
-
-// /* List organisations */
-// export const listOrganisations = async () => {
-//   const orgs = await model.getOrganisations();
-
-//   return {
-//     success: true,
-//     data: orgs,
-//   };
-// };
 
 import db from "../config/dborg.js";
 import * as model from "../models/organisation.model.js";
@@ -121,7 +84,6 @@ export const registerOrganisation = async (
 /* List organisations (READ-ONLY) */
 export const listOrganisations = async () => {
   const orgs = await model.getOrganisations();
-console.log("Fetched organisations:", orgs);
   return {
     success: true,
     data: orgs,
@@ -218,61 +180,134 @@ export const fetchAllOrgCodesAndNames = async () => {
   }
 };
 
+
+export const listDepartments = async () => {
+  try {
+    const departments = await model.getAllDepartments();
+    return { success: true, data: departments };
+  } catch (error) {
+    console.error("Departments Service Error:", error);
+    return { success: false, message: "Failed to fetch departments" };
+  }
+};
+
 /* ---------------- Update Organisation ---------------- */
-export const updateOrganisation = async (id, name, org_code, admin, selectedDepartments = []) => {
+export const updateOrganisationService = async (
+  id,
+  name,
+  admin,
+  selectedDepartments = [],
+) => {
   const client = await db.connect();
+
   try {
     await client.query("BEGIN");
 
     const org = await model.getOrganisationById(client, id);
     if (!org) throw new Error("Organisation not found");
 
-    // Update organisation details
-    await model.updateOrganisation(client, id, name, org_code);
+    // 1️⃣ Update organisation (name + admin, org_code unchanged)
+    const updatedOrg = await model.updateOrganisation(client, id, name, admin);
 
-    // Update admin if provided
-    if (admin) {
-      await model.updateOrgAdmin(client, org.schema_name, admin);
-    }
+    // 2️⃣ Update departments (clear and reinsert)
+    await model.clearDepartments(client, org.schema_name);
 
-    // Update departments: simple approach - delete all and insert selected
-    if (selectedDepartments.length) {
-      await model.clearDepartments(client, org.schema_name);
-      await model.insertDefaultDepartments(client, org.schema_name, selectedDepartments);
+    if (selectedDepartments && selectedDepartments.length > 0) {
+      await model.insertDefaultDepartments(
+        client,
+        org.schema_name,
+        selectedDepartments,
+      );
     }
 
     await client.query("COMMIT");
 
-    return { success: true, message: "Organisation updated successfully" };
+    return {
+      success: true,
+      message: "Organisation updated successfully",
+      data: updatedOrg,
+    };
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Update Organisation Error:", error);
-    return { success: false, message: error.message };
+
+    return {
+      success: false,
+      message: error.message || "Failed to update organisation",
+    };
   } finally {
     client.release();
   }
 };
 
+
+
 /* ---------------- Delete Organisation ---------------- */
-export const deleteOrganisation = async (id) => {
+export const deleteOrganisationService = async (id) => {
+  if (!id) {
+    return { success: false, message: "Organisation ID is required" };
+  }
+
   const client = await db.connect();
+
   try {
     await client.query("BEGIN");
 
+    // 1️⃣ Fetch organisation to get schema name (optional: could be used for cleanup)
     const org = await model.getOrganisationById(client, id);
-    if (!org) throw new Error("Organisation not found");
+    if (!org) {
+      await client.query("ROLLBACK");
+      return { success: false, message: "Organisation not found" };
+    }
 
-    // Drop schema and organisation record
-    await model.dropOrgSchema(client, org.schema_name);
-    await model.deleteOrganisation(client, id);
+    // 2️⃣ Delete organisation from master table
+    const deletedOrg = await model.deleteOrganisation(client, id);
+
+    // 3️⃣ Optional: you can also drop the schema if you want
+    // await client.query(`DROP SCHEMA IF EXISTS ${org.schema_name} CASCADE`);
 
     await client.query("COMMIT");
 
-    return { success: true, message: "Organisation deleted successfully" };
+    return {
+      success: true,
+      message: "Organisation deleted successfully",
+      data: deletedOrg,
+    };
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("Delete Organisation Error:", error);
-    return { success: false, message: error.message };
+    console.error("Delete Organisation Service Error:", error);
+    return { success: false, message: "Server Error" };
+  } finally {
+    client.release();
+  }
+};
+
+
+/* ---------------- Get Single Organisation ---------------- */
+export const getSingleOrganisation = async (id) => {
+  const client = await db.connect();
+
+  try {
+    const org = await model.getOrganisationById(client, id);
+
+    if (!org) {
+      return {
+        success: false,
+        message: "Organisation not found",
+      };
+    }
+
+    return {
+      success: true,
+      data: org,
+    };
+  } catch (error) {
+    console.error("Get Organisation Error:", error);
+
+    return {
+      success: false,
+      message: "Failed to fetch organisation",
+    };
   } finally {
     client.release();
   }
