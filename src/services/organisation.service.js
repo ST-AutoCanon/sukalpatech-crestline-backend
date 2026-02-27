@@ -90,40 +90,7 @@ export const listOrganisations = async () => {
   };
 };
 
-/* Add Department to Organisation */
-export const addDepartmentToOrg = async (org_code, department_name) => {
-  const client = await db.connect();
 
-  try {
-    await client.query("BEGIN");
-
-    const org = await model.getOrganisationByCode(client, org_code);
-
-    if (!org) {
-      throw new Error("Organisation not found");
-    }
-
-    const schemaName = org.schema_name;
-
-    await model.insertDepartment(client, schemaName, department_name);
-
-    await client.query("COMMIT");
-
-    return {
-      success: true,
-      message: "Department added successfully",
-    };
-  } catch (error) {
-    await client.query("ROLLBACK");
-
-    return {
-      success: false,
-      message: error.message,
-    };
-  } finally {
-    client.release();
-  }
-};
 
 /* Remove Department from Organisation */
 export const removeDepartmentFromOrg = async (org_code, department_name) => {
@@ -192,6 +159,54 @@ export const listDepartments = async () => {
 };
 
 /* ---------------- Update Organisation ---------------- */
+// export const updateOrganisationService = async (
+//   id,
+//   name,
+//   admin,
+//   selectedDepartments = [],
+// ) => {
+//   const client = await db.connect();
+
+//   try {
+//     await client.query("BEGIN");
+
+//     const org = await model.getOrganisationById(client, id);
+//     if (!org) throw new Error("Organisation not found");
+
+//     // 1️⃣ Update organisation (name + admin, org_code unchanged)
+//     const updatedOrg = await model.updateOrganisation(client, id, name, admin);
+
+//     // 2️⃣ Update departments (clear and reinsert)
+//     await model.clearDepartments(client, org.schema_name);
+
+//     if (selectedDepartments && selectedDepartments.length > 0) {
+//       await model.insertDefaultDepartments(
+//         client,
+//         org.schema_name,
+//         selectedDepartments,
+//       );
+//     }
+
+//     await client.query("COMMIT");
+
+//     return {
+//       success: true,
+//       message: "Organisation updated successfully",
+//       data: updatedOrg,
+//     };
+//   } catch (error) {
+//     await client.query("ROLLBACK");
+//     console.error("Update Organisation Error:", error);
+
+//     return {
+//       success: false,
+//       message: error.message || "Failed to update organisation",
+//     };
+//   } finally {
+//     client.release();
+//   }
+// };
+
 export const updateOrganisationService = async (
   id,
   name,
@@ -206,18 +221,35 @@ export const updateOrganisationService = async (
     const org = await model.getOrganisationById(client, id);
     if (!org) throw new Error("Organisation not found");
 
-    // 1️⃣ Update organisation (name + admin, org_code unchanged)
+    // 1️⃣ Update organisation basic details
     const updatedOrg = await model.updateOrganisation(client, id, name, admin);
 
-    // 2️⃣ Update departments (clear and reinsert)
-    await model.clearDepartments(client, org.schema_name);
+    const schemaName = org.schema_name;
 
-    if (selectedDepartments && selectedDepartments.length > 0) {
-      await model.insertDefaultDepartments(
-        client,
-        org.schema_name,
-        selectedDepartments,
-      );
+    // 2️⃣ Get existing departments
+    const existingDepartments = await model.getDepartments(client, schemaName);
+
+    // Convert to array of names
+    const existingNames = existingDepartments.map((d) => d.name);
+
+    // 3️⃣ Find departments to delete
+    const departmentsToDelete = existingNames.filter(
+      (name) => !selectedDepartments.includes(name),
+    );
+
+    // 4️⃣ Find departments to insert
+    const departmentsToInsert = selectedDepartments.filter(
+      (name) => !existingNames.includes(name),
+    );
+
+    // 5️⃣ Delete removed departments
+    for (const name of departmentsToDelete) {
+      await model.deleteDepartments(client, schemaName, name);
+    }
+
+    // 6️⃣ Insert new departments
+    if (departmentsToInsert.length > 0) {
+      await model.insertDepartments(client, schemaName, departmentsToInsert);
     }
 
     await client.query("COMMIT");
@@ -240,31 +272,19 @@ export const updateOrganisationService = async (
   }
 };
 
-
-
 /* ---------------- Delete Organisation ---------------- */
 export const deleteOrganisationService = async (id) => {
-  if (!id) {
-    return { success: false, message: "Organisation ID is required" };
-  }
-
   const client = await db.connect();
 
   try {
     await client.query("BEGIN");
 
-    // 1️⃣ Fetch organisation to get schema name (optional: could be used for cleanup)
-    const org = await model.getOrganisationById(client, id);
-    if (!org) {
+    const deletedOrg = await model.deleteOrganisation(client, id);
+
+    if (!deletedOrg) {
       await client.query("ROLLBACK");
       return { success: false, message: "Organisation not found" };
     }
-
-    // 2️⃣ Delete organisation from master table
-    const deletedOrg = await model.deleteOrganisation(client, id);
-
-    // 3️⃣ Optional: you can also drop the schema if you want
-    // await client.query(`DROP SCHEMA IF EXISTS ${org.schema_name} CASCADE`);
 
     await client.query("COMMIT");
 
@@ -275,7 +295,7 @@ export const deleteOrganisationService = async (id) => {
     };
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("Delete Organisation Service Error:", error);
+    console.error("Delete Organisation Error:", error);
     return { success: false, message: "Server Error" };
   } finally {
     client.release();
