@@ -112,28 +112,6 @@ export const createOrgAdmin = async (client, schemaName, admin) => {
   );
 };
 
-/* Add department */
-export const insertDepartment = async (client, schemaName, department_name) => {
-  await client.query(
-    `
-    INSERT INTO ${schemaName}.departments (name)
-    VALUES ($1)
-    ON CONFLICT (name) DO NOTHING
-    `,
-    [department_name],
-  );
-};
-
-/* Remove department */
-export const deleteDepartment = async (client, schemaName, department_name) => {
-  await client.query(
-    `
-    DELETE FROM ${schemaName}.departments
-    WHERE name = $1
-    `,
-    [department_name],
-  );
-};
 
 export const getAllOrgCodesAndNames = async () => {
   const result = await db.query(
@@ -196,9 +174,61 @@ export const updateOrganisation = async (client, id, name, admin) => {
   return organisation;
 };
 
-// organisation.model.js
-export const deleteOrganisation = async (client, id) => {
+export const getDepartments = async (client, schemaName) => {
   const result = await client.query(
+    `SELECT name FROM ${schemaName}.departments`,
+  );
+
+  return result.rows; // [{ name: 'HR' }, ...]
+};
+
+export const deleteDepartments = async (client, schemaName, department_name) => {
+  await client.query(
+    `
+    DELETE FROM ${schemaName}.departments
+    WHERE name = $1
+    `,
+    [department_name],
+  );
+};
+
+export const insertDepartments = async (
+  client,
+  schemaName,
+  departmentNames,
+) => {
+  for (const name of departmentNames) {
+    await client.query(
+      `INSERT INTO ${schemaName}.departments (name)
+       VALUES ($1)
+       ON CONFLICT (name) DO NOTHING`,
+      [name],
+    );
+  }
+};
+
+export const deleteOrganisation = async (client, id) => {
+  // 1️⃣ Get organisation first
+  const orgResult = await client.query(
+    `SELECT * FROM master.organisations WHERE id = $1`,
+    [id],
+  );
+
+  const organisation = orgResult.rows[0];
+  if (!organisation) return null;
+
+  const schemaName = organisation.schema_name;
+
+  // Security validation
+  if (!/^org_\d+$/.test(schemaName)) {
+    throw new Error("Invalid schema name");
+  }
+
+  // 2️⃣ Drop the schema and everything inside it
+  await client.query(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);
+
+  // 3️⃣ Delete from master table
+  const deleteResult = await client.query(
     `
     DELETE FROM master.organisations
     WHERE id = $1
@@ -207,15 +237,7 @@ export const deleteOrganisation = async (client, id) => {
     [id],
   );
 
-  return result.rows[0];
-};
-
-
-export const clearDepartments = async (client, schemaName) => {
-  await client.query(`
-    TRUNCATE TABLE ${schemaName}.departments
-    RESTART IDENTITY CASCADE
-  `);
+  return deleteResult.rows[0];
 };
 
 /* Get Single Organisation By ID (for service layer) */
