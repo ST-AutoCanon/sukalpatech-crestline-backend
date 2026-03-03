@@ -69,7 +69,7 @@ export const createPRController = async (req, res) => {
             const file = req.files[fileIndex];
             vendor.attachments.push({
               file_name: file.originalname,
-              file_path: file.filename, // only filename
+              file_path: `attachments/${file.filename}`,
               uploaded_by: prData.requested_by,
               uploaded_at: new Date().toISOString(),
             });
@@ -288,7 +288,7 @@ export const getAllPRsByStatusController = async (req, res) => {
     // Map frontend "Completed" to backend "APPROVED"
     const status =
       statusParam.toUpperCase() === "COMPLETED"
-        ? "APPROVED"
+        ? "STORE APPROVED"
         : statusParam.toUpperCase();
 
     const result = await getAllPRsByStatus(status,org_code);

@@ -139,7 +139,7 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
     FROM ${schema}.purchase_requests pr
-    LEFT JOIN purchase_items pi ON pi.purchase_request_id = pr.id
+    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(

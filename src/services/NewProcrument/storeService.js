@@ -26,6 +26,7 @@ export const updateStoreReq = async (reqId, userData, org_code) => {
 export const getFinanceApprovedStoreRequests = async (org_code) => {
   try {
     const prs = await storeModel.fetchFinanceApprovedStoreRequests(org_code);
+    console.log("prs:",prs);
     return { success: true, data: prs };
   } catch (err) {
     console.error("❌ Error fetching Store requests:", err);

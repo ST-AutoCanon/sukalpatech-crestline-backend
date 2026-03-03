@@ -47,19 +47,20 @@ export const getAllEmployeesModel = async (orgCode) => {
 export const updateEmployeeModel = async (id, data, orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
 
-  const { first_name, last_name, role, status,category } = data;
+  const { first_name, last_name, email, role, status, category } = data;
 
   const result = await thirdDB.query(
     `UPDATE ${schema}.org_users
      SET first_name = COALESCE($1, first_name),
          last_name  = COALESCE($2, last_name),
-         role       = COALESCE($3, role),
-         status     = COALESCE($4, status),
-         category   = COALESCE($5,category),
+         email      = COALESCE($3, email),
+         role       = COALESCE($4, role),
+         status     = COALESCE($5, status),
+         category   = COALESCE($6, category),
          updated_at = CURRENT_TIMESTAMP
-     WHERE id = $6
-     RETURNING id, first_name, last_name, email, role, status, category,updated_at`,
-    [first_name, last_name, role, status,category, id],
+     WHERE id = $7
+     RETURNING id, first_name, last_name, email, role, status, category, updated_at`,
+    [first_name, last_name, email, role, status, category, id]
   );
 
   return result.rows[0];
