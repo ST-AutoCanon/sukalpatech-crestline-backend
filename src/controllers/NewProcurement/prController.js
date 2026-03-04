@@ -215,21 +215,57 @@ export const updateFullPRController = async (req, res) => {
 /**
  * Update PR (ONLY department status & comments)
  */
+// export const updatePRRequest = async (req, res) => {
+//   try {
+//     // ✅ Dynamic org_code from logged-in user token
+//     const org_code = req.user.org_code;
+
+//     const reqId = req.params.id;
+//     const userData = req.body;
+
+//     const result = await prService.updatePRRequest(reqId, userData,org_code);
+//     res.status(200).json(result);
+//   } catch (err) {
+//     console.error("❌ Error updating Purchase Request:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
+
 export const updatePRRequest = async (req, res) => {
   try {
-    // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
-
     const reqId = req.params.id;
-    const userData = req.body;
 
-    const result = await prService.updatePRRequest(reqId, userData,org_code);
+    // 🔹 Parse JSON fields
+    const department_statuses = JSON.parse(
+      req.body.department_statuses || "[]",
+    );
+    const order_details = JSON.parse(req.body.order_details || "{}");
+
+    // 🔹 File from multer
+    const uploadedFile = req.file ? req.file.filename : null;
+
+    if (uploadedFile) {
+      order_details.order_file = uploadedFile;
+    }
+
+    const result = await prService.updatePRRequest(
+      reqId,
+      {
+        department_statuses,
+        order_details,
+      },
+      org_code,
+    );
+
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error updating Purchase Request:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 /**
  * Fetch ONLY Finance Approved PRs

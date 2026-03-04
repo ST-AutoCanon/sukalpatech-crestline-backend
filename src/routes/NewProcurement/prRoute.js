@@ -38,7 +38,13 @@ router.get("/purchase-requests", auth, prController.getAllPRsController);
 router.get("/purchase-requests/:id", auth, prController.getPRByIdController);
 
 // UPDATE department_statuses only (PR)
-router.put("/pr-requests/:id", auth, prController.updatePRRequest);
+// router.put("/pr-requests/:id", auth, prController.updatePRRequest);
+router.put(
+  "/pr-requests/:id",
+  auth,
+  upload.single("order_file"), // 👈 ADD THIS
+  prController.updatePRRequest,
+);
 
 // GET all PR requests with FINANCE APPROVED status
 router.get(
