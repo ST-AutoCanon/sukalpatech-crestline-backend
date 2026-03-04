@@ -1,15 +1,22 @@
 import express from "express";
 import * as financeController from "../../controllers/NewProcurement/financeReqController.js";
 import { auth } from "../../middleware/auth.js"; // ✅ Import auth middleware
-
+import { upload } from "../../config/multer.js";
 const router = express.Router();
 
 // ---------------- PROTECTED ROUTES ----------------
 
 // Update department_statuses only
+// router.put(
+//   "/finance-requests/:id",
+//   auth, // ✅ Add auth
+//   financeController.updateFinanceRequest,
+// );
+
 router.put(
   "/finance-requests/:id",
-  auth, // ✅ Add auth
+  auth,
+  upload.single("payment_proof"), // 👈 must match frontend field name
   financeController.updateFinanceRequest,
 );
 

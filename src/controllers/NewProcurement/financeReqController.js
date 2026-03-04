@@ -1,21 +1,55 @@
 import * as financeService from "../../services/NewProcrument/financeRequests.js";
 
+// export const updateFinanceRequest = async (req, res) => {
+//   try {
+//      // ✅ Dynamic org_code from logged-in user token
+//     const org_code = req.user.org_code;
+
+//     const reqId = req.params.id;
+//     const userData = req.body;
+
+//     const result = await financeService.updateFinanceReq(reqId, userData,org_code);
+//     res.status(200).json(result);
+//   } catch (err) {
+//     console.error("❌ Error updating Finance Request:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 export const updateFinanceRequest = async (req, res) => {
   try {
-     // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
-
     const reqId = req.params.id;
-    const userData = req.body;
 
-    const result = await financeService.updateFinanceReq(reqId, userData,org_code);
+    const parsedDepartmentStatuses = req.body.department_statuses
+      ? JSON.parse(req.body.department_statuses)
+      : [];
+
+    const userData = {
+      ...req.body,
+      department_statuses: parsedDepartmentStatuses,
+
+      // ✅ Store only relative path for static serving
+      payment_proof_file_name: req.file ? req.file.filename : null,
+      payment_proof_file_path: req.file
+        ? `uploads/attachments/${req.file.filename}`
+        : null,
+
+      payment_updated_by: req.user.id,
+    };
+
+    const result = await financeService.updateFinanceReq(
+      reqId,
+      userData,
+      org_code,
+    );
+
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error updating Finance Request:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 export const getApprovedFinanceRequests = async (req, res) => {
   try {

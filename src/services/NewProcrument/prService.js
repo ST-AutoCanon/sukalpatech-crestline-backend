@@ -3,6 +3,7 @@ import * as purchaseItemModel from "../../models/NewProcurement/purchaseItems.js
 import * as itemVendorModel from "../../models/NewProcurement/itemVendors.js";
 import * as vendorAttachmentModel from "../../models/NewProcurement/vendorAttachments.js";
 import * as vendorCommentModel from "../../models/NewProcurement/vendorComments.js";
+import * as prOrderDetailsModel from "../../models/NewProcurement/prOrderDetails.js";
 
 // -------------------------------
 // Create New Purchase Request
@@ -103,8 +104,39 @@ export const getPRById = async (prId, org_code) => {
  * Update PR (ONLY department status & comments)
  * No vendor logic here
  */
+// export const updatePRRequest = async (reqId, userData, org_code) => {
+//   try {
+//     if (
+//       userData.department_statuses &&
+//       userData.department_statuses.length > 0
+//     ) {
+//       await purchaseRequestModel.updateDepartmentStatuses(
+//         reqId,
+//         userData.department_statuses,
+//         org_code,
+//       );
+//     }
+
+//     return {
+//       success: true,
+//       message: "Purchase Request updated successfully",
+//     };
+//   } catch (err) {
+//     console.error("❌ Error updating Purchase Request:", err);
+//     throw err;
+//   }
+// };
+
+
+/**
+ * Update PR (ONLY department status & comments)
+ * along with status and comment also update the order details if the order status is PLACED
+ * No vendor logic here
+ */
 export const updatePRRequest = async (reqId, userData, org_code) => {
   try {
+
+    // 1️⃣ Update Department Status (existing logic)
     if (
       userData.department_statuses &&
       userData.department_statuses.length > 0
@@ -116,6 +148,27 @@ export const updatePRRequest = async (reqId, userData, org_code) => {
       );
     }
 
+    // 2️⃣ Update Order Details (NEW LOGIC)
+    if (userData.order_details) {
+      const existingOrder = await prOrderDetailsModel.getOrderDetailsByPR(
+        reqId,
+        org_code,
+      );
+
+      if (existingOrder) {
+        await prOrderDetailsModel.updateOrderDetails(
+          reqId,
+          userData.order_details,
+          org_code,
+        );
+      } else {
+        await prOrderDetailsModel.createOrderDetails(org_code, {
+          ...userData.order_details,
+          purchase_request_id: reqId,
+        });
+      }
+    }
+
     return {
       success: true,
       message: "Purchase Request updated successfully",
@@ -125,7 +178,6 @@ export const updatePRRequest = async (reqId, userData, org_code) => {
     throw err;
   }
 };
-
 
 /**
  * Fetch ONLY PRs whose LATEST status = FINANCE APPROVED
