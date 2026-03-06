@@ -98,6 +98,7 @@ export const loginController = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
+        first_name: user.first_name,
         email: user.email,
         role: user.role,
         org_code: org_code || null,
@@ -123,7 +124,8 @@ export const loginController = async (req, res) => {
     // ✅ THEN SEND RESPONSE (without token in body if you want)
     // return res.json(apiResponse(true, "Login successful", { user }));
 
-    return res.json(apiResponse(true, "Login successful", { user, token }));
+    // return res.json(apiResponse(true, "Login successful", { user, token }));
+    return res.json(apiResponse(true, "Login successful", { token }));
   } catch (err) {
     console.error("Login Error:", err);
     return res.status(500).json(apiResponse(false, "Internal server error"));

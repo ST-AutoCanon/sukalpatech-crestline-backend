@@ -32,12 +32,19 @@ export const createEmployeeModel = async (data, orgCode) => {
 export const getAllEmployeesModel = async (orgCode) => {
   const schema = await getSchemaFromOrgCode(orgCode);
 
+  // const result = await thirdDB.query(
+  //   `SELECT id, first_name, last_name, email, role, status,category, created_at
+  //    FROM ${schema}.org_users
+  //    WHERE role = $1
+  //    ORDER BY created_at DESC`,
+  //   ["employee"],
+  // );
   const result = await thirdDB.query(
-    `SELECT id, first_name, last_name, email, role, status,category, created_at
-     FROM ${schema}.org_users
-     WHERE role = $1
-     ORDER BY created_at DESC`,
-    ["employee"],
+    `SELECT id, first_name, last_name, email, role, status, category, created_at
+   FROM ${schema}.org_users
+   WHERE role = ANY($1)
+   ORDER BY created_at DESC`,
+    [["employee", "manager"]],
   );
 
   return result.rows;
