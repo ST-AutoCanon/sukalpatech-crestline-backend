@@ -50,11 +50,15 @@ export const copyTemplateTables = async (client, schemaName) => {
     "vendors",
     "items_suppliers",
     "purchase_requests",
+    "pr_finance_payment_details",
+    "pr_order_details",
+    "pr_store_receiving_details",
     "purchase_items",
     "item_vendors",
     "vendor_attachments",
     "vendor_comments",
     "business_development",
+    "business_dev_2",
     "category_limit",
   ];
 

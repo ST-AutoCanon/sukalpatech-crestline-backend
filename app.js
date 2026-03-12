@@ -19,6 +19,10 @@ import newBDBuisnessDevelopmentRoutes from "./src/routes/NewBD/businessDevelopme
 import newBDfeasibilityRoutes from "./src/routes/NewBD/businessDevelopment.js";
 import businessDevelopmentRoutes from "./src/routes/Businessdevelopment/businessDevelopmetroute.js";
 
+import twowheelerRoutes from "./src/routes/Businessdev/TwoWheeler.route.js";
+import threewheelerRoutes from "./src/routes/Businessdev/ThreeWheeler.route.js";
+import foodbusinessRoutes from "./src/routes/Businessdev/Foodbusiness.route.js";
+
 import path from "path";
 import cookieParser from "cookie-parser";
 const app = express();
@@ -94,6 +98,11 @@ app.use("/api/business-development", businessDevelopmentRoutes);
 app.use("/api/organisations-admin", orgRoutes);
 app.use("/api/organisation", orgRoutesgenric);
 app.use("/api/categorylimit", categorylimitRoutes);
+
+// Business Development APIs per type
+app.use("/api/business-development/2w", twowheelerRoutes);
+app.use("/api/business-development/3w", threewheelerRoutes);
+app.use("/api/business-development/food", foodbusinessRoutes);
 //test---->
 app.get("/", (req, res) => {
   res.send("Cristaline API is running...");
