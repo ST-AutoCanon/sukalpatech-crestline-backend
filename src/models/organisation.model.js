@@ -60,6 +60,7 @@ export const copyTemplateTables = async (client, schemaName) => {
     "business_development",
     "business_dev_2",
     "category_limit",
+    "notifications",
   ];
 
   for (const table of templateTables) {
