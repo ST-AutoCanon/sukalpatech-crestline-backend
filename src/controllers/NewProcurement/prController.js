@@ -69,7 +69,7 @@ export const createPRController = async (req, res) => {
             const file = req.files[fileIndex];
             vendor.attachments.push({
               file_name: file.originalname,
-              file_path: `attachments/${file.filename}`,
+              file_path: `/uploads/attachments/${file.filename}`,  // ✅ FULL PATH
               uploaded_by: prData.requested_by,
               uploaded_at: new Date().toISOString(),
             });

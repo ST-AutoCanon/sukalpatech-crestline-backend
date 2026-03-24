@@ -20,9 +20,10 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
       vehicle_model,
       motor_capacity,
       battery_type,
-      status
+      business_status,
+      comment
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
     RETURNING *;
   `;
 
@@ -39,7 +40,8 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
     data.vehicle_model,
     data.motor_capacity,
     data.battery_type,
-    "Pending",
+    data.business_status,
+    data.comment
   ];
 
   const result = await pool.query(query, values);
@@ -52,6 +54,7 @@ export const getTwoWheelerBusinesses = async (org_code) => {
 
   const query = `
     SELECT
+      id,
       industry_type,
       company_name,
       contact_person,
@@ -63,7 +66,8 @@ export const getTwoWheelerBusinesses = async (org_code) => {
       vehicle_model,
       motor_capacity,
       battery_type,
-      status,
+      business_status,
+      comment,
       created_at
     FROM ${schema}.business_dev_2
     WHERE industry_type = '2W'
@@ -131,4 +135,81 @@ export const deleteTwoWheelerBusiness = async (org_code, id) => {
 
   const result = await pool.query(query, [id, org_code]);
   return result.rows[0];
+};
+
+export const reviewTwoWheelerBusiness = async (org_code, data) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.business_dev_2
+    SET 
+      feasibility_status = $1,
+      comments = $2
+    WHERE id = $3 AND industry_type = '2W'
+    RETURNING *;
+  `;
+
+  const values = [
+    data.feasibility_status,
+    data.comments,
+    data.id
+  ];
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+/* ---------------- Get All 2W Feasibility Reviewed Businesses ---------------- */
+export const getTwoWheelerFeasibilityReviewed = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT
+      id,
+      industry_type,
+      company_name,
+      contact_person,
+      phone,
+      email,
+      project_title,
+      expected_quantity,
+      estimated_budget,
+      vehicle_model,
+      motor_capacity,
+      battery_type,
+      business_status,
+      comment,
+      feasibility_status,
+      comments,
+      created_at,
+      updated_at
+    FROM ${schema}.business_dev_2
+    WHERE industry_type = '2W'
+      AND feasibility_status IS NOT NULL
+      AND feasibility_status <> ''
+    ORDER BY created_at DESC
+  `;
+
+  const result = await pool.query(query);
+  return result.rows;
+};
+
+export const reviewfinalTwoWheelerBusiness = async (org_code, payload) => {
+  try {
+    const result = await reviewModel(org_code, {
+      ...payload,
+      final_status: payload.final_status,
+      final_comment: payload.final_comment
+    });
+
+    return {
+      success: true,
+      message: "2W feasibility updated",
+      data: result
+    };
+
+  } catch (error) {
+    console.error("Review 2W Error:", error);
+    return { success: false, message: "Failed to update feasibility" };
+  }
 };

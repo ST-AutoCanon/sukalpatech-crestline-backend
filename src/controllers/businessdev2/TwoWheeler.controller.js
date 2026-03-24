@@ -103,3 +103,70 @@ export const deleteTwoWheelerBusiness = async (req, res) => {
     });
   }
 };
+
+export const reviewTwoWheelerBusiness = async (req, res) => {
+  try {
+
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    const result = await TwoWheelerService.reviewTwoWheelerBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+
+    console.error("Review 3W Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+
+/* ---------------- Get 2W Feasibility Reviewed Requests ---------------- */
+export const getUpdatedTwoWheelerRequests = async (req, res) => {
+  try {
+    const org_code = req.user.org_code; // from JWT
+
+    const data = await TwoWheelerService.fetchTwoWheelerFeasibilityReviewed(org_code);
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    console.error("Fetch 2W feasibility reviewed requests error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const reviewfinalTwoWheelerBusiness = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    // payload should now include final_status & final_comment
+    const result = await TwoWheelerService.reviewTwoWheelerBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Review 2W Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
