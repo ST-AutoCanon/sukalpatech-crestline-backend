@@ -125,35 +125,78 @@ export const createPRControllerJSON = async (req, res) => {
 };
 
 
+// export const uploadVendorAttachmentController = async (req, res) => {
+//   try {
+//     const { vendorId } = req.params;
+//     const org_code = req.user.org_code;
+
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
+
+//     const savedAttachment = await prService.addVendorAttachment(
+//       vendorId,
+//       {
+//         file_name: req.file.originalname,
+//         file_path: req.file.filename,
+//         uploaded_by: req.user.id,
+//         uploaded_at: new Date().toISOString(),
+//       },
+//       org_code
+//     );
+
+//     res.status(200).json(savedAttachment);
+
+//   } catch (error) {
+//     console.error("Upload error:", error);
+//     res.status(500).json({ message: "Upload failed" });
+//   }
+// };
+
 export const uploadVendorAttachmentController = async (req, res) => {
   try {
     const { vendorId } = req.params;
     const org_code = req.user.org_code;
 
+    // 1️⃣ Validate file
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
     }
 
-    const savedAttachment = await prService.addVendorAttachment(
+    // 2️⃣ Prepare attachment data
+    const attachmentData = {
+      file_name: req.file.originalname,
+      file_path: req.file.filename, // multer already gives filename
+      uploaded_by: req.user.id,
+      uploaded_at: new Date().toISOString(),
+    };
+
+    // 3️⃣ Call service (this will REPLACE old attachment)
+    const result = await prService.addVendorAttachment(
       vendorId,
-      {
-        file_name: req.file.originalname,
-        file_path: req.file.filename,
-        uploaded_by: req.user.id,
-        uploaded_at: new Date().toISOString(),
-      },
-      org_code
+      attachmentData,
+      org_code,
     );
 
-    res.status(200).json(savedAttachment);
-
+    // 4️⃣ Response
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ message: "Upload failed" });
+    console.error("❌ Upload error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to upload attachment",
+      error: error.message,
+    });
   }
 };
-
-
 
 
 

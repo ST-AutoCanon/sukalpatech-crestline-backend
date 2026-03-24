@@ -34,3 +34,18 @@ export const fetchAttachmentsByVendor = async (vendorId, org_code) => {
   );
   return result.rows;
 };
+
+export const deleteAttachmentsByVendor = async (vendorId, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    DELETE FROM ${schema}.vendor_attachments
+    WHERE item_vendor_id = $1
+    RETURNING file_path
+  `;
+
+  const result = await thirdDB.query(query, [vendorId]);
+
+  // Return deleted file names so controller can remove from disk
+  return result.rows;
+};
