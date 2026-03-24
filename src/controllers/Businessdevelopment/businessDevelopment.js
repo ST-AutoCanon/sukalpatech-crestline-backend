@@ -21,12 +21,12 @@ export const createBD = async (req, res) => {
     const files = req.files || [];
 
     const attachments = files.map((file) => ({
-      filename: file.filename,
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-    }));
-
+  filename: file.filename,
+  originalname: file.originalname,
+  mimetype: file.mimetype,
+  size: file.size,
+  file_path: `/uploads/attachments/${file.filename}`, // ✅ FIX
+}));
     const payload = {
       ...req.body,
       attachments: JSON.stringify(attachments),

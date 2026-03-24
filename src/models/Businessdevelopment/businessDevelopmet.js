@@ -107,18 +107,32 @@ findAll: async (org_code, status) => {
   let query = `SELECT * FROM ${schema}.business_development`;
   let values = [];
 
-  // 🔥 Apply filter
+  // ✅ Apply filter
   if (status && status !== "ALL") {
-    query += ` WHERE bd_status = $1`;   // ⚠️ confirm column name
+    query += ` WHERE bd_status = $1`;
     values.push(status);
   }
 
   query += ` ORDER BY id DESC`;
 
   const { rows } = await thirdDB.query(query, values);
-  return rows;
-},
 
+  // ✅ IMPORTANT: Parse attachments JSON
+  const parsedRows = rows.map((row) => ({
+    ...row,
+    attachments: (() => {
+      try {
+        return typeof row.attachments === "string"
+          ? JSON.parse(row.attachments)
+          : row.attachments || [];
+      } catch {
+        return [];
+      }
+    })(),
+  }));
+
+  return parsedRows;
+},
   // GET BY ID
   findById: async (id, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);

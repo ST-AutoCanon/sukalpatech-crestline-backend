@@ -1,5 +1,5 @@
 // services/businessdev2/twoWheelerService.js
-import { insertTwoWheelerBusiness ,getTwoWheelerBusinesses} from "../../models/Businessdev/TwoWheeler.modal.js";
+import { insertTwoWheelerBusiness ,getTwoWheelerBusinesses,reviewTwoWheelerBusiness as reviewModel,getTwoWheelerFeasibilityReviewed} from "../../models/Businessdev/TwoWheeler.modal.js";
 
 export const createTwoWheelerBusiness = async (org_code, payload) => {
   // Add any business logic if needed
@@ -106,5 +106,88 @@ export const deleteTwoWheelerBusiness = async (org_code, id) => {
     };
   } finally {
     client.release();
+  }
+};
+
+export const reviewTwoWheelerBusiness = async (org_code, payload) => {
+  try {
+
+    const result = await reviewModel(org_code, payload);
+
+    return {
+      success: true,
+      message: "2W feasibility updated",
+      data: result
+    };
+
+  } catch (error) {
+
+    console.error("Review 2W Error:", error);
+
+    return {
+      success: false,
+      message: "Failed to update feasibility"
+    };
+  }
+};
+
+
+/* ---------------- Fetch all 2W Feasibility Updated Requests ---------------- */
+export const fetchUpdatedTwoWheelerFeasibility = async (org_code) => {
+  try {
+    const allBusinesses = await model.getTwoWheelerBusinesses(org_code);
+
+    // Filter only those with feasibility_status set
+    const updated = allBusinesses.filter(
+      (item) => item.feasibility_status && item.feasibility_status !== ""
+    );
+
+    return {
+      success: true,
+      data: updated
+    };
+  } catch (error) {
+    console.error("Fetch Updated 2W Feasibility Error:", error);
+    return {
+      success: false,
+      message: "Failed to fetch updated feasibility requests"
+    };
+  }
+};
+
+/* ---------------- Fetch 2W Feasibility Reviewed Requests ---------------- */
+export const fetchTwoWheelerFeasibilityReviewed = async (org_code) => {
+  try {
+    const data = await getTwoWheelerFeasibilityReviewed(org_code); // use the imported function
+    return {
+      success: true,
+      data
+    };
+  } catch (error) {
+    console.error("Fetch 2W feasibility reviewed requests error:", error);
+    return {
+      success: false,
+      message: "Failed to fetch 2W feasibility reviewed requests"
+    };
+  }
+};
+
+export const reviewfinalTwoWheelerBusiness = async (org_code, payload) => {
+  try {
+    const result = await reviewModel(org_code, {
+      ...payload,
+      final_status: payload.final_status,
+      final_comment: payload.final_comment
+    });
+
+    return {
+      success: true,
+      message: "2W feasibility updated",
+      data: result
+    };
+
+  } catch (error) {
+    console.error("Review 2W Error:", error);
+    return { success: false, message: "Failed to update feasibility" };
   }
 };

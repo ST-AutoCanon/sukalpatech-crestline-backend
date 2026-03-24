@@ -17,9 +17,10 @@ export const insertFoodBusiness = async (org_code, data) => {
       expected_quantity,
       estimated_budget,
       packaging_type,
-      status
+      business_status,
+      comment
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
     RETURNING *;
   `;
 
@@ -34,7 +35,8 @@ export const insertFoodBusiness = async (org_code, data) => {
     data.expected_quantity,
     data.estimated_budget,
     data.packaging_type,
-    "Pending",
+    data.business_status,
+    data.comment
   ];
 
   const result = await pool.query(query, values);
@@ -84,4 +86,68 @@ export const deleteFoodBusiness = async (org_code, id) => {
   const query = `DELETE FROM ${schema}.business_dev_2 WHERE id=$1 AND industry_type='Food' RETURNING *;`;
   const result = await pool.query(query, [id]);
   return result.rows[0];
+};
+
+export const reviewFoodBusiness = async (org_code, data) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.business_dev_2
+    SET 
+      feasibility_status = $1,
+      comments = $2
+    WHERE id = $3 AND industry_type = 'FOOD'
+    RETURNING *;
+  `;
+
+  const values = [
+    data.feasibility_status,
+    data.comments,
+    data.id
+  ];
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+export const getFoodBusinessFeasibilityReviewed = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT *
+    FROM ${schema}.business_dev_2
+    WHERE industry_type = 'FOOD'
+      AND feasibility_status IS NOT NULL
+      AND feasibility_status <> ''
+    ORDER BY created_at DESC;
+  `;
+
+  const result = await pool.query(query);
+  return result.rows;
+};
+export const reviewFinalFoodBusiness = async (org_code, data) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.business_dev_2
+    SET 
+      business_status = $1,
+      comment = $2
+    WHERE id = $3 AND industry_type = 'FOOD'
+    RETURNING *;
+  `;
+
+  const values = [
+    data.final_status,
+    data.final_comment,
+    data.id
+  ];
+
+  const result = await pool.query(query, values);
+
+  return {
+    success: true,
+    message: "Food business final review updated",
+    data: result.rows[0]
+  };
 };

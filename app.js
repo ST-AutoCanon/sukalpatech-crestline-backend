@@ -23,6 +23,7 @@ import businessDevelopmentRoutes from "./src/routes/Businessdevelopment/business
 import twowheelerRoutes from "./src/routes/Businessdev/TwoWheeler.route.js";
 import threewheelerRoutes from "./src/routes/Businessdev/ThreeWheeler.route.js";
 import foodbusinessRoutes from "./src/routes/Businessdev/Foodbusiness.route.js";
+import goldbusinessRoutes from "./src/routes/Businessdev/Goldbusiness.route.js";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -203,6 +204,8 @@ app.use("/api/categorylimit", categorylimitRoutes);
 app.use("/api/business-development/2w", twowheelerRoutes);
 app.use("/api/business-development/3w", threewheelerRoutes);
 app.use("/api/business-development/food", foodbusinessRoutes);
+app.use("/api/business-development/gold",goldbusinessRoutes)
+
 //test---->
 app.get("/", (req, res) => {
   res.send("Cristaline API is running...");

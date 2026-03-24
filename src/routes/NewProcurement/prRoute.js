@@ -16,7 +16,14 @@ router.post(
   upload.array("attachments"), // 'attachments' = field name in form-data
   prController.createPRController,
 );
-router.post(
+// router.post(
+//   "/vendors/:vendorId/attachments",
+//   auth,
+//   upload.single("file"),
+//   prController.uploadVendorAttachmentController
+// );
+
+router.put(
   "/vendors/:vendorId/attachments",
   auth,
   upload.single("file"),

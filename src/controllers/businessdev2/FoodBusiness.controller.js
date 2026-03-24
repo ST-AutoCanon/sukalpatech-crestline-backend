@@ -102,3 +102,71 @@ export const deleteFoodBusiness = async (req, res) => {
     });
   }
 };
+
+export const reviewFoodBusiness = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    const result = await FoodBusinessService.reviewFoodBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Review Food Business Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+export const getUpdatedFoodBusinessRequests = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const data = await FoodBusinessService.fetchFoodFeasibilityReviewed(
+      org_code
+    );
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+
+  } catch (err) {
+    console.error("Fetch Food feasibility reviewed error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const reviewFinalFoodBusiness = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    // payload should contain final_status & final_comment
+    const result = await FoodBusinessService.reviewFoodBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Final Review Food Business Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

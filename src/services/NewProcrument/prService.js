@@ -4,6 +4,8 @@ import * as itemVendorModel from "../../models/NewProcurement/itemVendors.js";
 import * as vendorAttachmentModel from "../../models/NewProcurement/vendorAttachments.js";
 import * as vendorCommentModel from "../../models/NewProcurement/vendorComments.js";
 import * as prOrderDetailsModel from "../../models/NewProcurement/prOrderDetails.js";
+import fs from "fs";
+import path from "path";
 
 // -------------------------------
 // Create New Purchase Request
@@ -242,24 +244,73 @@ export const getAllPRsByStatus = async (status, org_code) => {
   }
 };
 
+// export const addVendorAttachment = async (
+
+//   vendorId,
+//   attachmentData,
+//   org_code
+// ) => {
+//   try {
+//     // Remove folder path, store only filename
+//     attachmentData.file_path = attachmentData.file_path.replace(/^.*[\\\/]/, "");
+
+//     const result = await vendorAttachmentModel.createVendorAttachment(
+//       attachmentData,
+//       vendorId,
+//       org_code
+//     );
+
+//     return result;
+//   } catch (err) {
+//     console.error("❌ Error adding vendor attachment:", err);
+//     throw err;
+//   }
+// };
+
 export const addVendorAttachment = async (
   vendorId,
   attachmentData,
-  org_code
+  org_code,
 ) => {
   try {
-    // Remove folder path, store only filename
-    attachmentData.file_path = attachmentData.file_path.replace(/^.*[\\\/]/, "");
+    const deletedAttachments =
+      await vendorAttachmentModel.deleteAttachmentsByVendor(vendorId, org_code);
 
-    const result = await vendorAttachmentModel.createVendorAttachment(
-      attachmentData,
-      vendorId,
-      org_code
+    if (deletedAttachments?.length > 0) {
+      for (const att of deletedAttachments) {
+        if (!att.file_path) continue;
+
+        const filePath = path.join(
+          process.cwd(),
+          "uploads",
+          "attachments",
+          att.file_path,
+        );
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+
+    attachmentData.file_path = attachmentData.file_path.replace(
+      /^.*[\\\/]/,
+      "",
     );
 
-    return result;
+    const newAttachment = await vendorAttachmentModel.createVendorAttachment(
+      attachmentData,
+      vendorId,
+      org_code,
+    );
+
+    return {
+      success: true,
+      message: "Attachment replaced successfully",
+      data: newAttachment,
+    };
   } catch (err) {
-    console.error("❌ Error adding vendor attachment:", err);
+    console.error("❌ Error replacing vendor attachment:", err);
     throw err;
   }
 };

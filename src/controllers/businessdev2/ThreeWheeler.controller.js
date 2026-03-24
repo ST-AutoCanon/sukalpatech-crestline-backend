@@ -57,7 +57,7 @@ export const updateThreeWheelerBusiness = async (req, res) => {
       });
     }
 
-    const result = await ThreeWheelerService.updateTwoWheelerBusiness(
+    const result = await ThreeWheelerService.updateThreeWheelerBusiness(
       Number(id),
       org_code,
       payload
@@ -87,7 +87,7 @@ export const deleteThreeWheelerBusiness = async (req, res) => {
       });
     }
 
-    const result = await ThreeWheelerService.deleteTwoWheelerBusiness(
+    const result = await ThreeWheelerService.deleteThreeWheelerBusiness(
       Number(id),
       org_code
     );
@@ -103,3 +103,70 @@ export const deleteThreeWheelerBusiness = async (req, res) => {
     });
   }
 };
+
+export const reviewThreeWheelerBusiness = async (req, res) => {
+  try {
+
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    const result = await ThreeWheelerService.reviewThreeWheelerBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+
+    console.error("Review 3W Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+/* ---------------- Get 2W Feasibility Reviewed Requests ---------------- */
+export const getUpdatedThreeWheelerRequests = async (req, res) => {
+  try {
+    const org_code = req.user.org_code; // from JWT
+
+    const data = await ThreeWheelerService.fetchThreeWheelerFeasibilityReviewed(org_code);
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    console.error("Fetch 3W feasibility reviewed requests error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const reviewfinalThreeWheelerBusiness = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+    const payload = req.body;
+
+    // payload should now include final_status & final_comment
+    const result = await ThreeWheelerService.reviewThreeWheelerBusiness(
+      org_code,
+      payload
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Review 3W Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
