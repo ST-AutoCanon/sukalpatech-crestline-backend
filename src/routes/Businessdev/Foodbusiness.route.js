@@ -21,7 +21,9 @@ router.delete("/:id", auth, deleteFoodBusiness);
 router.patch("/review", auth,reviewFoodBusiness);
 
 router.get("/review", auth,getUpdatedFoodBusinessRequests);
-router.patch("/review", auth,reviewFinalFoodBusiness);
+router.patch("/review/final", auth,reviewFinalFoodBusiness);
+router.patch("/update/:id", auth,updateFoodBusiness);
+
 
 
 export default router;

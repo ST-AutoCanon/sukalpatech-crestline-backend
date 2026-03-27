@@ -1,14 +1,21 @@
 // services/businessdevFood/foodBusinessService.js
-import { insertFoodBusiness,getAllFoodBusinesses,getFoodBusinessFeasibilityReviewed,reviewFoodBusiness as reviewModel } from "../../models/Businessdev/Foodbusiness.modal.js";
+import { insertFoodBusiness,getAllFoodBusinesses,getFoodBusinessFeasibilityReviewed,reviewFoodBusiness as reviewModel,updateFoodBusiness as updateFoodBusinessModel,reviewFinalFoodBusiness as reviewFinalModel } from "../../models/Businessdev/Foodbusiness.modal.js";
 
 export const createFoodBusiness = async (org_code, payload) => {
   return insertFoodBusiness(org_code, payload);
 };
 
-export const fetchFoodBusinesses = async (org_code) => {
-
+/* ---------------- Get All with optional status filter ---------------- */
+export const fetchFoodBusinesses = async (org_code, status = "ALL") => {
   try {
-    const businesses = await getAllFoodBusinesses(org_code);
+    let businesses = await getAllFoodBusinesses(org_code);
+
+    // Apply status filter if not ALL
+    if (status && status !== "ALL") {
+      businesses = businesses.filter(
+        (b) => b.business_status?.toUpperCase() === status.toUpperCase()
+      );
+    }
 
     return {
       success: true,
@@ -16,55 +23,43 @@ export const fetchFoodBusinesses = async (org_code) => {
     };
 
   } catch (error) {
-    console.error("Fetch 2W Businesses Error:", error);
+    console.error("Fetch Food Businesses Error:", error);
 
     return {
       success: false,
-      message: "Failed to fetch 2W businesses",
+      message: "Failed to fetch food businesses",
     };
   }
 };
-
 /* ---------------- Update 2W Business ---------------- */
 export const updateFoodBusiness = async (org_code, id, payload) => {
-  const client = await db.connect();
-
   try {
-    await client.query("BEGIN");
-
-    const updatedBusiness = await model.updateFoodBusiness(
+    const updatedBusiness = await updateFoodBusinessModel(
       org_code,
       id,
       payload
     );
 
     if (!updatedBusiness) {
-      await client.query("ROLLBACK");
-
       return {
         success: false,
-        message: "2W Business not found",
+        message: "Food Business not found",
       };
     }
 
-    await client.query("COMMIT");
-
     return {
       success: true,
-      message: "2W Business updated successfully",
+      message: "Food Business updated successfully",
       data: updatedBusiness,
     };
 
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Update 2W Business Error:", error);
+    console.error("Update Food Business Error:", error);
 
     return {
       success: false,
-      message: "Failed to update 2W business",
+      message: "Failed to update Food business",
     };
-  } finally {
-    client.release();
   }
 };
 
@@ -173,7 +168,7 @@ export const fetchFoodFeasibilityReviewed = async (org_code) => {
 
 export const reviewfinalFoodBusiness = async (org_code, payload) => {
   try {
-    const result = await reviewModel(org_code, {
+    const result = await reviewFinalModel(org_code, {
       ...payload,
       final_status: payload.final_status,
       final_comment: payload.final_comment

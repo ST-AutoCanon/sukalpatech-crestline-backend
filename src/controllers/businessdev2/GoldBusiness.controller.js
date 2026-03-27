@@ -29,8 +29,9 @@ export const createGoldBusiness = async (req, res) => {
 export const getAllGoldBusinesses = async (req, res) => {
   try {
     const org_code = req.user.org_code;
+    const { status } = req.query; // <-- new
 
-    const data = await GoldBusinessService.fetchGoldBusinesses(org_code);
+    const data = await GoldBusinessService.fetchGoldBusinesses(org_code, status); // pass it to service
 
     res.status(200).json({
       success: true,
@@ -63,8 +64,8 @@ export const updateGoldBusiness = async (req, res) => {
     }
 
     const result = await GoldBusinessService.updateGoldBusiness(
-      Number(id),
-      org_code,
+     org_code,
+     Number(id),
       payload
     );
 
@@ -166,7 +167,7 @@ export const reviewFinalGoldBusiness = async (req, res) => {
     const org_code = req.user.org_code;
     const payload = req.body;
 
-    const result = await GoldBusinessService.reviewGoldBusiness(
+    const result = await GoldBusinessService.reviewFinalGoldBusiness( // ✅ FIXED
       org_code,
       payload
     );

@@ -48,11 +48,11 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
   return result.rows[0];
 };
 
-/* ---------------- Get All 2W Businesses ---------------- */
-export const getTwoWheelerBusinesses = async (org_code) => {
+// GET / LIST with optional status filter
+export const getTwoWheelerBusinesses = async (org_code, statusFilter) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  const query = `
+  let query = `
     SELECT
       id,
       industry_type,
@@ -68,16 +68,38 @@ export const getTwoWheelerBusinesses = async (org_code) => {
       battery_type,
       business_status,
       comment,
-      created_at
+      feasibility_status,
+      comments,
+      final_status,
+      final_comment,
+      created_at,
+      updated_at
     FROM ${schema}.business_dev_2
     WHERE industry_type = '2W'
-    ORDER BY created_at DESC
   `;
 
-  const result = await pool.query(query);
+  const values = [];
+
+  if (statusFilter && statusFilter !== "ALL") {
+  if (statusFilter === "PENDING") {
+    values.push("PENDING");
+    query += ` AND business_status = $1`;
+  } 
+  else if (statusFilter === "REJECTED") {
+    values.push("REJECTED");
+    query += ` AND business_status = $1`;
+  } 
+  else if (statusFilter === "COMPLETED") {
+    values.push("APPROVED");
+    query += ` AND business_status = $1`;
+  }
+}
+
+  query += ` ORDER BY created_at DESC;`;
+
+  const result = await pool.query(query, values);
   return result.rows;
 };
-
 /* ---------------- Update 2W Business ---------------- */
 export const updateTwoWheelerBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
@@ -95,10 +117,12 @@ export const updateTwoWheelerBusiness = async (org_code, id, data) => {
       vehicle_model = $8,
       motor_capacity = $9,
       battery_type = $10,
+      feasibility_status = $11,
+      comments = $12,
       updated_at = NOW()
-    WHERE id = $11
-    AND org_code = $12
-    AND industry_type = '2W'
+    WHERE id = $13
+      AND org_code = $14
+      AND industry_type = '2W'
     RETURNING *;
   `;
 
@@ -113,6 +137,8 @@ export const updateTwoWheelerBusiness = async (org_code, id, data) => {
     data.vehicle_model,
     data.motor_capacity,
     data.battery_type,
+    data.feasibility_status || null,
+    data.comments || null,
     id,
     org_code,
   ];
@@ -181,6 +207,8 @@ export const getTwoWheelerFeasibilityReviewed = async (org_code) => {
       comment,
       feasibility_status,
       comments,
+      final_status,
+      final_comment,
       created_at,
       updated_at
     FROM ${schema}.business_dev_2
@@ -196,20 +224,34 @@ export const getTwoWheelerFeasibilityReviewed = async (org_code) => {
 
 export const reviewfinalTwoWheelerBusiness = async (org_code, payload) => {
   try {
-    const result = await reviewModel(org_code, {
-      ...payload,
-      final_status: payload.final_status,
-      final_comment: payload.final_comment
-    });
+    const schema = await getSchemaFromOrgCode(org_code);
+
+    const query = `
+      UPDATE ${schema}.business_dev_2
+      SET
+        final_status = $1,
+        final_comment = $2,
+        updated_at = NOW()
+      WHERE id = $3
+        AND industry_type = '2W'
+      RETURNING *;
+    `;
+
+    const values = [
+      payload.final_status,
+      payload.final_comment,
+      payload.id
+    ];
+
+    const result = await pool.query(query, values);
 
     return {
       success: true,
-      message: "2W feasibility updated",
-      data: result
+      message: "2W final review updated",
+      data: result.rows[0]
     };
-
   } catch (error) {
     console.error("Review 2W Error:", error);
-    return { success: false, message: "Failed to update feasibility" };
+    return { success: false, message: "Failed to update final review" };
   }
 };

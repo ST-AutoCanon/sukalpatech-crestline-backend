@@ -26,7 +26,8 @@ router.put("/:id", auth, updateTwoWheelerBusiness);
 router.delete("/:id", auth, deleteTwoWheelerBusiness);
 router.patch("/review", auth,reviewTwoWheelerBusiness);
 router.get("/review", auth,getUpdatedTwoWheelerRequests);
-router.patch("/review", auth,reviewfinalTwoWheelerBusiness);
+router.patch("/review/final", auth,reviewfinalTwoWheelerBusiness);
+router.patch("/update/:id", auth,updateTwoWheelerBusiness);
 
 
 export default router;

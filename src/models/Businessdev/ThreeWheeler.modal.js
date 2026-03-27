@@ -48,13 +48,31 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
   return result.rows[0];
 };
 
-// GET / LIST
-export const getThreeWheelerBusinesses = async (org_code) => {
+/// GET / LIST with optional status filter
+export const getThreeWheelerBusinesses = async (org_code, statusFilter) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  const query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = '3W' ORDER BY created_at DESC;`;
+  let query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = '3W'`;
+  const values = [];
 
-  const result = await pool.query(query);
+  if (statusFilter && statusFilter !== "ALL") {
+  if (statusFilter === "PENDING") {
+    values.push("PENDING");
+    query += ` AND business_status = $1`;
+  } 
+  else if (statusFilter === "REJECTED") {
+    values.push("REJECTED");
+    query += ` AND business_status = $1`;
+  } 
+  else if (statusFilter === "COMPLETED") {
+    values.push("APPROVED");
+    query += ` AND business_status = $1`;
+  }
+}
+
+  query += ` ORDER BY created_at DESC;`;
+
+  const result = await pool.query(query, values);
   return result.rows;
 };
 
@@ -75,8 +93,15 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
       vehicle_model = $8,
       motor_capacity = $9,
       battery_type = $10,
-      status = $11
-    WHERE id = $12 AND industry_type = '3W'
+      business_status = $11,
+      comment = $12,
+      feasibility_status = $13,
+      comments = $14,
+      final_status = $15,
+      final_comment = $16,
+      updated_at = NOW()
+    WHERE id = $17
+      AND industry_type = '3W'
     RETURNING *;
   `;
 
@@ -91,8 +116,13 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
     data.vehicle_model,
     data.motor_capacity,
     data.battery_type,
-    data.status || "Pending",
-    id,
+    data.business_status || "PENDING",
+    data.comment || null,
+    data.feasibility_status || null,
+    data.comments || null,
+    data.final_status || null,
+    data.final_comment || null,
+    id
   ];
 
   const result = await pool.query(query, values);
@@ -173,20 +203,35 @@ export const getThreeWheelerFeasibilityReviewed = async (org_code) => {
 
 export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
   try {
-    const result = await reviewModel(org_code, {
-      ...payload,
-      final_status: payload.final_status,
-      final_comment: payload.final_comment
-    });
+    const schema = await getSchemaFromOrgCode(org_code);
+
+    const query = `
+      UPDATE ${schema}.business_dev_2
+      SET
+        final_status = $1,
+        final_comment = $2,
+        updated_at = NOW()
+      WHERE id = $3
+        AND industry_type = '3W'
+      RETURNING *;
+    `;
+
+    const values = [
+      payload.final_status,
+      payload.final_comment,
+      payload.id
+    ];
+
+    const result = await pool.query(query, values);
 
     return {
       success: true,
-      message: "3W feasibility updated",
-      data: result
+      message: "3W final review updated",
+      data: result.rows[0]
     };
 
   } catch (error) {
     console.error("Review 3W Error:", error);
-    return { success: false, message: "Failed to update feasibility" };
+    return { success: false, message: "Failed to update final review" };
   }
 };
