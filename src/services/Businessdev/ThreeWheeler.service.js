@@ -1,70 +1,53 @@
 // services/businessdev3/threeWheelerService.js
-import { insertThreeWheelerBusiness,getThreeWheelerBusinesses,reviewThreeWheelerBusiness as reviewModel,getThreeWheelerFeasibilityReviewed } from "../../models/Businessdev/ThreeWheeler.modal.js";
+import { insertThreeWheelerBusiness,getThreeWheelerBusinesses,reviewThreeWheelerBusiness as reviewModel,getThreeWheelerFeasibilityReviewed, updateThreeWheelerBusiness as updateThreeWheelerBusinessModel, reviewfinalThreeWheelerBusiness as reviewFinalModel} from "../../models/Businessdev/ThreeWheeler.modal.js";
 
 export const createThreeWheelerBusiness = async (org_code, payload) => {
   return insertThreeWheelerBusiness(org_code, payload);
 };
 
-export const fetchThreeWheelerBusinesses = async (org_code) => {
-
+/* ---------------- Get All with optional status filter ---------------- */
+export const fetchThreeWheelerBusinesses = async (org_code, statusFilter) => {
   try {
-    const businesses = await getThreeWheelerBusinesses(org_code);
+    const businesses = await getThreeWheelerBusinesses(org_code, statusFilter);
 
-    return {
-      success: true,
-      data: businesses,
-    };
+    return { success: true, data: businesses };
 
   } catch (error) {
-    console.error("Fetch 2W Businesses Error:", error);
-
-    return {
-      success: false,
-      message: "Failed to fetch 2W businesses",
-    };
+    return { success: false, message: "Failed to fetch" };
   }
 };
 
+
 /* ---------------- Update 2W Business ---------------- */
-export const updateThreeWheelerBusiness = async (org_code, id, payload) => {
-  const client = await db.connect();
-
+export const updateThreeWheelerBusiness = async (id, org_code, payload) => {
   try {
-    await client.query("BEGIN");
 
-    const updatedBusiness = await model.updateThreeWheelerBusiness(
+    const updatedBusiness = await updateThreeWheelerBusinessModel(
       org_code,
       id,
       payload
     );
 
     if (!updatedBusiness) {
-      await client.query("ROLLBACK");
-
       return {
         success: false,
-        message: "2W Business not found",
+        message: "3W Business not found",
       };
     }
 
-    await client.query("COMMIT");
-
     return {
       success: true,
-      message: "2W Business updated successfully",
+      message: "3W Business updated successfully",
       data: updatedBusiness,
     };
 
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Update 2W Business Error:", error);
+    console.error("Update 3W Business Error:", error);
 
     return {
       success: false,
-      message: "Failed to update 2W business",
+      message: "Failed to update 3W business",
     };
-  } finally {
-    client.release();
   }
 };
 
@@ -174,20 +157,21 @@ export const fetchThreeWheelerFeasibilityReviewed = async (org_code) => {
 
 export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
   try {
-    const result = await reviewModel(org_code, {
-      ...payload,
-      final_status: payload.final_status,
-      final_comment: payload.final_comment
-    });
+
+    const result = await reviewFinalModel(org_code, payload);
 
     return {
       success: true,
-      message: "3W feasibility updated",
-      data: result
+      message: "3W final review updated",
+      data: result.data || result
     };
 
   } catch (error) {
-    console.error("Review 3W Error:", error);
-    return { success: false, message: "Failed to update feasibility" };
+    console.error("Review 3W Final Error:", error);
+
+    return {
+      success: false,
+      message: "Failed to update final review"
+    };
   }
 };

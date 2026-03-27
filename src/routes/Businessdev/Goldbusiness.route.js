@@ -35,5 +35,7 @@ router.get("/review", auth, getUpdatedGoldBusinessRequests);
 
 /* ---------------- FINAL REVIEW ---------------- */
 router.patch("/final-review", auth, reviewFinalGoldBusiness);
+router.patch("/update/:id", auth,updateGoldBusiness);
+
 
 export default router;

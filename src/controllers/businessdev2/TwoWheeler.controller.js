@@ -24,15 +24,17 @@ export const createTwoWheelerBusiness = async (req, res) => {
   }
 };
 
+/* ---------------- FETCH ALL WITH STATUS FILTER ---------------- */
 export const getAllTwoWheelerBusinesses = async (req, res) => {
   try {
-    const org_code = req.user.org_code; // get from JWT
+    const org_code = req.user.org_code;
+    const status = req.query.status; // "ALL", "PENDING", "REJECTED", "COMPLETED"
 
-    const data = await TwoWheelerService.fetchTwoWheelerBusinesses(org_code);
+    const data = await TwoWheelerService.fetchTwoWheelerBusinesses(org_code, status);
 
     res.status(200).json({
       success: true,
-      data: data
+      data
     });
 
   } catch (error) {
@@ -44,6 +46,7 @@ export const getAllTwoWheelerBusinesses = async (req, res) => {
     });
   }
 };
+
 export const updateTwoWheelerBusiness = async (req, res) => {
   try {
     const { id } = req.params;
@@ -155,7 +158,7 @@ export const reviewfinalTwoWheelerBusiness = async (req, res) => {
     const payload = req.body;
 
     // payload should now include final_status & final_comment
-    const result = await TwoWheelerService.reviewTwoWheelerBusiness(
+    const result = await TwoWheelerService.reviewfinalTwoWheelerBusiness(
       org_code,
       payload
     );

@@ -3,7 +3,7 @@
 import {
   insertGoldBusiness,
   getGoldBusinesses,
-  updateGoldBusiness as updateModel,
+  updateGoldBusiness as updateGoldBusinessModel,
   deleteGoldBusiness as deleteModel,
   reviewGoldBusiness as reviewModel,
   getGoldFeasibilityReviewed,
@@ -16,10 +16,11 @@ export const createGoldBusiness = async (org_code, payload) => {
 };
 
 
-/* ---------------- FETCH ALL ---------------- */
-export const fetchGoldBusinesses = async (org_code) => {
+/* ---------------- FETCH ALL WITH FILTER ---------------- */
+export const fetchGoldBusinesses = async (org_code, statusFilter) => {
   try {
-    const businesses = await getGoldBusinesses(org_code);
+    // Call model with optional filter
+    const businesses = await getGoldBusinesses(org_code, statusFilter);
 
     return {
       success: true,
@@ -40,7 +41,11 @@ export const fetchGoldBusinesses = async (org_code) => {
 /* ---------------- UPDATE ---------------- */
 export const updateGoldBusiness = async (org_code, id, payload) => {
   try {
-    const updatedBusiness = await updateModel(org_code, id, payload);
+    const updatedBusiness = await updateGoldBusinessModel( // ✅ CORRECT
+      org_code,
+      id,
+      payload
+    );
 
     if (!updatedBusiness) {
       return {
@@ -64,6 +69,7 @@ export const updateGoldBusiness = async (org_code, id, payload) => {
     };
   }
 };
+
 
 
 /* ---------------- DELETE ---------------- */

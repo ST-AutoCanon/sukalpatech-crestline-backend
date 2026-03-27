@@ -26,7 +26,7 @@ export const insertFoodBusiness = async (org_code, data) => {
 
   const values = [
     org_code,
-    data.industry_type || "Food",
+    data.industry_type || "FOOD",
     data.company_name,
     data.contact_person,
     data.phone,
@@ -43,13 +43,27 @@ export const insertFoodBusiness = async (org_code, data) => {
   return result.rows[0]; // ✅ only return the inserted row
 };
 
-// GET ALL
-export const getAllFoodBusinesses = async (org_code) => {
+// GET ALL with optional status filter
+export const getAllFoodBusinesses = async (org_code, status) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  const query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = 'FOOD' ORDER BY created_at DESC;`;
+  let query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = 'FOOD'`;
+  const values = [];
+if (status && status !== "ALL") {
+  if (status === "PENDING") {
+    values.push("PENDING");
+    query += ` AND business_status = $${values.length}`;
+  } else if (status === "REJECTED") {
+    values.push("REJECTED");
+    query += ` AND business_status = $${values.length}`;
+  } else if (status === "COMPLETED") {
+    values.push("APPROVED", "FEASIBILITY APPROVED");
+    query += ` AND business_status IN ($${values.length - 1}, $${values.length})`;
+  }
+}
+  query += ` ORDER BY created_at DESC`;
 
-  const result = await pool.query(query);
+  const result = await pool.query(query, values);
   return result.rows;
 };
 
@@ -57,25 +71,44 @@ export const getAllFoodBusinesses = async (org_code) => {
 export const updateFoodBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-    UPDATE ${schema}.business_dev_2
-    SET company_name=$1, contact_person=$2, phone=$3, email=$4,
-        project_title=$5, expected_quantity=$6, estimated_budget=$7,
-        packaging_type=$8, status=$9
-    WHERE id=$10 AND industry_type='Food'
-    RETURNING *;
-  `;
+  UPDATE ${schema}.business_dev_2
+  SET 
+    company_name = $1,
+    contact_person = $2,
+    phone = $3,
+    email = $4,
+    project_title = $5,
+    expected_quantity = $6,
+    estimated_budget = $7,
+    packaging_type = $8,
+    business_status = $9,
+    comment = $10,
+    feasibility_status = $11,
+    comments = $12,
+    final_status = $13,
+    final_comment = $14,
+    updated_at = NOW()
+  WHERE id = $15 
+    AND industry_type = 'FOOD'
+  RETURNING *;
+`;
   const values = [
-    data.company_name,
-    data.contact_person,
-    data.phone,
-    data.email,
-    data.project_title,
-    data.expected_quantity,
-    data.estimated_budget,
-    data.packaging_type,
-    data.status || "Pending",
-    id,
-  ];
+  data.company_name,
+  data.contact_person,
+  data.phone,
+  data.email,
+  data.project_title,
+  data.expected_quantity,
+  data.estimated_budget,
+  data.packaging_type,
+  data.business_status || "PENDING",
+  data.comment || null,
+  data.feasibility_status || null,
+  data.comments || null,
+  data.final_status || null,
+  data.final_comment || null,
+  id,
+];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
@@ -131,8 +164,9 @@ export const reviewFinalFoodBusiness = async (org_code, data) => {
   const query = `
     UPDATE ${schema}.business_dev_2
     SET 
-      business_status = $1,
-      comment = $2
+  final_status = $1,
+  final_comment = $2,
+  updated_at = NOW()
     WHERE id = $3 AND industry_type = 'FOOD'
     RETURNING *;
   `;

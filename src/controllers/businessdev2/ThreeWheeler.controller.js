@@ -24,26 +24,28 @@ export const createThreeWheelerBusiness = async (req, res) => {
   }
 };
 
+/* ---------------- FETCH ALL WITH STATUS FILTER ---------------- */
 export const getAllThreeWheelerBusinesses = async (req, res) => {
   try {
-    const org_code = req.user.org_code; // get from JWT
+    const org_code = req.user.org_code;
+    const { status } = req.query; // ✅ read status from query
 
-    const data = await ThreeWheelerService.fetchThreeWheelerBusinesses(org_code);
+    const data = await ThreeWheelerService.fetchThreeWheelerBusinesses(org_code, status); // pass status to service
 
     res.status(200).json({
       success: true,
-      data: data
+      data,
     });
-
   } catch (error) {
-    console.error("Fetch 2W businesses error:", error);
+    console.error("Fetch 3W businesses error:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch 2W businesses"
+      message: error.message || "Failed to fetch 3W businesses",
     });
   }
 };
+
 export const updateThreeWheelerBusiness = async (req, res) => {
   try {
     const { id } = req.params;
@@ -153,8 +155,7 @@ export const reviewfinalThreeWheelerBusiness = async (req, res) => {
     const org_code = req.user.org_code;
     const payload = req.body;
 
-    // payload should now include final_status & final_comment
-    const result = await ThreeWheelerService.reviewThreeWheelerBusiness(
+    const result = await ThreeWheelerService.reviewfinalThreeWheelerBusiness(
       org_code,
       payload
     );

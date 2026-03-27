@@ -22,7 +22,9 @@ router.delete("/:id", auth, deleteThreeWheelerBusiness);
 router.patch("/review", auth,reviewThreeWheelerBusiness);
 
 router.get("/review", auth,getUpdatedThreeWheelerRequests);
-router.patch("/review", auth,reviewfinalThreeWheelerBusiness);
+router.patch("/review/final", auth,reviewfinalThreeWheelerBusiness);
+router.patch("/update/:id", auth,updateThreeWheelerBusiness);
+
 
 
 export default router;

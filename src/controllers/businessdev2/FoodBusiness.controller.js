@@ -23,23 +23,27 @@ export const createFoodBusiness = async (req, res) => {
   }
 };
 
+/* ---------------- FETCH ALL WITH STATUS FILTER ---------------- */
+// controllers/businessdev2/FoodBusiness.controller.js
+
 export const getAllFoodBusinesses = async (req, res) => {
   try {
-    const org_code = req.user.org_code; // get from JWT
+    const org_code = req.user.org_code; // from JWT
+    const status = req.query.status; // "ALL", "PENDING", "REJECTED", "COMPLETED"
 
-    const data = await FoodBusinessService.fetchFoodBusinesses(org_code);
+    const data = await FoodBusinessService.fetchFoodBusinesses(org_code, status);
 
     res.status(200).json({
       success: true,
-      data: data
+      data
     });
 
   } catch (error) {
-    console.error("Fetch 2W businesses error:", error);
+    console.error("Fetch Food Businesses Error:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch 2W businesses"
+      message: error.message || "Failed to fetch food businesses"
     });
   }
 };
@@ -57,8 +61,8 @@ export const updateFoodBusiness = async (req, res) => {
     }
 
     const result = await FoodBusinessService.updateFoodBusiness(
-      Number(id),
       org_code,
+      Number(id),
       payload
     );
 
@@ -153,8 +157,7 @@ export const reviewFinalFoodBusiness = async (req, res) => {
     const org_code = req.user.org_code;
     const payload = req.body;
 
-    // payload should contain final_status & final_comment
-    const result = await FoodBusinessService.reviewFoodBusiness(
+    const result = await FoodBusinessService.reviewfinalFoodBusiness( // ✅ correct
       org_code,
       payload
     );
