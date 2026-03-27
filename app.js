@@ -25,6 +25,9 @@ import threewheelerRoutes from "./src/routes/Businessdev/ThreeWheeler.route.js";
 import foodbusinessRoutes from "./src/routes/Businessdev/Foodbusiness.route.js";
 import goldbusinessRoutes from "./src/routes/Businessdev/Goldbusiness.route.js";
 
+import projectRoutes from "./src/routes/projectManagement/projectRoutes.js";
+
+
 import http from "http";
 import { Server } from "socket.io";
 import path from "path";
@@ -205,6 +208,9 @@ app.use("/api/business-development/2w", twowheelerRoutes);
 app.use("/api/business-development/3w", threewheelerRoutes);
 app.use("/api/business-development/food", foodbusinessRoutes);
 app.use("/api/business-development/gold",goldbusinessRoutes)
+
+
+app.use("/api/project", projectRoutes);
 
 //test---->
 app.get("/", (req, res) => {
