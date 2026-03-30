@@ -130,9 +130,9 @@ getAllBD: async (org_code, status) => {
       const bd = await BDModel.findById(id, org_code);
       if (!bd) throw new Error("Business request not found");
 
-      if (bd.bd_status !== "DRAFT" && bd.bd_status !== "CREATED") {
-        throw new Error("Only DRAFT / CREATED requests can be edited");
-      }
+      // if (bd.bd_status !== "DRAFT" && bd.bd_status !== "CREATED") {
+      //   throw new Error("Only DRAFT / CREATED requests can be edited");
+      // }
 
       return await BDModel.updateBD(id, payload, org_code);
     } catch (err) {
@@ -149,9 +149,9 @@ getAllBD: async (org_code, status) => {
       const bd = await BDModel.findById(id, org_code);
       if (!bd) throw new Error("Business request not found");
 
-      if (bd.bd_status !== "DRAFT" && bd.bd_status !== "CREATED") {
-        throw new Error("Only DRAFT / CREATED requests can be submitted");
-      }
+      // if (bd.bd_status !== "DRAFT" && bd.bd_status !== "CREATED") {
+      //   throw new Error("Only DRAFT / CREATED requests can be submitted");
+      // }
 
       return await BDModel.updateStatus(
         id,
