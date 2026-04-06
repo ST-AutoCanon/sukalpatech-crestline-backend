@@ -9,8 +9,18 @@ const router = express.Router();
 // ITEM routes
 // -------------------------------
 router.post("/items", auth, itemController.createItem);
+
+// ✅ NEW: Item search (code + name)
+router.get(
+  "/items/search",
+  auth,
+  itemController.searchItemsByCodeOrName
+);
+
 router.get("/items/:id", auth, itemController.getItem);
 router.get("/items", auth, itemController.listItems);
+
+
 
 // -------------------------------
 // SEARCH routes

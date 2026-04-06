@@ -59,3 +59,12 @@ export const updateItemService = async (id, data, org_code) => {
 export const deleteItemService = async (id, org_code) => {
   return await ItemModel.deleteItem(id, org_code);
 };
+
+// Search by item code or name (autocomplete)
+export const searchItemsByCodeOrNameService = async (query, org_code) => {
+  if (!query || query.trim() === "") {
+    return [];
+  }
+
+  return await ItemModel.searchItemsByCodeOrName(query, org_code);
+};
