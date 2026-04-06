@@ -162,5 +162,22 @@ export const getItems = async (org_code) => {
   return result.rows;
 };
 
+export async function searchItemsByCodeOrName(query, org_code) {
+  const schema = await getSchemaFromOrgCode(org_code);
 
+  const sql = `
+    SELECT 
+      id,
+      item_code,
+      item_name
+    FROM ${schema}.items
+    WHERE 
+      item_code ILIKE $1 OR
+      item_name ILIKE $1
+    ORDER BY item_code ASC
+    LIMIT 20;
+  `;
 
+  const result = await thirdDB.query(sql, [`%${query}%`]);
+  return result.rows;
+}
