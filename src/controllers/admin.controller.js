@@ -106,17 +106,43 @@ import {
 import { apiResponse } from "../utils/helpers.js";
 
 /* ================= CREATE ================= */
+// export const createEmployeeController = async (req, res) => {
+//   try {
+//     const org_code = req.user.org_code;
+//     const result = await createEmployee(req.body, org_code);
+
+//     res.status(201).json(
+//       apiResponse(true, "Employee created successfully", result)
+//     );
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json(apiResponse(false, "Server error"));
+//   }
+// };
+
 export const createEmployeeController = async (req, res) => {
   try {
     const org_code = req.user.org_code;
+
     const result = await createEmployee(req.body, org_code);
 
-    res.status(201).json(
+    return res.status(201).json(
       apiResponse(true, "Employee created successfully", result)
     );
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json(apiResponse(false, "Server error"));
+    console.error("CREATE EMPLOYEE ERROR:", err);
+
+    // ✅ POSTGRES duplicate email error
+    if (err.code === "23505") {
+      return res.status(409).json(
+        apiResponse(false, "Email already exists")
+      );
+    }
+
+    return res.status(500).json(
+      apiResponse(false, "Server error")
+    );
   }
 };
 
