@@ -50,6 +50,7 @@ export async function searchCategoriesHierarchy(query, org_code) {
   `;
 
   const result = await thirdDB.query(searchQuery, [`%${query}%`]);
+  console.log("Search Query Result:", result.rows);
   return result.rows;
 }
 
@@ -158,10 +159,128 @@ export async function searchCategoriesHierarchy(query, org_code) {
 
 //   return [];
 // }
+////////////////////////////////
+// export async function searchItems(query, org_code) {
+//   const q = `%${query}%`;
+
+//   const schema = await getSchemaFromOrgCode(org_code);
+
+//   const vendSelect = `
+//     SELECT
+//       i.id,
+//       i.item_code,
+//       i.item_name,
+//       i.product_id,
+//       i.qty,
+//       COALESCE(
+//         json_agg(s.vendor_id) FILTER (WHERE s.vendor_id IS NOT NULL),
+//         '[]'
+//       ) AS vendors
+//     FROM ${schema}.items i
+//     LEFT JOIN ${schema}.items_suppliers s ON s.item_id = i.id
+//   `;
+
+//   // 1️⃣ Sub Variant match → ONLY those items
+//   let res = await thirdDB.query(
+//     `SELECT id FROM ${schema}.sub_variants WHERE name ILIKE $1 OR code ILIKE $1`,
+//     [q],
+//   );
+//   if (res.rows.length) {
+//     const ids = res.rows.map((r) => r.id);
+//     const r = await thirdDB.query(
+//       `${vendSelect}
+//        WHERE i.sub_variant_id = ANY($1::int[])
+//        GROUP BY i.id`,
+//       [ids],
+//     );
+//     return r.rows;
+//   }
+
+//   // 2️⃣ Variant match → variant + its sub variants
+//   res = await thirdDB.query(
+//     `SELECT id FROM ${schema}.variants WHERE name ILIKE $1 OR code ILIKE $1`,
+//     [q],
+//   );
+//   if (res.rows.length) {
+//     const ids = res.rows.map((r) => r.id);
+//     const r = await thirdDB.query(
+//       `${vendSelect}
+//        WHERE
+//          i.variant_id = ANY($1::int[])
+//          OR i.sub_variant_id IN (
+//            SELECT id FROM ${schema}.sub_variants WHERE variant_id = ANY($1::int[])
+//          )
+//        GROUP BY i.id`,
+//       [ids],
+//     );
+//     return r.rows;
+//   }
+
+//   // 3️⃣ Product match
+//   res = await thirdDB.query(
+//     `SELECT id FROM ${schema}.products WHERE name ILIKE $1 OR code ILIKE $1`,
+//     [q],
+//   );
+//   if (res.rows.length) {
+//     const ids = res.rows.map((r) => r.id);
+//     const r = await thirdDB.query(
+//       `${vendSelect}
+//        WHERE i.product_id = ANY($1::bigint[])
+//        GROUP BY i.id`,
+//       [ids],
+//     );
+//     return r.rows;
+//   }
+
+//   // 4️⃣ Category match
+//   res = await thirdDB.query(
+//     `SELECT id FROM ${schema}.categories WHERE name ILIKE $1 OR code ILIKE $1`,
+//     [q],
+//   );
+//   if (res.rows.length) {
+//     const ids = res.rows.map((r) => r.id);
+//     const r = await thirdDB.query(
+//       `${vendSelect}
+//        WHERE i.category_id = ANY($1::int[])
+//        GROUP BY i.id`,
+//       [ids],
+//     );
+//     return r.rows;
+//   }
+
+//   // 5️⃣ Root Category match
+//   res = await thirdDB.query(
+//     `SELECT id FROM ${schema}.root_categories WHERE name ILIKE $1 OR code ILIKE $1`,
+//     [q],
+//   );
+//   if (res.rows.length) {
+//     const ids = res.rows.map((r) => r.id);
+//     const r = await thirdDB.query(
+//       `${vendSelect}
+//        JOIN categories c ON c.id = i.category_id
+//        WHERE c.root_category_id = ANY($1::int[])
+//        GROUP BY i.id`,
+//       [ids],
+//     );
+//     return r.rows;
+//   }
+
+//   // 6️⃣ Item name / item code match (fallback)
+//   const r = await thirdDB.query(
+//     `${vendSelect}
+//      WHERE i.item_name ILIKE $1
+//         OR i.item_code ILIKE $1
+//      GROUP BY i.id`,
+//     [q],
+//   );
+
+//   console.log("Search Items Fallback Result:", r.rows);
+//   return r.rows;
+// }
+
 
 export async function searchItems(query, org_code) {
   const q = `%${query}%`;
-
   const schema = await getSchemaFromOrgCode(org_code);
 
   const vendSelect = `
@@ -179,92 +298,7 @@ export async function searchItems(query, org_code) {
     LEFT JOIN ${schema}.items_suppliers s ON s.item_id = i.id
   `;
 
-  // 1️⃣ Sub Variant match → ONLY those items
-  let res = await thirdDB.query(
-    `SELECT id FROM ${schema}.sub_variants WHERE name ILIKE $1 OR code ILIKE $1`,
-    [q],
-  );
-  if (res.rows.length) {
-    const ids = res.rows.map((r) => r.id);
-    const r = await thirdDB.query(
-      `${vendSelect}
-       WHERE i.sub_variant_id = ANY($1::int[])
-       GROUP BY i.id`,
-      [ids],
-    );
-    return r.rows;
-  }
-
-  // 2️⃣ Variant match → variant + its sub variants
-  res = await thirdDB.query(
-    `SELECT id FROM ${schema}.variants WHERE name ILIKE $1 OR code ILIKE $1`,
-    [q],
-  );
-  if (res.rows.length) {
-    const ids = res.rows.map((r) => r.id);
-    const r = await thirdDB.query(
-      `${vendSelect}
-       WHERE 
-         i.variant_id = ANY($1::int[])
-         OR i.sub_variant_id IN (
-           SELECT id FROM ${schema}.sub_variants WHERE variant_id = ANY($1::int[])
-         )
-       GROUP BY i.id`,
-      [ids],
-    );
-    return r.rows;
-  }
-
-  // 3️⃣ Product match
-  res = await thirdDB.query(
-    `SELECT id FROM ${schema}.products WHERE name ILIKE $1 OR code ILIKE $1`,
-    [q],
-  );
-  if (res.rows.length) {
-    const ids = res.rows.map((r) => r.id);
-    const r = await thirdDB.query(
-      `${vendSelect}
-       WHERE i.product_id = ANY($1::bigint[])
-       GROUP BY i.id`,
-      [ids],
-    );
-    return r.rows;
-  }
-
-  // 4️⃣ Category match
-  res = await thirdDB.query(
-    `SELECT id FROM ${schema}.categories WHERE name ILIKE $1 OR code ILIKE $1`,
-    [q],
-  );
-  if (res.rows.length) {
-    const ids = res.rows.map((r) => r.id);
-    const r = await thirdDB.query(
-      `${vendSelect}
-       WHERE i.category_id = ANY($1::int[])
-       GROUP BY i.id`,
-      [ids],
-    );
-    return r.rows;
-  }
-
-  // 5️⃣ Root Category match
-  res = await thirdDB.query(
-    `SELECT id FROM ${schema}.root_categories WHERE name ILIKE $1 OR code ILIKE $1`,
-    [q],
-  );
-  if (res.rows.length) {
-    const ids = res.rows.map((r) => r.id);
-    const r = await thirdDB.query(
-      `${vendSelect}
-       JOIN categories c ON c.id = i.category_id
-       WHERE c.root_category_id = ANY($1::int[])
-       GROUP BY i.id`,
-      [ids],
-    );
-    return r.rows;
-  }
-
-  // 6️⃣ Item name / item code match (fallback)
+  // ✅ Only search by item name & item code
   const r = await thirdDB.query(
     `${vendSelect}
      WHERE i.item_name ILIKE $1
@@ -273,7 +307,6 @@ export async function searchItems(query, org_code) {
     [q],
   );
 
+  console.log("Search Items Result:", r.rows);
   return r.rows;
 }
-
-
