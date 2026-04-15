@@ -263,6 +263,10 @@ RETURNING *;
   updateEditableBD: async (id, payload, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);
 
+     // ❌ REMOVE created_at if present
+  delete payload.created_at;
+
+
     const keys = Object.keys(payload);
     if (!keys.length) throw new Error("No fields provided for update");
 
@@ -298,6 +302,8 @@ RETURNING *;
   // BD UPDATE (after feasibility approval)
   updateBD: async (id, payload, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);
+
+      delete payload.created_at;
 
     const fields = [];
     const values = [];
