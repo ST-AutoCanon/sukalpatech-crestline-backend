@@ -44,6 +44,7 @@ export const updateDepartmentStatuses = async (
  */
 export const fetchApprovedFinanceRequests = async (org_code) => {
   const schema = await getSchemaFromOrgCode(org_code);
+
   const query = `
     SELECT 
       pr.id,
@@ -56,6 +57,15 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
       pr.created_at,
       pr.updated_at,
       pr.department_statuses,
+
+      -- ✅ PAYMENT FIELDS ADDED HERE
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name,
+
       COALESCE(jsonb_agg(
         DISTINCT jsonb_build_object(
           'id', pi.id,
@@ -65,8 +75,15 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
+
     FROM ${schema}.purchase_requests pr
-    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.pr_finance_payment_details fpd
+      ON fpd.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -83,6 +100,7 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
           )
         ) AS vendors
       FROM ${schema}.item_vendors iv
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -95,6 +113,7 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -106,10 +125,24 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
+
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
+
     WHERE pr.department_statuses @> '[{"department_status": "Feasibility APPROVED"}]'
-    GROUP BY pr.id
+    AND NOT (
+      LOWER(COALESCE(fpd.payment_stage, '')) LIKE '%final%'
+      OR COALESCE(fpd.final_completed::text, 'false') = 'true'
+    )
+
+    GROUP BY pr.id,
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name
+
     ORDER BY pr.updated_at DESC;
   `;
 
@@ -122,7 +155,6 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
  * Includes items, vendors, attachments, and comments
  */
 export const fetchRejectedFinanceRequests = async (org_code) => {
-  // ✅ Fetch schema automatically
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
@@ -137,6 +169,7 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
       pr.created_at,
       pr.updated_at,
       pr.department_statuses,
+
       COALESCE(jsonb_agg(
         DISTINCT jsonb_build_object(
           'id', pi.id,
@@ -146,8 +179,12 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
+
     FROM ${schema}.purchase_requests pr
-    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -164,6 +201,7 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
           )
         ) AS vendors
       FROM ${schema}.item_vendors iv
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -176,6 +214,7 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -187,9 +226,12 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
+
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
+
     WHERE pr.department_statuses @> '[{"department_status": "Feasibility REJECTED"}]'
+
     GROUP BY pr.id
     ORDER BY pr.updated_at DESC;
   `;
@@ -203,7 +245,6 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
  * Includes items, vendors, attachments, and comments
  */
 export const fetchPendingFinanceRequests = async (org_code) => {
-  // ✅ Fetch schema automatically
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
@@ -218,6 +259,15 @@ export const fetchPendingFinanceRequests = async (org_code) => {
       pr.created_at,
       pr.updated_at,
       pr.department_statuses,
+
+      -- ✅ PAYMENT FIELDS ADDED
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name,
+
       COALESCE(jsonb_agg(
         DISTINCT jsonb_build_object(
           'id', pi.id,
@@ -227,8 +277,15 @@ export const fetchPendingFinanceRequests = async (org_code) => {
           'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
         )
       ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
+
     FROM ${schema}.purchase_requests pr
-    LEFT JOIN ${schema}.purchase_items pi ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.pr_finance_payment_details fpd
+      ON fpd.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
     LEFT JOIN (
       SELECT iv.purchase_item_id,
         jsonb_agg(
@@ -245,6 +302,7 @@ export const fetchPendingFinanceRequests = async (org_code) => {
           )
         ) AS vendors
       FROM ${schema}.item_vendors iv
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -257,6 +315,7 @@ export const fetchPendingFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_attachments
         GROUP BY item_vendor_id
       ) att ON att.item_vendor_id = iv.id
+
       LEFT JOIN (
         SELECT item_vendor_id,
           jsonb_agg(jsonb_build_object(
@@ -268,13 +327,177 @@ export const fetchPendingFinanceRequests = async (org_code) => {
         FROM ${schema}.vendor_comments
         GROUP BY item_vendor_id
       ) com ON com.item_vendor_id = iv.id
+
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
-    WHERE pr.department_statuses @> '[{"department_status": "Feasibility PENDING"}]'
-    GROUP BY pr.id
+
+    WHERE 
+      pr.department_statuses @> '[{"department_status": "Feasibility PENDING"}]'
+
+    GROUP BY pr.id,
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name
+
     ORDER BY pr.updated_at DESC;
   `;
 
   const result = await thirdDB.query(query);
   return result.rows;
+};
+
+export const fetchPartialPaymentFinanceRequests = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT 
+      pr.id,
+      pr.department,
+      pr.requested_by,
+      pr.description,
+      pr.priority,
+      pr.required_date,
+      pr.remarks,
+      pr.created_at,
+      pr.updated_at,
+      pr.department_statuses,
+
+      -- ✅ PAYMENT FIELDS ADDED
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name,
+
+      COALESCE(jsonb_agg(
+        DISTINCT jsonb_build_object(
+          'id', pi.id,
+          'item_code', pi.item_code,
+          'item_name', pi.item_name,
+          'quantity_required', pi.quantity_required,
+          'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
+        )
+      ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
+
+    FROM ${schema}.purchase_requests pr
+
+    LEFT JOIN ${schema}.pr_finance_payment_details fpd
+      ON fpd.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN (
+      SELECT iv.purchase_item_id,
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', iv.id,
+            'vendor_id', iv.vendor_id,
+            'status', iv.status,
+            'unit_price', iv.unit_price,
+            'total_price', iv.total_price,
+            'quotation_validity_date', iv.quotation_validity_date,
+            'vendor_status_updated_by', iv.vendor_status_updated_by,
+            'attachments', COALESCE(att.attachments, '[]'::jsonb),
+            'comments', COALESCE(com.comments, '[]'::jsonb)
+          )
+        ) AS vendors
+      FROM ${schema}.item_vendors iv
+
+      LEFT JOIN (
+        SELECT item_vendor_id,
+          jsonb_agg(jsonb_build_object(
+            'id', id,
+            'file_name', file_name,
+            'file_path', file_path,
+            'uploaded_by', uploaded_by,
+            'uploaded_at', uploaded_at
+          )) AS attachments
+        FROM ${schema}.vendor_attachments
+        GROUP BY item_vendor_id
+      ) att ON att.item_vendor_id = iv.id
+
+      LEFT JOIN (
+        SELECT item_vendor_id,
+          jsonb_agg(jsonb_build_object(
+            'id', id,
+            'commented_by', commented_by,
+            'comment', comment,
+            'commented_at', commented_at
+          )) AS comments
+        FROM ${schema}.vendor_comments
+        GROUP BY item_vendor_id
+      ) com ON com.item_vendor_id = iv.id
+
+      GROUP BY iv.purchase_item_id
+    ) vendors_data ON vendors_data.purchase_item_id = pi.id
+
+    WHERE 
+      pr.department_statuses @> '[{"department_status": "Feasibility APPROVED"}]'
+      AND LOWER(TRIM(fpd.payment_stage)) = 'partial'
+      AND NOT (
+        LOWER(COALESCE(fpd.payment_stage, '')) LIKE '%final%'
+        OR COALESCE(fpd.final_completed::text, 'false') = 'true'
+      )
+
+    GROUP BY pr.id,
+      fpd.payment_stage,
+      fpd.partial_percentage,
+      fpd.final_completed,
+      fpd.finance_comment,
+      fpd.payment_proof_file_path,
+      fpd.payment_proof_file_name
+
+    ORDER BY pr.updated_at DESC;
+  `;
+
+  const result = await thirdDB.query(query);
+  return result.rows;
+};
+
+export const getFinanceRequestById = async (id, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const result = await thirdDB.query(
+    `
+    SELECT 
+      pr.*,
+
+      json_build_object(
+        'payment_stage', fpd.payment_stage,
+        'partial_percentage', fpd.partial_percentage,
+        'final_completed', fpd.final_completed,
+        'finance_comment', fpd.finance_comment,
+        'payment_proof_file_path', fpd.payment_proof_file_path,
+        'payment_proof_file_name', fpd.payment_proof_file_name
+      ) AS finance_payment_details,
+
+      json_build_object(
+        'order_placed_at', od.order_placed_at,
+        'expected_delivery_date', od.expected_delivery_date,
+        'transport_mode', od.transport_mode,
+        'in_house_type', od.in_house_type,
+        'vendor_address', od.vendor_address,
+        'po_file_path', od.po_file_path,
+        'po_file_name', od.po_file_name
+      ) AS order_details
+
+    FROM ${schema}.purchase_requests pr
+
+    LEFT JOIN ${schema}.pr_finance_payment_details fpd
+      ON pr.id = fpd.purchase_request_id
+
+    LEFT JOIN ${schema}.pr_order_details od
+      ON pr.id = od.purchase_request_id
+
+    WHERE pr.id = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0];
 };

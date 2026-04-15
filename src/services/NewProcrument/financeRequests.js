@@ -94,3 +94,25 @@ export const getPendingFinanceRequests = async (org_code) => {
     throw err;
   }
 };
+export const getPartialPaymentFinanceRequests = async (org_code) => {
+  try {
+    const prs = await financeModel.fetchPartialPaymentFinanceRequests(org_code);
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching partial payment PRs:", err);
+    throw err;
+  }
+};
+export const getFinanceRequestById = async (id, org_code) => {
+  try {
+    const pr = await financeModel.getFinanceRequestById(id, org_code);
+
+    return {
+      success: true,
+      data: pr,
+    };
+  } catch (err) {
+    console.error("❌ Error fetching PR by ID:", err);
+    throw err;
+  }
+};

@@ -89,3 +89,33 @@ export const getPendingFinanceRequests = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const getPartialPaymentFinanceRequests = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const result = await financeService.getPartialPaymentFinanceRequests(org_code);
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching partial payment PRs:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getFinanceRequestById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const org_code = req.user.org_code;
+
+    const result = await financeService.getFinanceRequestById(id, org_code);
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching PR by ID:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
