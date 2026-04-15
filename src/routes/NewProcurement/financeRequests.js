@@ -41,4 +41,15 @@ router.get(
   financeController.getPendingFinanceRequests,
 );
 
+router.get(
+  "/partial-finance-requests",
+  auth,
+  financeController.getPartialPaymentFinanceRequests
+);
+
+router.get(
+  "/finance-requests/:id",
+  auth,
+  financeController.getFinanceRequestById
+);
 export default router;
