@@ -2,14 +2,80 @@ import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 // Update department_statuses for a specific request
+// export const updateDepartmentStatuses = async (
+//   reqId,
+//   newStatuses,
+//   org_code,
+// ) => {
+//   // ✅ Fetch schema automatically
+//   const schema = await getSchemaFromOrgCode(org_code);
+
+//   const fetchQuery = `
+//     SELECT department_statuses
+//     FROM ${schema}.purchase_requests
+//     WHERE id = $1
+//   `;
+//   const result = await thirdDB.query(fetchQuery, [reqId]);
+//   const existingStatuses = result.rows[0]?.department_statuses || [];
+
+//   const statusesToAppend = newStatuses.filter((newStatus) => {
+//     return !existingStatuses.some(
+//       (existing) =>
+//         existing.department_status === newStatus.department_status &&
+//         existing.department_comment === newStatus.department_comment,
+//     );
+//   });
+
+//   const updatedStatuses = [...existingStatuses, ...statusesToAppend];
+
+//   const updateQuery = `
+//     UPDATE ${schema}.purchase_requests
+//     SET department_statuses = $1,
+//         updated_at = NOW()
+//     WHERE id = $2
+//   `;
+//   await thirdDB.query(updateQuery, [JSON.stringify(updatedStatuses), reqId]);
+// };
+
 export const updateDepartmentStatuses = async (
   reqId,
   newStatuses,
   org_code,
 ) => {
-  // ✅ Fetch schema automatically
   const schema = await getSchemaFromOrgCode(org_code);
 
+  // 🔥 Get finance + store info
+  const extraQuery = `
+    SELECT 
+      fin.payment_stage,
+      rec.quantity_status
+    FROM ${schema}.purchase_requests pr
+    LEFT JOIN ${schema}.pr_finance_payment_details fin
+      ON fin.purchase_request_id = pr.id
+    LEFT JOIN ${schema}.pr_store_receiving_details rec
+      ON rec.purchase_request_id = pr.id
+    WHERE pr.id = $1
+  `;
+
+  const extraResult = await thirdDB.query(extraQuery, [reqId]);
+
+  const paymentStage = extraResult.rows[0]?.payment_stage;
+  const quantityStatus = extraResult.rows[0]?.quantity_status;
+
+  // 🔥 CONDITION HERE
+  if (
+    paymentStage === "PARTIAL" &&
+    quantityStatus === "PARTIAL"
+  ) {
+    newStatuses = [
+      {
+        ...newStatuses[0],
+        department_status: "PR APPROVED", // 👈 force reflow
+      },
+    ];
+  }
+
+  // ===== EXISTING LOGIC =====
   const fetchQuery = `
     SELECT department_statuses
     FROM ${schema}.purchase_requests
@@ -34,7 +100,11 @@ export const updateDepartmentStatuses = async (
         updated_at = NOW()
     WHERE id = $2
   `;
-  await thirdDB.query(updateQuery, [JSON.stringify(updatedStatuses), reqId]);
+
+  await thirdDB.query(updateQuery, [
+    JSON.stringify(updatedStatuses),
+    reqId,
+  ]);
 };
 
 

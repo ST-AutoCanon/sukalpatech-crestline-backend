@@ -467,6 +467,7 @@ export const getFinanceRequestById = async (id, org_code) => {
     SELECT 
       pr.*,
 
+      -- ✅ Payment
       json_build_object(
         'payment_stage', fpd.payment_stage,
         'partial_percentage', fpd.partial_percentage,
@@ -476,6 +477,7 @@ export const getFinanceRequestById = async (id, org_code) => {
         'payment_proof_file_name', fpd.payment_proof_file_name
       ) AS finance_payment_details,
 
+      -- ✅ Order Details
       json_build_object(
         'order_placed_at', od.order_placed_at,
         'expected_delivery_date', od.expected_delivery_date,
@@ -484,7 +486,27 @@ export const getFinanceRequestById = async (id, org_code) => {
         'vendor_address', od.vendor_address,
         'po_file_path', od.po_file_path,
         'po_file_name', od.po_file_name
-      ) AS order_details
+      ) AS order_details,
+
+      -- ✅ Store Receiving Details (FIXED)
+      json_build_object(
+        'quantity_status', sr.quantity_status,
+        'partial_quantity', sr.partial_quantity,
+        'rejection_reason', sr.rejection_reason,
+        'building', sr.building,
+        'rack', sr.rack
+      ) AS order_receiving_details,
+
+      -- ✅ Items + Vendors + Comments
+      COALESCE(jsonb_agg(
+        DISTINCT jsonb_build_object(
+          'id', pi.id,
+          'item_code', pi.item_code,
+          'item_name', pi.item_name,
+          'quantity_required', pi.quantity_required,
+          'vendors', COALESCE(vendors_data.vendors, '[]'::jsonb)
+        )
+      ) FILTER (WHERE pi.id IS NOT NULL), '[]'::jsonb) AS items
 
     FROM ${schema}.purchase_requests pr
 
@@ -494,7 +516,70 @@ export const getFinanceRequestById = async (id, org_code) => {
     LEFT JOIN ${schema}.pr_order_details od
       ON pr.id = od.purchase_request_id
 
+    -- ✅ FIXED TABLE
+    LEFT JOIN ${schema}.pr_store_receiving_details sr
+      ON pr.id = sr.purchase_request_id
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN (
+      SELECT iv.purchase_item_id,
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', iv.id,
+            'vendor_id', iv.vendor_id,
+            'status', iv.status,
+            'unit_price', iv.unit_price,
+            'total_price', iv.total_price,
+            'quotation_validity_date', iv.quotation_validity_date,
+            'vendor_status_updated_by', iv.vendor_status_updated_by,
+            'attachments', COALESCE(att.attachments, '[]'::jsonb),
+            'comments', COALESCE(com.comments, '[]'::jsonb)
+          )
+        ) AS vendors
+      FROM ${schema}.item_vendors iv
+
+      LEFT JOIN (
+        SELECT item_vendor_id,
+          jsonb_agg(jsonb_build_object(
+            'id', id,
+            'file_name', file_name,
+            'file_path', file_path,
+            'uploaded_by', uploaded_by,
+            'uploaded_at', uploaded_at
+          )) AS attachments
+        FROM ${schema}.vendor_attachments
+        GROUP BY item_vendor_id
+      ) att ON att.item_vendor_id = iv.id
+
+      LEFT JOIN (
+        SELECT item_vendor_id,
+          jsonb_agg(jsonb_build_object(
+            'id', id,
+            'commented_by', commented_by,
+            'comment', comment,
+            'commented_at', commented_at
+          )) AS comments
+        FROM ${schema}.vendor_comments
+        GROUP BY item_vendor_id
+      ) com ON com.item_vendor_id = iv.id
+
+      GROUP BY iv.purchase_item_id
+    ) vendors_data ON vendors_data.purchase_item_id = pi.id
+
     WHERE pr.id = $1
+
+    GROUP BY 
+      pr.id,
+      fpd.payment_stage, fpd.partial_percentage, fpd.final_completed,
+      fpd.finance_comment, fpd.payment_proof_file_path, fpd.payment_proof_file_name,
+
+      od.order_placed_at, od.expected_delivery_date, od.transport_mode,
+      od.in_house_type, od.vendor_address, od.po_file_path, od.po_file_name,
+
+      sr.quantity_status, sr.partial_quantity, sr.rejection_reason,
+      sr.building, sr.rack
     `,
     [id]
   );
