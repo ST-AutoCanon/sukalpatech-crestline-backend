@@ -1,7 +1,7 @@
 import express from "express";
 import * as prController from "../../controllers/NewProcurement/prController.js";
 import { getVendorsController } from "../../controllers/vendor/vendor.controller.js";
-import { getAllPRsByStatusController } from "../../controllers/NewProcurement/prController.js";
+import { getAllPRsByStatusController,getPartialQuantityPRsController } from "../../controllers/NewProcurement/prController.js";
 import { upload } from "../../config/multer.js";
 import { auth } from "../../middleware/auth.js"; // ✅ Import auth middleware
 
@@ -86,5 +86,7 @@ router.get("/prs/status/:status", auth, getAllPRsByStatusController);
 
 // GET vendors (optional: protect this if vendors are user-specific)
 router.get("/vendors", auth, getVendorsController);
+router.get("/prs/partial", auth, getPartialQuantityPRsController);
+
 
 export default router;

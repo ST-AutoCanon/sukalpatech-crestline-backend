@@ -16,4 +16,10 @@ router.get(
   storeController.getFinanceApprovedStoreRequests,
 );
 
+router.get(
+  "/finance-approved-store-requests/partial",
+  auth,
+  storeController.getPartialStoreRequests
+);
+
 export default router;

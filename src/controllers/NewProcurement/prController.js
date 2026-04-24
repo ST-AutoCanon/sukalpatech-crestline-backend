@@ -356,6 +356,22 @@ export const getFinancePendingPRRequests = async (req, res) => {
   }
 };
 
+export const getPartialQuantityPRsController = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const result = await prService.getPartialQuantityPRs(org_code);
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching Partial Quantity PRs:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch Partial Quantity PRs",
+    });
+  }
+};
+
 
 export const getAllPRsByStatusController = async (req, res) => {
   try {

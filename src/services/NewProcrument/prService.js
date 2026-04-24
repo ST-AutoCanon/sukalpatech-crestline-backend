@@ -314,3 +314,13 @@ export const addVendorAttachment = async (
     throw err;
   }
 };
+
+export const getPartialQuantityPRs = async (org_code) => {
+  try {
+    const prs = await purchaseRequestModel.fetchPartialQuantityPRs(org_code);
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching Partial Quantity PRs:", err);
+    throw err;
+  }
+};
