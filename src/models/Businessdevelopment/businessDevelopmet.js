@@ -194,7 +194,7 @@ RETURNING *;
       data.approximate_budget !== undefined && data.approximate_budget !== null
         ? Number(data.approximate_budget)
         : null,
-      data.attachments || [],
+      data.attachments ? JSON.stringify(data.attachments) : null,
       safe(data.applicant_signature),
       safe(data.declaration_date),
       safe(data.place),
@@ -263,8 +263,8 @@ RETURNING *;
   updateEditableBD: async (id, payload, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);
 
-     // ❌ REMOVE created_at if present
-  delete payload.created_at;
+    // ❌ REMOVE created_at if present
+    delete payload.created_at;
 
 
     const keys = Object.keys(payload);
@@ -303,7 +303,7 @@ RETURNING *;
   updateBD: async (id, payload, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);
 
-      delete payload.created_at;
+    delete payload.created_at;
 
     const fields = [];
     const values = [];

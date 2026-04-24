@@ -109,3 +109,14 @@ export const getFinanceApprovedStoreRequests = async (org_code) => {
     throw err;
   }
 };
+
+export const getPartialStoreRequests = async (org_code) => {
+  try {
+    const prs = await storeModel.fetchPartialStoreRequests(org_code);
+
+    return { success: true, data: prs };
+  } catch (err) {
+    console.error("❌ Error fetching PARTIAL Store requests:", err);
+    throw err;
+  }
+};

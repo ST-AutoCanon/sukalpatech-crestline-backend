@@ -17,6 +17,7 @@ export const updateStoreRequest = async (req, res) => {
 };
 
 export const getFinanceApprovedStoreRequests = async (req, res) => {
+  console.log("API HIT: finance-approved-store-requests");
   try {
     // ✅ Dynamic org_code from logged-in user token
     const org_code = req.user.org_code;
@@ -25,6 +26,19 @@ export const getFinanceApprovedStoreRequests = async (req, res) => {
     res.status(200).json(result);
   } catch (err) {
     console.error("❌ Error fetching Store requests:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getPartialStoreRequests = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const result = await storeService.getPartialStoreRequests(org_code);
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Error fetching PARTIAL Store requests:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

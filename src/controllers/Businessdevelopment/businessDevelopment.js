@@ -3,13 +3,12 @@ import BDService from "../../services/Businessdevelopment/businessDevelopment.js
 // CREATE BD
 export const createBD = async (req, res) => {
   try {
+    console.log("REQ.FILES:", req.files);
+    console.log("REQ.BODY:", req.body);
 
     // ✅ Declare FIRST
     const org_code = req.user?.org_code;
 
-    console.log("FULL REQ.USER:", req.user);
-    console.log("ORG CODE RECEIVED:", org_code);
-    console.log("BODY:", req.body);
 
     if (!org_code) {
       return res.status(400).json({
@@ -21,16 +20,18 @@ export const createBD = async (req, res) => {
     const files = req.files || [];
 
     const attachments = files.map((file) => ({
-  filename: file.filename,
-  originalname: file.originalname,
-  mimetype: file.mimetype,
-  size: file.size,
-  file_path: `/uploads/attachments/${file.filename}`, // ✅ FIX
-}));
+      filename: file.filename,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      file_path: `/uploads/attachments/${file.filename}`, // ✅ FIX
+    }));
+    console.log("MAPPED ATTACHMENTS:", attachments);
     const payload = {
       ...req.body,
-      attachments: JSON.stringify(attachments),
+      attachments: attachments,
     };
+    console.log("FINAL PAYLOAD:", payload);
 
     if (!payload.applicant_name) {
       return res.status(400).json({
@@ -38,9 +39,8 @@ export const createBD = async (req, res) => {
         message: "applicant_name is required",
       });
     }
-    const data = await BDService.createBD(org_code,payload);
+    const data = await BDService.createBD(org_code, payload);
 
-    console.log("line 41",org_code);
 
     res.status(201).json({ success: true, data });
 
@@ -88,7 +88,7 @@ export const submitToFeasibility = async (req, res) => {
     const org_code = req.user.org_code;
 
     const { id } = req.params;
-    const data = await BDService.submitToFeasibility(id,org_code);
+    const data = await BDService.submitToFeasibility(id, org_code);
     res.json({ success: true, message: "Submitted to feasibility", data });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -173,6 +173,7 @@ export const updateBD = async (req, res) => {
         originalname: file.originalname,
         mimetype: file.mimetype,
         size: file.size,
+        file_path: `/uploads/attachments/${file.filename}`,
       }));
     }
 
@@ -185,7 +186,7 @@ export const updateBD = async (req, res) => {
       payload.attachments = JSON.stringify(attachments);
     }
 
-    const data = await BDService.updateBD(id, payload,org_code);
+    const data = await BDService.updateBD(id, payload, org_code);
 
     res.json({
       success: true,

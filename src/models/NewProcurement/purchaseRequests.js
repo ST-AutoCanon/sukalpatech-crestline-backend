@@ -1475,3 +1475,56 @@ WHERE EXISTS (
 
 //   return result.rows;
 // };
+
+export const fetchPartialQuantityPRs = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT 
+      pr.id,
+      pr.department,
+      pr.requested_by,
+      pr.description,
+      pr.priority,
+      pr.required_date,
+      pr.remarks,
+      pr.created_at,
+      pr.updated_at,
+      pr.department_statuses,
+
+      -- STORE DETAILS
+      jsonb_build_object(
+        'id', store.id,
+        'quantity_status', store.quantity_status,
+        'partial_quantity', store.partial_quantity,
+        'rejection_reason', store.rejection_reason,
+        'received_at', store.received_at
+      ) AS store_receiving_details,
+
+      COALESCE(jsonb_agg(
+        DISTINCT jsonb_build_object(
+          'id', pi.id,
+          'item_code', pi.item_code,
+          'item_name', pi.item_name,
+          'quantity_required', pi.quantity_required
+        )
+      ) FILTER (WHERE pi.id IS NOT NULL), '[]') AS items
+
+    FROM ${schema}.purchase_requests pr
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
+    INNER JOIN ${schema}.pr_store_receiving_details store
+      ON store.purchase_request_id = pr.id
+
+    -- ✅ MAIN FILTER
+    WHERE store.quantity_status = 'PARTIAL'
+
+    GROUP BY pr.id, store.id
+    ORDER BY pr.updated_at DESC;
+  `;
+
+  const result = await thirdDB.query(query);
+  return result.rows;
+};

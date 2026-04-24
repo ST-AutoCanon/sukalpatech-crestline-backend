@@ -43,7 +43,7 @@ export const updateDepartmentStatuses = async (
   org_code,
 ) => {
   const schema = await getSchemaFromOrgCode(org_code);
-
+  
   // 🔥 Get finance + store info
   const extraQuery = `
     SELECT 
@@ -62,18 +62,19 @@ export const updateDepartmentStatuses = async (
   const paymentStage = extraResult.rows[0]?.payment_stage;
   const quantityStatus = extraResult.rows[0]?.quantity_status;
 
+  console.log("👉 quantityStatus:", quantityStatus);
+console.log("👉 newStatuses:", newStatuses);
+
   // 🔥 CONDITION HERE
-  if (
-    paymentStage === "PARTIAL" &&
-    quantityStatus === "PARTIAL"
-  ) {
-    newStatuses = [
-      {
-        ...newStatuses[0],
-        department_status: "PR APPROVED", // 👈 force reflow
-      },
-    ];
-  }
+  if (quantityStatus === "PARTIAL") {
+  newStatuses = [
+    {
+      ...newStatuses[0],
+    department_status: newStatuses[0].department_status,
+      department_comment: newStatuses[0].department_comment,
+    },
+  ];
+}
 
   // ===== EXISTING LOGIC =====
   const fetchQuery = `
@@ -217,15 +218,12 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
             'in_house_type', ord.in_house_type,
             'vendor_address', ord.vendor_address,
             'po_file_name', ord.po_file_name,
-            'po_file_path', ord.po_file_path,
-            'created_by', ord.created_by,
-            'created_at', ord.created_at,
-            'updated_at', ord.updated_at
+            'po_file_path', ord.po_file_path
           )
         ELSE NULL
       END AS order_details,
 
-      -- FINANCE PAYMENT DETAILS
+      -- FINANCE DETAILS
       CASE 
         WHEN fin.id IS NOT NULL THEN
           jsonb_build_object(
@@ -233,15 +231,26 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
             'payment_stage', fin.payment_stage,
             'partial_percentage', fin.partial_percentage,
             'final_completed', fin.final_completed,
-            'finance_comment', fin.finance_comment,
-            'payment_proof_file_name', fin.payment_proof_file_name,
-            'payment_proof_file_path', fin.payment_proof_file_path,
-            'payment_updated_by', fin.payment_updated_by,
-            'created_at', fin.created_at,
-            'updated_at', fin.updated_at
+            'finance_comment', fin.finance_comment
           )
         ELSE NULL
       END AS finance_payment_details,
+
+      -- STORE RECEIVING DETAILS ✅
+      CASE 
+        WHEN rec.id IS NOT NULL THEN
+          jsonb_build_object(
+            'id', rec.id,
+            'quantity_status', rec.quantity_status,
+            'partial_quantity', rec.partial_quantity,
+            'rejection_reason', rec.rejection_reason,
+            'building', rec.building,
+            'rack', rec.rack,
+            'received_at', rec.received_at,
+            'received_by', rec.received_by
+          )
+        ELSE NULL
+      END AS store_receiving_details,
 
       -- ITEMS
       COALESCE(
@@ -268,6 +277,9 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
     LEFT JOIN ${schema}.pr_finance_payment_details fin
       ON fin.purchase_request_id = pr.id
 
+    LEFT JOIN ${schema}.pr_store_receiving_details rec
+      ON rec.purchase_request_id = pr.id
+
     LEFT JOIN (
       SELECT 
         iv.purchase_item_id,
@@ -277,52 +289,73 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
             'vendor_id', iv.vendor_id,
             'status', iv.status,
             'unit_price', iv.unit_price,
-            'total_price', iv.total_price,
-            'quotation_validity_date', iv.quotation_validity_date,
-            'vendor_status_updated_by', iv.vendor_status_updated_by,
-            'attachments', COALESCE(att.attachments, '[]'::jsonb),
-            'comments', COALESCE(com.comments, '[]'::jsonb)
+            'total_price', iv.total_price
           )
         ) AS vendors
       FROM ${schema}.item_vendors iv
-
-      LEFT JOIN (
-        SELECT 
-          item_vendor_id,
-          jsonb_agg(
-            jsonb_build_object(
-              'id', id,
-              'file_name', file_name,
-              'file_path', file_path,
-              'uploaded_by', uploaded_by,
-              'uploaded_at', uploaded_at
-            )
-          ) AS attachments
-        FROM ${schema}.vendor_attachments
-        GROUP BY item_vendor_id
-      ) att ON att.item_vendor_id = iv.id
-
-      LEFT JOIN (
-        SELECT 
-          item_vendor_id,
-          jsonb_agg(
-            jsonb_build_object(
-              'id', id,
-              'commented_by', commented_by,
-              'comment', comment,
-              'commented_at', commented_at
-            )
-          ) AS comments
-        FROM ${schema}.vendor_comments
-        GROUP BY item_vendor_id
-      ) com ON com.item_vendor_id = iv.id
-
       GROUP BY iv.purchase_item_id
-    ) vendors_data ON vendors_data.purchase_item_id = pi.id
+    ) vendors_data 
+      ON vendors_data.purchase_item_id = pi.id
 
-    WHERE (pr.department_statuses -> -1 ->> 'department_status') = 'PR APPROVED'
+WHERE 
+  (rec.quantity_status IS NULL OR rec.quantity_status = 'PARTIAL')
+  AND EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(pr.department_statuses) elem
+    WHERE elem->>'department_status' = 'PR APPROVED'
+  )
 
-    GROUP BY pr.id, ord.id, fin.id
+    GROUP BY pr.id, ord.id, fin.id, rec.id
+    ORDER BY pr.updated_at DESC;
+  `;
+
+  const result = await thirdDB.query(query);
+  return result.rows;
+};
+export const fetchPartialStoreRequests = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT 
+      pr.id,
+      pr.department,
+      pr.requested_by,
+      pr.description,
+      pr.priority,
+      pr.required_date,
+      pr.remarks,
+      pr.created_at,
+      pr.updated_at,
+      pr.department_statuses,
+
+      -- 🔥 include receiving details
+      rec.quantity_status,
+
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'id', pi.id,
+            'item_code', pi.item_code,
+            'item_name', pi.item_name,
+            'quantity_required', pi.quantity_required
+          )
+        ) FILTER (WHERE pi.id IS NOT NULL),
+        '[]'::jsonb
+      ) AS items
+
+    FROM ${schema}.purchase_requests pr
+
+    LEFT JOIN ${schema}.purchase_items pi
+      ON pi.purchase_request_id = pr.id
+
+    LEFT JOIN ${schema}.pr_store_receiving_details rec
+      ON rec.purchase_request_id = pr.id
+
+    WHERE 
+      (pr.department_statuses -> -1 ->> 'department_status') = 'PR APPROVED'
+      AND rec.quantity_status = 'PARTIAL'  -- ✅ MAIN FILTER
+
+    GROUP BY pr.id, rec.quantity_status
     ORDER BY pr.updated_at DESC;
   `;
 
