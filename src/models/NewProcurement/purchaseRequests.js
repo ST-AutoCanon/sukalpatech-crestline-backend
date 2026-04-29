@@ -153,7 +153,12 @@ export const fetchAllPRs = async (org_code) => {
             'partial_quantity', store.partial_quantity,
             'rejection_reason', store.rejection_reason,
             'building', store.building,
-            'rack', store.rack,
+           'rack', 
+CASE 
+  WHEN store.rack LIKE 'R%' 
+  THEN 'Rack' || SUBSTRING(store.rack FROM 2)
+  ELSE store.rack
+END,
             'received_at', store.received_at,
             'received_by', store.received_by,
             'created_at', store.created_at,

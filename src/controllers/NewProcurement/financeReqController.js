@@ -119,3 +119,19 @@ export const getFinanceRequestById = async (req, res) => {
     });
   }
 };
+
+export const getFinancePaymentHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const data = await financeService.getFinancePaymentHistory(
+      id,
+      req.user.org_code
+    );
+
+    res.json({ data });
+  } catch (err) {
+    console.error("Error fetching payment history:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

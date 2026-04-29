@@ -237,21 +237,24 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
       END AS finance_payment_details,
 
       -- STORE RECEIVING DETAILS ✅
-      CASE 
-        WHEN rec.id IS NOT NULL THEN
-          jsonb_build_object(
-            'id', rec.id,
-            'quantity_status', rec.quantity_status,
-            'partial_quantity', rec.partial_quantity,
-            'rejection_reason', rec.rejection_reason,
-            'building', rec.building,
-            'rack', rec.rack,
-            'received_at', rec.received_at,
-            'received_by', rec.received_by
-          )
-        ELSE NULL
-      END AS store_receiving_details,
-
+     CASE 
+  WHEN rec.id IS NOT NULL THEN
+    jsonb_build_object(
+      'id', rec.id,
+      'quantity_status', rec.quantity_status,
+      'partial_quantity', rec.partial_quantity,
+      'rejection_reason', rec.rejection_reason,
+      'building', rec.building,
+      'rack',
+        CASE
+          WHEN rec.rack LIKE 'R%' THEN 'Rack' || SUBSTRING(rec.rack FROM 2)
+          ELSE rec.rack
+        END,
+      'received_at', rec.received_at,
+      'received_by', rec.received_by
+    )
+  ELSE NULL
+END AS store_receiving_details,
       -- ITEMS
       COALESCE(
         jsonb_agg(
@@ -289,13 +292,48 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
             'vendor_id', iv.vendor_id,
             'status', iv.status,
             'unit_price', iv.unit_price,
-            'total_price', iv.total_price
+            'total_price', iv.total_price,
+            'quotation_validity_date', iv.quotation_validity_date,
+            'vendor_status_updated_by', iv.vendor_status_updated_by,
+            'attachments', COALESCE(att.attachments, '[]'::jsonb),
+            'comments', COALESCE(com.comments, '[]'::jsonb)
           )
         ) AS vendors
       FROM ${schema}.item_vendors iv
+
+      LEFT JOIN (
+        SELECT 
+          item_vendor_id,
+          jsonb_agg(
+            jsonb_build_object(
+              'id', id,
+              'file_name', file_name,
+              'file_path', file_path,
+              'uploaded_by', uploaded_by,
+              'uploaded_at', uploaded_at
+            )
+          ) AS attachments
+        FROM ${schema}.vendor_attachments
+        GROUP BY item_vendor_id
+      ) att ON att.item_vendor_id = iv.id
+
+      LEFT JOIN (
+        SELECT 
+          item_vendor_id,
+          jsonb_agg(
+            jsonb_build_object(
+              'id', id,
+              'commented_by', commented_by,
+              'comment', comment,
+              'commented_at', commented_at
+            )
+          ) AS comments
+        FROM ${schema}.vendor_comments
+        GROUP BY item_vendor_id
+      ) com ON com.item_vendor_id = iv.id
+
       GROUP BY iv.purchase_item_id
-    ) vendors_data 
-      ON vendors_data.purchase_item_id = pi.id
+    ) vendors_data ON vendors_data.purchase_item_id = pi.id
 
 WHERE 
   (rec.quantity_status IS NULL OR rec.quantity_status = 'PARTIAL')

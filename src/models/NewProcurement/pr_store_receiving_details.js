@@ -93,5 +93,5 @@ export const getStoreReceivingDetailsByPR = async (
   `;
 
   const result = await thirdDB.query(query, [purchase_request_id]);
-  return result.rows[0] || null;
+  return result.rows;
 };

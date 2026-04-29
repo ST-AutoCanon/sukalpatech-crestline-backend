@@ -52,4 +52,9 @@ router.get(
   auth,
   financeController.getFinanceRequestById
 );
+router.get(
+  "/finance-payment-history/:id",
+  auth,
+  financeController.getFinancePaymentHistory
+);
 export default router;

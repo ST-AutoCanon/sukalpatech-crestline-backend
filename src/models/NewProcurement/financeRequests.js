@@ -494,7 +494,12 @@ export const getFinanceRequestById = async (id, org_code) => {
         'partial_quantity', sr.partial_quantity,
         'rejection_reason', sr.rejection_reason,
         'building', sr.building,
-        'rack', sr.rack
+        'rack',
+  CASE 
+    WHEN sr.rack = 'R1' THEN 'Rack1'
+    WHEN sr.rack = 'R2' THEN 'Rack2'
+    ELSE sr.rack
+  END
       ) AS order_receiving_details,
 
       -- ✅ Items + Vendors + Comments
@@ -583,6 +588,53 @@ export const getFinanceRequestById = async (id, org_code) => {
     `,
     [id]
   );
+  // ✅ FETCH FINANCE PAYMENT HISTORY
+const historyResult = await thirdDB.query(
+  `
+  SELECT 
+    id,
+    purchase_request_id,
+    payment_stage,
+    partial_percentage,
+    final_completed,
+    finance_comment,
+    payment_proof_file_name,
+    payment_proof_file_path,
+    created_at
+    
+  FROM ${schema}.pr_finance_payment_details
+  WHERE purchase_request_id = $1
+  ORDER BY created_at DESC
+  `,
+  [id]
+);
+
+// ✅ Attach to response
+result.rows[0].finance_payment_details_history = historyResult.rows;
 
   return result.rows[0];
+};
+export const getFinancePaymentHistory = async (id, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const result = await thirdDB.query(
+    `
+    SELECT 
+      id,
+      purchase_request_id,
+      payment_stage,
+      partial_percentage,
+      final_completed,
+      finance_comment,
+      payment_proof_file_name,
+      payment_proof_file_path,
+      created_at
+    FROM ${schema}.pr_finance_payment_history   -- ✅ FIXED TABLE
+    WHERE purchase_request_id = $1
+    ORDER BY created_at DESC
+    `,
+    [id]
+  );
+
+  return result.rows;
 };
