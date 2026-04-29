@@ -84,48 +84,88 @@ export const updateFinancePaymentDetails = async (
 ) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  const query = `
-    INSERT INTO ${schema}.pr_finance_payment_details (
+  const client = await thirdDB.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    // 1️⃣ GET EXISTING
+    const existingResult = await client.query(
+      `SELECT * FROM ${schema}.pr_finance_payment_details WHERE purchase_request_id = $1`,
+      [purchase_request_id]
+    );
+    const existing = existingResult.rows[0];
+
+    // 2️⃣ BUILD VALUES (MERGE OLD + NEW)
+    const values = [
       purchase_request_id,
-      payment_stage,
-      partial_percentage,
-      final_completed,
-      payment_proof_file_name,
-      payment_proof_file_path,
-      finance_comment,
-      payment_updated_by,
-      created_at,
-      updated_at
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW())
+      data.payment_stage ?? existing?.payment_stage,
+      data.partial_percentage ?? existing?.partial_percentage,
+      data.final_completed ?? existing?.final_completed ?? false,
+      data.payment_proof_file_name ?? existing?.payment_proof_file_name,
+      data.payment_proof_file_path ?? existing?.payment_proof_file_path,
+      data.finance_comment ?? existing?.finance_comment,
+      data.payment_updated_by,
+    ];
 
-    ON CONFLICT (purchase_request_id)
-    DO UPDATE SET
-      payment_stage = EXCLUDED.payment_stage,
-      partial_percentage = EXCLUDED.partial_percentage,
-      final_completed = EXCLUDED.final_completed,
-      payment_proof_file_name = EXCLUDED.payment_proof_file_name,
-      payment_proof_file_path = EXCLUDED.payment_proof_file_path,
-      finance_comment = EXCLUDED.finance_comment,
-      payment_updated_by = EXCLUDED.payment_updated_by,
-      updated_at = NOW()
+    // 3️⃣ UPSERT
+    const upsertQuery = `
+      INSERT INTO ${schema}.pr_finance_payment_details (
+        purchase_request_id,
+        payment_stage,
+        partial_percentage,
+        final_completed,
+        payment_proof_file_name,
+        payment_proof_file_path,
+        finance_comment,
+        payment_updated_by,
+        created_at,
+        updated_at
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW())
+      ON CONFLICT (purchase_request_id)
+      DO UPDATE SET
+        payment_stage = EXCLUDED.payment_stage,
+        partial_percentage = EXCLUDED.partial_percentage,
+        final_completed = EXCLUDED.final_completed,
+        payment_proof_file_name = EXCLUDED.payment_proof_file_name,
+        payment_proof_file_path = EXCLUDED.payment_proof_file_path,
+        finance_comment = EXCLUDED.finance_comment,
+        payment_updated_by = EXCLUDED.payment_updated_by,
+        updated_at = NOW()
+      RETURNING *;
+    `;
 
-    RETURNING *;
-  `;
+    const result = await client.query(upsertQuery, values);
 
-  const values = [
-    purchase_request_id,
-    data.payment_stage || null,
-    data.partial_percentage || null,
-    data.final_completed ?? false,
-    data.payment_proof_file_name || null,
-    data.payment_proof_file_path || null,
-    data.finance_comment || null,
-    data.payment_updated_by || null,
-  ];
+    // 4️⃣ HISTORY QUERY (DECLARE BEFORE USE)
+    const historyQuery = `
+      INSERT INTO ${schema}.pr_finance_payment_history (
+        purchase_request_id,
+        payment_stage,
+        partial_percentage,
+        final_completed,
+        payment_proof_file_name,
+        payment_proof_file_path,
+        finance_comment,
+        payment_updated_by,
+        created_at
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW());
+    `;
 
-  const result = await thirdDB.query(query, values);
-  return result.rows[0];
+    // 5️⃣ INSERT HISTORY ONLY ONCE
+    await client.query(historyQuery, values);
+
+    await client.query("COMMIT");
+
+    return result.rows[0];
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 };
 /**
  * Get Finance Payment Details by PR ID

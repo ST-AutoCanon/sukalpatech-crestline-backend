@@ -61,20 +61,12 @@ export const updateStoreReq = async (reqId, userData, org_code) => {
       const existingReceiving =
         await receivingModel.getStoreReceivingDetailsByPR(reqId, org_code);
 
-      if (existingReceiving) {
-        // Update
-        await receivingModel.updateStoreReceivingDetails(
-          reqId,
-          userData.store_receiving_details,
-          org_code,
-        );
-      } else {
-        // Create
-        await receivingModel.createStoreReceivingDetails(org_code, {
-          purchase_request_id: reqId,
-          ...userData.store_receiving_details,
-        });
-      }
+     if (userData.store_receiving_details) {
+  await receivingModel.createStoreReceivingDetails(org_code, {
+    purchase_request_id: reqId,
+    ...userData.store_receiving_details,
+  });
+}
     }
 
     return {
@@ -100,7 +92,7 @@ export const getFinanceApprovedStoreRequests = async (org_code) => {
         pr.id,
         org_code,
       );
-      pr.store_receiving_details = receiving || null;
+      pr.store_receiving_details = receiving || [];
     }
 
     return { success: true, data: prs };

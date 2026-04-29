@@ -116,3 +116,6 @@ export const getFinanceRequestById = async (id, org_code) => {
     throw err;
   }
 };
+export const getFinancePaymentHistory = async (id, org_code) => {
+  return await financeModel.getFinancePaymentHistory(id, org_code);
+};
