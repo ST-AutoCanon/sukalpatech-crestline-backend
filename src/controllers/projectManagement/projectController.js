@@ -133,7 +133,7 @@
 // };
 
 import * as ProjectService from "../../services/projectManagement/projectService.js";
-
+import NotificationService from "../../services/notification/NotificationService.js";
 /* ================= CREATE PROJECT ================= */
 export const assignProject = async (req, res) => {
   try {
@@ -165,8 +165,9 @@ export const assignProject = async (req, res) => {
 export const getAllProjects = async (req, res) => {
   try {
     const org_code = req.user.org_code;
+    const { status } = req.query;   // ✅ GET STATUS
 
-    const data = await ProjectService.getAllProjectsService(org_code);
+    const data = await ProjectService.getAllProjectsService(org_code, status);
 
     res.json({
       success: true,
@@ -181,7 +182,6 @@ export const getAllProjects = async (req, res) => {
     });
   }
 };
-
 /* ================= UPDATE STATUS ================= */
 export const updateProjectStatus = async (req, res) => {
   try {
@@ -190,23 +190,83 @@ export const updateProjectStatus = async (req, res) => {
     const payload = {
       project_management_id: req.body.project_management_id,
       department: req.body.department,
-      status: req.body.status, // ENUM: PENDING | APPROVED | REJECTED
+      status: req.body.status,
       comments: req.body.comments,
       updated_by: req.body.updated_by || req.user.username,
     };
 
+    // ✅ 1. SAVE STATUS
     const data = await ProjectService.updateProjectStatusService(
       payload,
       org_code,
     );
 
+    // ✅ 2. GET WORKFLOW (dynamic)
+    const workflow = await ProjectService.getProjectWorkflowService(
+      payload.project_management_id,
+      org_code
+    );
+
+    const orderedWorkflow = workflow.sort((a, b) => a.sequence - b.sequence);
+
+    const currentIndex = orderedWorkflow.findIndex(
+      (w) => w.department === payload.department
+    );
+
+    const nextDept = orderedWorkflow[currentIndex + 1]?.department || null;
+    const prevDept = orderedWorkflow[currentIndex - 1]?.department || null;
+
+    // ✅ 3. PREPARE NOTIFICATION
+    let title = "";
+    let message = "";
+    let recipient_role = "";
+
+    if (payload.status === "APPROVED") {
+      recipient_role = nextDept;
+      title = "Project Approved";
+      message = `Project ${payload.project_management_id} moved to ${nextDept}`;
+    }
+
+    if (payload.status === "REJECTED") {
+      recipient_role = prevDept;
+      title = "Project Rejected";
+      message = `Project ${payload.project_management_id} sent back to ${prevDept}`;
+    }
+
+    if (payload.status === "PENDING") {
+      recipient_role = payload.department;
+      title = "Project Pending";
+      message = `Project ${payload.project_management_id} pending in ${payload.department}`;
+    }
+
+    // ✅ 4. SEND NOTIFICATION (IMPORTANT)
+    if (recipient_role) {
+      await NotificationService.createNotification(
+        {
+          title,
+          message,
+          type: payload.status.toLowerCase(),
+          recipient_department_id: recipient_role, 
+          related_bd_id: payload.project_management_id,
+        },
+        org_code
+      );
+    }
+
     res.json({
-      success: true,
-      message: "Status updated successfully",
-      data,
-    });
+  success: true,
+  message: "Status updated successfully",
+  data,
+  workflowInfo: {
+    current: payload.department,
+    next: nextDept,
+    previous: prevDept,
+    status: payload.status,
+  },
+});
   } catch (error) {
     console.error("❌ Update Status Error:", error);
+    
 
     res.status(400).json({
       success: false,
@@ -247,7 +307,7 @@ export const upsertProjectWorkflow = async (req, res) => {
 
     const payload = {
       project_id: req.params.project_id,
-      workflow: req.body.workflow, // [{ department, sequence }]
+      workflow: req.body.workflow,
     };
 
     const data = await ProjectService.upsertProjectWorkflowService(
@@ -256,11 +316,29 @@ export const upsertProjectWorkflow = async (req, res) => {
       org_code,
     );
 
+    // ✅ AFTER SUCCESS → send notification
+    const firstDepartment = payload.workflow
+      .sort((a, b) => a.sequence - b.sequence)[0]?.department;
+
+    if (firstDepartment) {
+      await NotificationService.createNotification(
+        {
+          title: "New Project Assigned",
+          message: `Project ${payload.project_id} assigned to ${firstDepartment}`,
+          type: "info",
+          recipient_role: firstDepartment,
+          related_bd_id: payload.project_id,
+        },
+        org_code
+      );
+    }
+
     res.json({
       success: true,
       message: "Workflow updated successfully",
       data,
     });
+
   } catch (error) {
     console.error("❌ Upsert Workflow Error:", error);
 
@@ -270,6 +348,7 @@ export const upsertProjectWorkflow = async (req, res) => {
     });
   }
 };
+
 
 export const getProjectWorkflow = async (req, res) => {
   try {
@@ -385,3 +464,4 @@ export const fetchProjectsForDepartment = async (req, res) => {
     });
   }
 };
+

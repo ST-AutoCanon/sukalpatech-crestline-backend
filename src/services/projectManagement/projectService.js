@@ -82,10 +82,9 @@ export const createProjectService = async (data, org_code) => {
 };
 
 /* ================= GET ALL ================= */
-export const getAllProjectsService = async (org_code) => {
-  return await ProjectModel.fetchAllProjects(org_code);
+export const getAllProjectsService = async (org_code, status) => {
+  return await ProjectModel.fetchAllProjects(org_code, status);
 };
-
 /* ================= UPDATE STATUS ================= */
 export const updateProjectStatusService = async (data, org_code) => {
   if (!data.project_management_id || !data.department || !data.status) {
@@ -163,4 +162,4 @@ export const fetchProjectsForDepartmentService = async (
   if (!department) throw new Error("department is required");
 
   return await ProjectModel.fetchProjectsForDepartment(department, org_code);
-};
+};   

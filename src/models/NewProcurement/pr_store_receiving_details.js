@@ -89,9 +89,11 @@ export const getStoreReceivingDetailsByPR = async (
   const query = `
     SELECT *
     FROM ${schema}.pr_store_receiving_details
-    WHERE purchase_request_id = $1;
+    WHERE purchase_request_id = $1
+    ORDER BY updated_at DESC
+    LIMIT 1;
   `;
 
   const result = await thirdDB.query(query, [purchase_request_id]);
-  return result.rows;
+  return result.rows[0] || null;
 };
