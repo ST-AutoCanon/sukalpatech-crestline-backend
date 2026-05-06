@@ -260,13 +260,32 @@ export const findProjectByBDId = async (bd_request_id, org_code) => {
 };
 
 /* ================= GET ALL PROJECTS ================= */
-export const fetchAllProjects = async (org_code) => {
+export const fetchAllProjects = async (org_code, status) => {
   const schema = await getSchemaFromOrgCode(org_code);
-  console.log("schema:", schema);
-  const { rows } = await thirdDB.query(
-    `SELECT * FROM ${schema}.project_management ORDER BY id DESC`,
-  );
 
+  let query = `
+    SELECT p.*, s.status
+    FROM ${schema}.project_management p
+
+    LEFT JOIN LATERAL (
+      SELECT status
+      FROM ${schema}.project_management_status
+      WHERE project_management_id = p.id
+      ORDER BY updated_at DESC
+      LIMIT 1
+    ) s ON true
+  `;
+
+  const values = [];
+
+  if (status && status !== "ALL") {
+    query += ` WHERE s.status = $1`;
+    values.push(status);
+  }
+
+  query += ` ORDER BY p.id DESC`;
+
+  const { rows } = await thirdDB.query(query, values);
   return rows;
 };
 
@@ -457,3 +476,4 @@ export const findProjectByBDId1 = async (bd_request_id, org_code) => {
 
   return rows[0]; // may be undefined
 };
+

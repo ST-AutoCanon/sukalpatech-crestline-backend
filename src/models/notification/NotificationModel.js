@@ -12,7 +12,7 @@ const NotificationModel = {
         message,
         type,
         recipient_id,
-        recipient_role,
+        recipient_department_id,
         related_bd_id,
         metadata,
         is_read,

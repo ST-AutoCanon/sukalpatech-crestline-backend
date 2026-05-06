@@ -7,11 +7,19 @@ const NotificationService = {
 
   createNotification: async (data, org_code) => {
   try {
-    // If you are using a queue
-    await addNotificationJob({ data, org_code });
-    // console.log("✅ Notification job queued successfully");
+    // ✅ Map role → department (IMPORTANT FIX)
+    const payload = {
+      ...data,
+      recipient_department_id: data.recipient_role || null,
+    };
+
+    // ❌ avoid confusion
+    delete payload.recipient_role;
+
+    await addNotificationJob({ data: payload, org_code });
+
     console.log(
-      `🔔 Notification queued | Org: ${org_code} | Role: ${data.recipient_role} | User: ${data.recipient_id}`,
+      `🔔 Notification queued | Org: ${org_code} | Dept: ${payload.recipient_department_id} | User: ${payload.recipient_id}`
     );
 
     return {
@@ -22,7 +30,7 @@ const NotificationService = {
     console.error("❌ Error in createNotification:", error);
     throw error;
   }
-  },
+},
   
   // GET NOTIFICATIONS
   getNotifications: async (org_code, filters) => {
