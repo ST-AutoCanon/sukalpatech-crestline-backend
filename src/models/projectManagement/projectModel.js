@@ -263,18 +263,25 @@ export const findProjectByBDId = async (bd_request_id, org_code) => {
 export const fetchAllProjects = async (org_code, status) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  let query = `
-    SELECT p.*, s.status
-    FROM ${schema}.project_management p
+ let query = `
+  SELECT 
+    p.*,
+    b.display_id AS bd_request_display_id,
+    s.status
 
-    LEFT JOIN LATERAL (
-      SELECT status
-      FROM ${schema}.project_management_status
-      WHERE project_management_id = p.id
-      ORDER BY updated_at DESC
-      LIMIT 1
-    ) s ON true
-  `;
+  FROM ${schema}.project_management p
+
+  LEFT JOIN ${schema}.business_development b
+    ON b.id = p.bd_request_id
+
+  LEFT JOIN LATERAL (
+    SELECT status
+    FROM ${schema}.project_management_status
+    WHERE project_management_id = p.id
+    ORDER BY updated_at DESC
+    LIMIT 1
+  ) s ON true
+`;
 
   const values = [];
 
@@ -389,10 +396,14 @@ export const fetchProjectsForDepartment = async (department, org_code) => {
   const { rows } = await thirdDB.query(
     `
     SELECT DISTINCT p.*, 
+     b.display_id AS bd_request_display_id,
       s_prev.status AS prev_status,
       s_curr.status AS curr_status
 
     FROM ${schema}.project_management p
+      LEFT JOIN ${schema}.business_development b
+    ON b.id = p.bd_request_id
+
 
     JOIN ${schema}.project_workflow w
       ON p.id = w.project_management_id
