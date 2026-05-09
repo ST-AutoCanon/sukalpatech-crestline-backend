@@ -52,8 +52,13 @@ export const updateDepartmentStatuses = async (
     FROM ${schema}.purchase_requests pr
     LEFT JOIN ${schema}.pr_finance_payment_details fin
       ON fin.purchase_request_id = pr.id
-    LEFT JOIN ${schema}.pr_store_receiving_details rec
-      ON rec.purchase_request_id = pr.id
+   LEFT JOIN LATERAL (
+  SELECT *
+  FROM ${schema}.pr_store_receiving_details srd
+  WHERE srd.purchase_request_id = pr.id
+  ORDER BY srd.id DESC
+  LIMIT 1
+) rec ON true
     WHERE pr.id = $1
   `;
 
@@ -280,8 +285,13 @@ END AS store_receiving_details,
     LEFT JOIN ${schema}.pr_finance_payment_details fin
       ON fin.purchase_request_id = pr.id
 
-    LEFT JOIN ${schema}.pr_store_receiving_details rec
-      ON rec.purchase_request_id = pr.id
+   LEFT JOIN LATERAL (
+  SELECT *
+  FROM ${schema}.pr_store_receiving_details srd
+  WHERE srd.purchase_request_id = pr.id
+  ORDER BY srd.id DESC
+  LIMIT 1
+) rec ON true
 
     LEFT JOIN (
       SELECT 
@@ -343,7 +353,18 @@ WHERE
     WHERE elem->>'department_status' = 'PR APPROVED'
   )
 
-    GROUP BY pr.id, ord.id, fin.id, rec.id
+GROUP BY 
+  pr.id,
+  ord.id,
+  fin.id,
+  rec.id,
+  rec.quantity_status,
+  rec.partial_quantity,
+  rec.rejection_reason,
+  rec.building,
+  rec.rack,
+  rec.received_at,
+  rec.received_by
     ORDER BY pr.updated_at DESC;
   `;
 
@@ -386,8 +407,13 @@ export const fetchPartialStoreRequests = async (org_code) => {
     LEFT JOIN ${schema}.purchase_items pi
       ON pi.purchase_request_id = pr.id
 
-    LEFT JOIN ${schema}.pr_store_receiving_details rec
-      ON rec.purchase_request_id = pr.id
+   LEFT JOIN LATERAL (
+  SELECT *
+  FROM ${schema}.pr_store_receiving_details srd
+  WHERE srd.purchase_request_id = pr.id
+  ORDER BY srd.id DESC
+  LIMIT 1
+) rec ON true
 
     WHERE 
       (pr.department_statuses -> -1 ->> 'department_status') = 'PR APPROVED'
