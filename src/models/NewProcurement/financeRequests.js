@@ -129,8 +129,11 @@ export const fetchApprovedFinanceRequests = async (org_code) => {
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
 
-    WHERE pr.department_statuses @> '[{"department_status": "Feasibility APPROVED"}]'
-    AND NOT (
+WHERE EXISTS (
+  SELECT 1
+  FROM jsonb_array_elements(pr.department_statuses) AS ds
+  WHERE LOWER(ds->>'department_status') = 'feasibility approved'
+)    AND NOT (
       LOWER(COALESCE(fpd.payment_stage, '')) LIKE '%final%'
       OR COALESCE(fpd.final_completed::text, 'false') = 'true'
     )
@@ -230,8 +233,11 @@ export const fetchRejectedFinanceRequests = async (org_code) => {
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
 
-    WHERE pr.department_statuses @> '[{"department_status": "Feasibility REJECTED"}]'
-
+WHERE EXISTS (
+  SELECT 1
+  FROM jsonb_array_elements(pr.department_statuses) AS ds
+  WHERE LOWER(ds->>'department_status') = 'feasibility rejected'
+)
     GROUP BY pr.id
     ORDER BY pr.updated_at DESC;
   `;
@@ -331,8 +337,11 @@ export const fetchPendingFinanceRequests = async (org_code) => {
       GROUP BY iv.purchase_item_id
     ) vendors_data ON vendors_data.purchase_item_id = pi.id
 
-    WHERE 
-      pr.department_statuses @> '[{"department_status": "Feasibility PENDING"}]'
+   WHERE EXISTS (
+  SELECT 1
+  FROM jsonb_array_elements(pr.department_statuses) AS ds
+  WHERE LOWER(ds->>'department_status') = 'feasibility pending'
+)
 
     GROUP BY pr.id,
       fpd.payment_stage,
