@@ -39,9 +39,9 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://flowracle.sts-test.site",
-  "https://crestline.sts-test.site",
-  "https://sjaem.sts-test.site",
+  "https://flowracle.sts-test.online",
+  "https://crestline.sts-test.online",
+  "https://sjaem.sts-test.online",
 ];
 
 const server = http.createServer(app);
@@ -51,9 +51,9 @@ const io = new Server(server, {
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://flowracle.sts-test.site",
-      "https://crestline.sts-test.site",
-      "https://sjaem.sts-test.site",
+      "https://flowracle.sts-test.online",
+      "https://crestline.sts-test.online",
+      "https://sjaem.sts-test.online",
     ],
     credentials: true,
   },
