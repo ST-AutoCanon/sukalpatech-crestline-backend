@@ -509,7 +509,7 @@ export const getFinanceRequestById = async (id, org_code) => {
     WHEN sr.rack = 'R2' THEN 'Rack2'
     ELSE sr.rack
   END
-      ) AS order_receiving_details,
+      ) AS store_receiving_details,
 
       -- ✅ Items + Vendors + Comments
       COALESCE(jsonb_agg(

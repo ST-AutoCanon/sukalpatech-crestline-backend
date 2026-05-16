@@ -31,6 +31,29 @@ export const createBD = async (req, res) => {
       ...req.body,
       attachments: attachments,
     };
+    const booleanFields = [
+  "ac",
+  "cctv",
+  "gps",
+  "fire_extinguisher",
+  "emergency_exit",
+  "led_board",
+  "usb",
+  "luggage_carrier",
+  "wheelchair_access",
+  "ais_compliant",
+  "cmvr_compliant",
+  "school_bus_safety",
+  "state_transport_norms",
+];
+
+booleanFields.forEach((field) => {
+  if (payload[field] !== undefined) {
+    payload[field] =
+      payload[field] === true ||
+      payload[field] === "true";
+  }
+});
     console.log("FINAL PAYLOAD:", payload);
 
     if (!payload.applicant_name) {
@@ -164,27 +187,62 @@ export const updateBD = async (req, res) => {
     const { id } = req.params;
     const files = req.files || [];
 
-    let attachments;
+// ✅ OLD attachments from frontend
+let existingAttachments = [];
 
-    // If new files uploaded → process them
-    if (files.length > 0) {
-      attachments = files.map((file) => ({
-        filename: file.filename,
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        file_path: `/uploads/attachments/${file.filename}`,
-      }));
-    }
+if (req.body.existingAttachments) {
+  try {
+    existingAttachments = JSON.parse(req.body.existingAttachments);
+  } catch (err) {
+    existingAttachments = [];
+  }
+}
 
-    const payload = {
-      ...req.body,
-    };
+// ✅ NEW uploaded files
+const newAttachments = files.map((file) => ({
+  filename: file.filename,
+  originalname: file.originalname,
+  mimetype: file.mimetype,
+  size: file.size,
+  file_path: `/uploads/attachments/${file.filename}`,
+}));
 
-    // Attachments only if uploaded
-    if (attachments) {
-      payload.attachments = JSON.stringify(attachments);
-    }
+// ✅ MERGE OLD + NEW
+const mergedAttachments = [
+  ...existingAttachments,
+  ...newAttachments,
+];
+
+const payload = {
+  ...req.body,
+  attachments: JSON.stringify(mergedAttachments),
+};
+const booleanFields = [
+  "ac",
+  "cctv",
+  "gps",
+  "fire_extinguisher",
+  "emergency_exit",
+  "led_board",
+  "usb",
+  "luggage_carrier",
+  "wheelchair_access",
+  "ais_compliant",
+  "cmvr_compliant",
+  "school_bus_safety",
+  "state_transport_norms",
+];
+
+booleanFields.forEach((field) => {
+  if (payload[field] !== undefined) {
+    payload[field] =
+      payload[field] === true ||
+      payload[field] === "true";
+  }
+});
+
+// ✅ REMOVE frontend-only field
+delete payload.existingAttachments;
 
     const data = await BDService.updateBD(id, payload, org_code);
 
