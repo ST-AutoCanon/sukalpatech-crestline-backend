@@ -266,7 +266,7 @@ export const fetchAllProjects = async (org_code, status) => {
  let query = `
   SELECT 
     p.*,
-    b.display_id AS bd_request_display_id,
+    b.id AS bd_request_display_id,
     s.status
 
   FROM ${schema}.project_management p
@@ -396,7 +396,7 @@ export const fetchProjectsForDepartment = async (department, org_code) => {
   const { rows } = await thirdDB.query(
     `
     SELECT DISTINCT p.*, 
-     b.display_id AS bd_request_display_id,
+     b.id AS bd_request_display_id,
       s_prev.status AS prev_status,
       s_curr.status AS curr_status
 
@@ -435,7 +435,10 @@ export const fetchProjectsForDepartment = async (department, org_code) => {
     ) s_prev ON true
 
     WHERE w.department = $1
-      AND (s_curr.status IS NULL OR s_curr.status = 'PENDING')
+    AND (
+  s_curr.status IS NULL
+  OR s_curr.status IN ('PENDING', 'IN_PROGRESS', 'REJECTED')
+)
       AND (
         w.sequence = 1 OR s_prev.status = 'APPROVED'
       )
@@ -488,3 +491,18 @@ export const findProjectByBDId1 = async (bd_request_id, org_code) => {
   return rows[0]; // may be undefined
 };
 
+/* ================= GET PROJECT BY ID ================= */
+export const findProjectById = async (project_id, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT *
+    FROM ${schema}.project_management
+    WHERE id = $1
+    LIMIT 1
+  `;
+
+  const { rows } = await thirdDB.query(query, [project_id]);
+
+  return rows[0];
+};

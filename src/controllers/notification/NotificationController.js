@@ -21,17 +21,23 @@
 
 export const getNotificationsController = async (req, res) => {
   try {
+    console.log("USER ROLE:", req.user.role);
+
     const org_code = req.user.org_code;
 
     const filters = {
       recipient_id: parseInt(req.user.id, 10),
-      recipient_role: req.user.role.toLowerCase(), // normalize role to lowercase
+      recipient_role: req.user.role.toLowerCase(),
     };
+
+    console.log("FILTERS:", filters);
 
     const notifications = await NotificationService.getNotifications(
       org_code,
       filters,
     );
+
+    console.log("NOTIFICATIONS:", notifications);
 
     res.json({ success: true, data: notifications });
   } catch (err) {
@@ -39,7 +45,6 @@ export const getNotificationsController = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
   // MARK AS READ
   export const markAsReadController = async (req, res) => {
     try {

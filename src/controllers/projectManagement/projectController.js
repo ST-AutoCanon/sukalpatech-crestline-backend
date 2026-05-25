@@ -146,6 +146,8 @@ export const assignProject = async (req, res) => {
 
     const data = await ProjectService.createProjectService(payload, org_code);
 
+    
+
     res.status(201).json({
       success: true,
       message: "Project created successfully",
@@ -217,40 +219,62 @@ export const updateProjectStatus = async (req, res) => {
     const prevDept = orderedWorkflow[currentIndex - 1]?.department || null;
 
     // ✅ 3. PREPARE NOTIFICATION
-    let title = "";
-    let message = "";
-    let recipient_role = "";
+   // ✅ GET PROJECT
+const project = await ProjectService.getProjectByIdService(
+  payload.project_management_id,
+  org_code
+);
 
-    if (payload.status === "APPROVED") {
-      recipient_role = nextDept;
-      title = "Project Approved";
-      message = `Project ${payload.project_management_id} moved to ${nextDept}`;
-    }
+// ✅ NOTIFICATION
+let title = "";
+let message = "";
+let recipient_role = "manager";
 
-    if (payload.status === "REJECTED") {
-      recipient_role = prevDept;
-      title = "Project Rejected";
-      message = `Project ${payload.project_management_id} sent back to ${prevDept}`;
-    }
+if (payload.status === "IN_PROGRESS") {
+  recipient_role = "manager";
 
-    if (payload.status === "PENDING") {
-      recipient_role = payload.department;
-      title = "Project Pending";
-      message = `Project ${payload.project_management_id} pending in ${payload.department}`;
-    }
+  title = "Project In Progress";
+
+  message =  `${data.department} started working on Project ID ${data.project_management_id}`;
+}
+
+
+if (payload.status === "APPROVED") {
+  recipient_role = "manager";
+
+  title = "Project Approved";
+
+  message = `Project ${project.bd_request_id} approved and moved to ${nextDept}`;
+}
+
+if (payload.status === "REJECTED") {
+  recipient_role = "manager";
+
+  title = "Project Rejected";
+
+  message = `Project ${project.bd_request_id} rejected in ${payload.department}`;
+}
+
+if (payload.status === "PENDING") {
+  recipient_role = "manager";
+
+  title = "Project Pending";
+
+  message = `Project ${project.bd_request_id} pending in ${payload.department}`;
+}
 
     // ✅ 4. SEND NOTIFICATION (IMPORTANT)
     if (recipient_role) {
       await NotificationService.createNotification(
-        {
-          title,
-          message,
-          type: payload.status.toLowerCase(),
-          recipient_department_id: recipient_role, 
-          related_bd_id: payload.project_management_id,
-        },
-        org_code
-      );
+  {
+    title,
+    message,
+    type: payload.status.toLowerCase(),
+    recipient_role,
+    related_bd_id: payload.project_management_id,
+  },
+  org_code
+);
     }
 
     res.json({
@@ -326,7 +350,7 @@ export const upsertProjectWorkflow = async (req, res) => {
           title: "New Project Assigned",
           message: `Project ${payload.project_id} assigned to ${firstDepartment}`,
           type: "info",
-          recipient_role: firstDepartment,
+          recipient_role: "manager",
           related_bd_id: payload.project_id,
         },
         org_code
@@ -464,4 +488,3 @@ export const fetchProjectsForDepartment = async (req, res) => {
     });
   }
 };
-
