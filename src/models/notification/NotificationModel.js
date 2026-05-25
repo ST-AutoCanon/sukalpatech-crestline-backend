@@ -12,7 +12,7 @@ const NotificationModel = {
         message,
         type,
         recipient_id,
-        recipient_department_id,
+        recipient_role,
         related_bd_id,
         metadata,
         is_read,
@@ -39,33 +39,46 @@ const NotificationModel = {
 
   // GET ALL
   findAll: async (org_code, filters = {}) => {
-    const schema = await getSchemaFromOrgCode(org_code);
+  const schema = await getSchemaFromOrgCode(org_code);
 
-    const values = [];
-    const conditions = [];
+  let query = `
+    SELECT *
+    FROM ${schema}.notifications
+    WHERE 1=1
+  `;
 
-    // user-specific
-    if (filters.recipient_id != null) {
-      values.push(filters.recipient_id);
-      conditions.push(`recipient_id = $${values.length}`);
-    }
+  const values = [];
 
-    // role-based
-    if (filters.recipient_role) {
-      values.push(filters.recipient_role);
-      conditions.push(`recipient_role = $${values.length}`);
-    }
+  // Department notifications
+  if (filters.recipient_role) {
+    values.push(filters.recipient_role);
 
-    let query = `SELECT * FROM ${schema}.notifications`;
-    if (conditions.length) {
-      query += ` WHERE (${conditions.join(" OR ")})`;
-    }
-    query += ` ORDER BY created_at DESC`;
+    query += `
+      AND LOWER(recipient_role) = LOWER($${values.length})
+    `;
+  }
 
-    const { rows } = await thirdDB.query(query, values);
+  // User-specific notifications
+  if (filters.recipient_id) {
+    values.push(filters.recipient_id);
 
-    return rows;
-  },
+    query += `
+      AND (
+        recipient_id = $${values.length}
+        OR recipient_id IS NULL
+      )
+    `;
+  }
+
+  query += `
+    ORDER BY created_at DESC
+    LIMIT 20
+  `;
+
+  const { rows } = await thirdDB.query(query, values);
+
+  return rows;
+},
   // MARK AS READ
   markAsRead: async (id, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);

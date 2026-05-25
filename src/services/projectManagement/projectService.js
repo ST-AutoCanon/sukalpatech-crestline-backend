@@ -91,7 +91,7 @@ export const updateProjectStatusService = async (data, org_code) => {
     throw new Error("Missing required fields");
   }
 
-  const allowed = ["PENDING", "APPROVED", "REJECTED"];
+  const allowed = ["IN_PROGRESS","PENDING", "APPROVED", "REJECTED"];
   if (!allowed.includes(data.status)) {
     throw new Error("Invalid status");
   }
@@ -139,6 +139,20 @@ export const getProjectByBDIdService = async (bd_request_id, org_code) => {
   return project; // can be null
 };
 
+/* ================= GET PROJECT BY ID ================= */
+export const getProjectByIdService = async (
+  project_id,
+  org_code,
+) => {
+  if (!project_id) {
+    throw new Error("project_id is required");
+  }
+
+  return await ProjectModel.findProjectById(
+    project_id,
+    org_code,
+  );
+};
 
 export const fetchNextDepartment = async (
   project_id,

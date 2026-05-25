@@ -236,7 +236,9 @@ export const fetchFinanceApprovedStoreRequests = async (org_code) => {
             'payment_stage', fin.payment_stage,
             'partial_percentage', fin.partial_percentage,
             'final_completed', fin.final_completed,
-            'finance_comment', fin.finance_comment
+            'finance_comment', fin.finance_comment,
+             'payment_proof_file_path', fin.payment_proof_file_path,
+      'payment_proof_file_name', fin.payment_proof_file_name
           )
         ELSE NULL
       END AS finance_payment_details,
