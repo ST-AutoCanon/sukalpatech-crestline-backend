@@ -26,6 +26,7 @@ import foodbusinessRoutes from "./src/routes/Businessdev/Foodbusiness.route.js";
 import goldbusinessRoutes from "./src/routes/Businessdev/Goldbusiness.route.js";
 
 import projectRoutes from "./src/routes/projectManagement/projectRoutes.js";
+import projectManagerRoutes from "./src/routes/projectManagement/ProjectManagerRoute.js";
 
 
 import http from "http";
@@ -211,6 +212,7 @@ app.use("/api/business-development/gold",goldbusinessRoutes)
 
 
 app.use("/api/project", projectRoutes);
+app.use("/api/project-manager", projectManagerRoutes);
 
 //test---->
 app.get("/", (req, res) => {

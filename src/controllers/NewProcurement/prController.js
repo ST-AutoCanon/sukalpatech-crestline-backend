@@ -287,11 +287,11 @@ export const updatePRRequest = async (req, res) => {
     const order_details = JSON.parse(req.body.order_details || "{}");
 
     // 🔹 File from multer
-    const uploadedFile = req.file ? req.file.filename : null;
+  if (req.file) {
+  order_details.po_file_name = req.file.originalname;
 
-    if (uploadedFile) {
-      order_details.order_file = uploadedFile;
-    }
+  order_details.po_file_path = `/uploads/attachments/${req.file.filename}`;
+}
 
     const result = await prService.updatePRRequest(
       reqId,
