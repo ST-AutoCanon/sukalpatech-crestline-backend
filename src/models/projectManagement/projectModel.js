@@ -263,30 +263,42 @@ export const findProjectByBDId = async (bd_request_id, org_code) => {
 export const fetchAllProjects = async (org_code, status) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
- let query = `
-  SELECT 
-    p.*,
-    b.id AS bd_request_display_id,
-    s.status
+  let query = `
+    SELECT 
+      p.*,
+      b.id AS bd_request_display_id,
+      s.status AS latest_status
 
-  FROM ${schema}.project_management p
+    FROM ${schema}.project_management p
 
-  LEFT JOIN ${schema}.business_development b
-    ON b.id = p.bd_request_id
+    LEFT JOIN ${schema}.business_development b
+      ON b.id = p.bd_request_id
 
-  LEFT JOIN LATERAL (
-    SELECT status
-    FROM ${schema}.project_management_status
-    WHERE project_management_id = p.id
-    ORDER BY updated_at DESC
-    LIMIT 1
-  ) s ON true
-`;
+    LEFT JOIN LATERAL (
+      SELECT status
+      FROM ${schema}.project_management_status
+      WHERE project_management_id = p.id
+      ORDER BY updated_at DESC
+      LIMIT 1
+    ) s ON true
+  `;
 
   const values = [];
 
+  query += `
+    WHERE EXISTS (
+      SELECT 1
+      FROM ${schema}.project_management_status ps
+      WHERE ps.project_management_id = p.id
+        AND ps.department = 'PROJECT_MANAGER'
+        AND ps.status = 'APPROVED'
+        AND ps.comments = 'Workflow created'
+    )
+  `;
+
+  // optional filter
   if (status && status !== "ALL") {
-    query += ` WHERE s.status = $1`;
+    query += ` AND s.status = $1`;
     values.push(status);
   }
 

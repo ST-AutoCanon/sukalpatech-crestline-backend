@@ -44,7 +44,7 @@ export const getAllEmployeesModel = async (orgCode) => {
    FROM ${schema}.org_users
    WHERE role = ANY($1)
    ORDER BY created_at DESC`,
-    [["employee", "manager"]],
+    [["employee", "manager","project_manager"]],
   );
 
   return result.rows;
