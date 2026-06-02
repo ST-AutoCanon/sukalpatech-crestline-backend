@@ -1,11 +1,14 @@
 import {
+  getProjectsForAssignedManagerService,
   getAssignedProjectsService,
   getProjectByIdService,
   updateProjectStatusService,
   getProjectStatusHistoryService,
   getWorkflowService,
   getNextDepartmentService,
-  createProjectService
+  createProjectService,
+  assignManagerService,
+  getPendingProjectsService
 } from "../../services/projectManagement/ProjectManagerService.js";
 
 /* ================= GET ASSIGNED PROJECTS ================= */
@@ -63,6 +66,28 @@ export const getAssignedProjects = async (
     return res.status(500).json({
       success: false,
       message: "Failed to fetch projects",
+    });
+  }
+};
+
+export const getPendingProjects = async (req, res) => {
+  try {
+    const projects =
+      await getPendingProjectsService(
+        req.user.org_code
+      );
+
+    return res.status(200).json({
+      success: true,
+      data: projects,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -212,3 +237,54 @@ export const getNextDepartmentController =
       });
     }
   };
+  //////////////PM A////////////
+
+  export const assignManager = async (req, res) => {
+  try {
+
+    const { assigned_project_manager } = req.body;
+
+    const updated =
+      await assignManagerService(
+        req.params.id,
+        assigned_project_manager,
+        req.user.org_code
+      );
+
+    return res.status(200).json({
+      success: true,
+      data: updated,
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to assign manager",
+    });
+  }
+};
+
+ export const getProjectsForAssignedManager = async (req, res) => {
+  try {
+    const role = req.user.role; // 🔥 ALWAYS USE JWT ROLE (NOT QUERY)
+
+    const projects = await getProjectsForAssignedManagerService(
+      req.user.org_code,
+      role
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: projects,
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch projects",
+    });
+  }
+};
