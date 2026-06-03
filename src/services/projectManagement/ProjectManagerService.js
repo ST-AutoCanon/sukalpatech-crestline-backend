@@ -1,11 +1,15 @@
 import {
+  fetchProjectsForAssignedManager,
   fetchProjectsForProjectManager,
   upsertProjectStatus,
   getProjectStatuses,
   getProjectWorkflow,
   getNextDepartment,
   findProjectById,
-  createProject
+  createProject,
+  assignManager,
+  getPendingProjectsModel
+  
 } from "../../models/projectManagement/ProjectManagerModal.js";
 
 export const createProjectService = async (data) => {
@@ -13,6 +17,10 @@ export const createProjectService = async (data) => {
 };
 
 /* ================= GET PROJECTS ================= */
+
+export const getPendingProjectsService = async (org_code) => {
+  return await getPendingProjectsModel(org_code);
+};
 
 export const getAssignedProjectsService = async (org_code) => {
   return await fetchProjectsForProjectManager(org_code);
@@ -65,5 +73,29 @@ export const getNextDepartmentService = async (
     project_id,
     current_department,
     org_code
+  );
+};
+
+////////PM A/////////
+
+export const assignManagerService = async (
+  projectId,
+  assigned_project_manager,
+  org_code
+) => {
+
+  return await assignManager(
+    projectId,
+    assigned_project_manager,
+    org_code
+  );
+};
+export const getProjectsForAssignedManagerService = async (
+  org_code,
+  manager_name,role
+) => {
+  return await fetchProjectsForAssignedManager(
+    org_code,
+    manager_name,role
   );
 };

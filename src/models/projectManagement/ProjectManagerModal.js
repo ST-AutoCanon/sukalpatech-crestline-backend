@@ -34,15 +34,48 @@ const values = [
   const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
+
+export const getPendingProjectsModel = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT *
+    FROM ${schema}.project_management
+    WHERE assigned_project_manager IS NULL
+    ORDER BY created_at DESC
+  `;
+
+  const result = await thirdDB.query(query);
+
+  return result.rows;
+};
 /* ================= FETCH PROJECTS ================= */
 export const fetchProjectsForProjectManager = async (org_code) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
     SELECT *
-FROM ${schema}.project_management
-WHERE current_department = 'PROJECT_MANAGER'
-ORDER BY created_at DESC
+    FROM ${schema}.project_management
+    WHERE current_department = 'PROJECT_MANAGER'
+      AND (
+        assigned_project_manager IS NULL
+        OR assigned_project_manager = ''
+      )
+    ORDER BY created_at DESC
+  `;
+
+  const result = await thirdDB.query(query);
+  return result.rows;
+};
+
+export const fetchAllProjectsForProjectManager = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT *
+    FROM ${schema}.project_management
+    WHERE current_department = 'PROJECT_MANAGER'
+    ORDER BY created_at DESC
   `;
 
   const result = await thirdDB.query(query);
@@ -152,4 +185,36 @@ export const getNextDepartment = async (
   ]);
 
   return result.rows[0] || null;
+};
+
+/////////PROJECTMANAGER A///////////
+
+export const assignManager = async (projectId, assigned_project_manager, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.project_management
+    SET assigned_project_manager = LOWER($1)
+    WHERE id = $2
+    RETURNING *
+  `;
+
+  const values = [assigned_project_manager, projectId];
+
+  const result = await thirdDB.query(query, values);
+  return result.rows[0];
+};
+export const fetchProjectsForAssignedManager = async (org_code,role) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    SELECT *
+    FROM ${schema}.project_management
+    WHERE LOWER(assigned_project_manager) = LOWER($1)
+    ORDER BY created_at DESC
+  `;
+
+  const result = await thirdDB.query(query, [role]);
+
+  return result.rows;
 };

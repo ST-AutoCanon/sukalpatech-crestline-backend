@@ -1,6 +1,7 @@
 import express from "express";
 
 import {
+  getProjectsForAssignedManager,
   assignProjectToProjectManager,
   getAssignedProjects,
   getProjectById,
@@ -8,6 +9,8 @@ import {
   getProjectStatusHistory,
   getWorkflow,
   getNextDepartmentController,
+  assignManager,
+  getPendingProjects
 } from "../../controllers/projectManagement/ProjectManagerController.js";
 
 const router = express.Router();
@@ -27,11 +30,17 @@ router.get(
 );
 
 /* ================= GET SINGLE PROJECT ================= */
+router.get(
+  "/pending-projects",
+  auth,
+  getPendingProjects
+);
 
 router.get(
   "/projects/:id",auth,
   getProjectById
 );
+
 
 /* ================= UPDATE STATUS ================= */
 
@@ -59,6 +68,20 @@ router.get(
 router.get(
   "/projects/:id/next-department",auth,
   getNextDepartmentController
+);
+
+/* ================= ASSIGN TO PM A/B/C ================= */
+
+router.put(
+  "/projects/:id/assign-manager",
+  auth,
+  assignManager
+);
+
+router.get(
+  "/assigned-projects",
+  auth,
+  getProjectsForAssignedManager
 );
 
 export default router;
