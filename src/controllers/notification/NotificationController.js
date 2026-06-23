@@ -5,6 +5,10 @@
     try {
       const org_code = req.user.org_code;
       const data = req.body;
+      console.log("Creating notification:", {
+  recipient_role: data.recipient_role,
+  recipient_id: data.recipient_id,
+});
       const notification = await NotificationService.createNotification(
         data,
         org_code,
@@ -25,11 +29,26 @@ export const getNotificationsController = async (req, res) => {
 
     const org_code = req.user.org_code;
 
-    const filters = {
-      recipient_id: parseInt(req.user.id, 10),
-      recipient_role: req.user.role.toLowerCase(),
-    };
+   const role = req.user.role.toLowerCase();
 
+const roleMap = {
+  manager: [
+    "manager",
+    "project_manager",
+    "project_manager_a",
+    "project_manager_b",
+    "project_manager_c",
+    "project_manager_d",
+    "project_manager_e",
+  ],
+};
+
+const rolesToFetch = roleMap[role] || [role];
+
+const filters = {
+  recipient_id: parseInt(req.user.id, 10),
+  recipient_roles: rolesToFetch,
+};
     console.log("FILTERS:", filters);
 
     const notifications = await NotificationService.getNotifications(

@@ -8,7 +8,15 @@ import {
   findProjectById,
   createProject,
   assignManager,
-  getPendingProjectsModel
+  getProjectManagers,
+  getPendingProjectsModel,
+  saveDepartmentTasksModel,
+  getProjectTasksModel,
+  getDashboardTaskStatsModel,
+  getWorkflowSummaryModel,
+  getDepartmentDetailsModel,
+  getAllProjectWorkflowModel,
+  getActiveProjectsModel
   
 } from "../../models/projectManagement/ProjectManagerModal.js";
 
@@ -17,6 +25,12 @@ export const createProjectService = async (data) => {
 };
 
 /* ================= GET PROJECTS ================= */
+
+export const getProjectManagersService = async (
+  org_code
+) => {
+  return await getProjectManagers(org_code);
+};
 
 export const getPendingProjectsService = async (org_code) => {
   return await getPendingProjectsModel(org_code);
@@ -81,21 +95,80 @@ export const getNextDepartmentService = async (
 export const assignManagerService = async (
   projectId,
   assigned_project_manager,
+   assigned_by,
   org_code
 ) => {
-
   return await assignManager(
     projectId,
     assigned_project_manager,
+     assigned_by,
     org_code
   );
 };
 export const getProjectsForAssignedManagerService = async (
   org_code,
-  manager_name,role
+  first_name
 ) => {
   return await fetchProjectsForAssignedManager(
     org_code,
-    manager_name,role
+    first_name
   );
+};
+
+export const saveDepartmentTasksService = async (
+  projectId,
+  tasks,
+  assignedBy,
+  org_code
+) => {
+  return await saveDepartmentTasksModel(
+    projectId,
+    tasks,
+    assignedBy,
+    org_code
+  );
+};
+
+export const getProjectTasksService = async (
+  projectId,
+  org_code
+) => {
+  return await getProjectTasksModel(
+    projectId,
+    org_code
+  );
+};
+export const getDashboardTaskStatsService = async (org_code, first_name) => {
+  return await getDashboardTaskStatsModel(org_code, first_name);
+};
+
+export const getWorkflowSummaryService = async (
+  org_code
+) => {
+  return await getWorkflowSummaryModel(org_code);
+};
+
+export const getDepartmentDetailsService = async (
+  org_code,
+  department
+) => {
+
+  return await getDepartmentDetailsModel(org_code, department);
+};
+
+
+export const getAllProjectWorkflowService = async (org_code) => {
+  try {
+    const data = await getAllProjectWorkflowModel(org_code);
+    return data;
+  } catch (error) {
+    console.error("Service Error - getAllProjectWorkflow:", error);
+    throw error;
+  }
+};
+
+export const getActiveProjectsService = async (
+  org_code
+) => {
+  return await getActiveProjectsModel(org_code);
 };

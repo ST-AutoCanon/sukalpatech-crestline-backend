@@ -10,7 +10,15 @@ import {
   getWorkflow,
   getNextDepartmentController,
   assignManager,
-  getPendingProjects
+  getProjectManagers,
+  getPendingProjects,
+  saveDepartmentTasks,
+  getProjectTasks,
+  getDashboardTaskStats,
+  getWorkflowSummary,
+  getDepartmentDetails,
+  getAllProjectWorkflowController,
+  getActiveProjects
 } from "../../controllers/projectManagement/ProjectManagerController.js";
 
 const router = express.Router();
@@ -39,6 +47,12 @@ router.get(
 router.get(
   "/projects/:id",auth,
   getProjectById
+);
+
+router.get(
+  "/project-managers",
+  auth,
+  getProjectManagers
 );
 
 
@@ -82,6 +96,48 @@ router.get(
   "/assigned-projects",
   auth,
   getProjectsForAssignedManager
+);
+
+////assigned task////
+router.post(
+  "/project/:projectId/tasks",
+  auth,
+  saveDepartmentTasks
+);
+
+router.get(
+  "/project/:projectId/tasks",
+  auth,
+  getProjectTasks
+);
+router.get(
+  "/dashboard-tasks",
+  auth,
+  getDashboardTaskStats
+);
+
+router.get(
+  "/workflow-summary",
+  auth,
+  getWorkflowSummary
+);
+
+router.get(
+  "/department-details/:department",
+  auth,
+  getDepartmentDetails
+);
+
+router.get(
+  "/all-project-workflows",
+  auth,
+  getAllProjectWorkflowController
+);
+
+router.get(
+  "/active-projects",
+  auth,
+  getActiveProjects
 );
 
 export default router;

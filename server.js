@@ -7,7 +7,7 @@ import app from "./app.js";
 
 import "./src/config/dbSecond.js"; // STS DB
 
-const PORT = process.env.PORT || 5004;
+const PORT = process.env.PORT || 5002;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
