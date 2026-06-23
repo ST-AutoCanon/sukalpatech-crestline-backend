@@ -9,6 +9,8 @@ import {
   getProjectWorkflow,
   getProjectByBDId,
   getNextDepartmentController,
+  updateAssignedToController,
+  getProjectTasks
 } from "../../controllers/projectManagement/projectController.js";
 
 import { auth } from "../../middleware/auth.js";
@@ -16,6 +18,12 @@ import { auth } from "../../middleware/auth.js";
 const router = express.Router();
 
 router.post("/assign", auth, assignProject);
+
+router.put(
+  "/:id/assign",
+  auth,
+  updateAssignedToController
+);
 router.get("/", auth, getAllProjects);
 
 router.post("/status", auth, updateProjectStatus);
@@ -37,6 +45,11 @@ router.get(
   "/projects/department/:department",
   auth,
   fetchProjectsForDepartment,
+);
+router.get(
+  "/project/:projectId/tasks",
+  auth,
+  getProjectTasks
 );
 
 

@@ -50,13 +50,14 @@ const NotificationModel = {
   const values = [];
 
   // Department notifications
-  if (filters.recipient_role) {
-    values.push(filters.recipient_role);
+  // Department notifications (MULTI ROLE FIX)
+if (filters.recipient_roles && filters.recipient_roles.length > 0) {
+  values.push(filters.recipient_roles);
 
-    query += `
-      AND LOWER(recipient_role) = LOWER($${values.length})
-    `;
-  }
+  query += `
+    AND LOWER(recipient_role) = ANY($${values.length}::text[])
+  `;
+}
 
   // User-specific notifications
   if (filters.recipient_id) {

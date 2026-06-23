@@ -5,24 +5,20 @@ const NotificationService = {
   // CREATE NOTIFICATION
 
 
-  createNotification: async (data, org_code) => {
+ createNotification: async (data, org_code) => {
   try {
-    // If you are using a queue
-    await addNotificationJob({ data, org_code });
-    // console.log("✅ Notification job queued successfully");
+    const notification = await NotificationModel.create(data, org_code);
+
     console.log(
-      `🔔 Notification queued | Org: ${org_code} | Role: ${data.recipient_role} | User: ${data.recipient_id}`,
+      `🔔 Notification saved | Org: ${org_code} | Role: ${data.recipient_role} | User: ${data.recipient_id}`,
     );
 
-    return {
-      success: true,
-      message: "Notification queued successfully",
-    };
+    return notification;
   } catch (error) {
     console.error("❌ Error in createNotification:", error);
     throw error;
   }
-  },
+},
   
   // GET NOTIFICATIONS
   getNotifications: async (org_code, filters) => {

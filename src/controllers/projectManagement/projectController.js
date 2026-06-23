@@ -140,9 +140,17 @@ export const assignProject = async (req, res) => {
     const org_code = req.user.org_code;
 
     const payload = {
-      ...req.body,
-      assigned_date: new Date(),
-    };
+  ...req.body,
+
+  assigned_date: new Date(),
+
+  // 🔥 ADD THIS (CRITICAL)
+  current_department: "PROJECT_MANAGER",
+
+  status: "ASSIGNED_TO_MANAGER",
+
+  assigned_project_manager: req.body.assigned_project_manager,
+};
 
     const data = await ProjectService.createProjectService(payload, org_code);
 
@@ -157,6 +165,35 @@ export const assignProject = async (req, res) => {
     console.error("❌ Create Project Error:", error);
 
     res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateAssignedToController = async (
+  req,
+  res
+) => {
+  try {
+    const { id } = req.params;
+    const { assigned_to } = req.body;
+
+    const project =
+      await ProjectService.updateAssignedToService(
+        id,
+        assigned_to,
+        req.user.org_code
+      );
+
+    res.status(200).json({
+      success: true,
+      data: project,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -194,6 +231,7 @@ export const updateProjectStatus = async (req, res) => {
       department: req.body.department,
       status: req.body.status,
       comments: req.body.comments,
+      completion_percentage:req.body.completion_percentage,
       updated_by: req.body.updated_by || req.user.username,
     };
 
@@ -224,6 +262,7 @@ const project = await ProjectService.getProjectByIdService(
   payload.project_management_id,
   org_code
 );
+console.log(project);
 
 // ✅ NOTIFICATION
 let title = "";
@@ -483,6 +522,25 @@ export const fetchProjectsForDepartment = async (req, res) => {
     console.error("❌ Fetch Projects Error:", error);
 
     res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getProjectTasks = async (req, res) => {
+  try {
+    const data = await ProjectService.getProjectTasksService(
+      req.params.projectId,
+      req.user.org_code
+    );
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
       success: false,
       message: error.message,
     });

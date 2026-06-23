@@ -81,6 +81,18 @@ export const createProjectService = async (data, org_code) => {
   );
 };
 
+export const updateAssignedToService = async (
+  projectId,
+  assigned_to,
+  org_code
+) => {
+  return await ProjectModel.updateAssignedTo(
+    projectId,
+    assigned_to,
+    org_code
+  );
+};
+
 /* ================= GET ALL ================= */
 export const getAllProjectsService = async (org_code, status) => {
   return await ProjectModel.fetchAllProjects(org_code, status);
@@ -177,3 +189,13 @@ export const fetchProjectsForDepartmentService = async (
 
   return await ProjectModel.fetchProjectsForDepartment(department, org_code);
 };   
+
+export const getProjectTasksService = async (
+  projectId,
+  org_code
+) => {
+  return await ProjectModel.getProjectTasks(
+    projectId,
+    org_code
+  );
+};

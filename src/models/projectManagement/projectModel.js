@@ -247,6 +247,30 @@ export const createProject = async (data, org_code) => {
   return rows[0];
 };
 
+export const updateAssignedTo = async (
+  projectId,
+  assigned_to,
+  org_code
+) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.project_management
+    SET
+      assigned_to = $1,
+      updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+  `;
+
+  const result = await thirdDB.query(query, [
+    assigned_to,
+    projectId,
+  ]);
+
+  return result.rows[0];
+};
+
 /* ================= CHECK DUPLICATE ================= */
 export const findProjectByBDId = async (bd_request_id, org_code) => {
   const schema = await getSchemaFromOrgCode(org_code);
@@ -285,16 +309,7 @@ export const fetchAllProjects = async (org_code, status) => {
 
   const values = [];
 
-  query += `
-    WHERE EXISTS (
-      SELECT 1
-      FROM ${schema}.project_management_status ps
-      WHERE ps.project_management_id = p.id
-        AND ps.department = 'PROJECT_MANAGER'
-        AND ps.status = 'APPROVED'
-        AND ps.comments = 'Workflow created'
-    )
-  `;
+  query += ` WHERE 1=1 `;
 
   // optional filter
   if (status && status !== "ALL") {
@@ -313,14 +328,15 @@ export const upsertProjectStatus = async (data, org_code) => {
   const schema = await getSchemaFromOrgCode(org_code);
   const query = `
 INSERT INTO ${schema}.project_management_status
-(project_management_id, department, status, comments, updated_by)
+(project_management_id, department, status, comments, completion_percentage, updated_by)
 
 SELECT 
   $1::int,
   $2::varchar,
   $3::project_status_enum,
   $4::text,
-  $5::varchar
+  $5::int,
+  $6::varchar
 
 WHERE NOT EXISTS (
   SELECT 1 
@@ -340,6 +356,7 @@ RETURNING *;
     data.department,
     data.status,
     data.comments,
+    data.completion_percentage,
     data.updated_by,
   ];
 
@@ -376,14 +393,36 @@ export const upsertProjectWorkflow = async (
 
   // Insert new workflow
   const insertQuery = `
-    INSERT INTO ${schema}.project_workflow (project_management_id, department, sequence)
-    VALUES ($1, $2, $3)
-  `;
+  INSERT INTO ${schema}.project_workflow
+  (
+    project_management_id,
+    task_title,
+    department,
+    assigned_to,
+    priority,
+    start_date,
+    due_date,
+    estimated_days,
+    sequence,
+    task_description
+  )
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+`;
 
   for (const wf of workflowArray) {
-    await thirdDB.query(insertQuery, [project_id, wf.department, wf.sequence]);
-  }
-
+  await thirdDB.query(insertQuery, [
+    project_id,               // $1
+    wf.task_title,            // $2
+    wf.department,            // $3
+    wf.assigned_to,           // $4
+    wf.priority,              // $5
+    wf.start_date,            // $6
+    wf.due_date,              // $7
+    wf.estimated_days || null,// $8
+    wf.sequence,              // $9
+    wf.task_description       // $10
+  ]);
+}
   return { message: "Workflow updated successfully" };
 };
 
@@ -391,11 +430,22 @@ export const getProjectWorkflow = async (project_id, org_code) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    SELECT id, project_management_id, department, sequence
-    FROM ${schema}.project_workflow
-    WHERE project_management_id = $1
-    ORDER BY sequence ASC
-  `;
+SELECT
+  id,
+  project_management_id,
+  task_title,
+  department,
+  assigned_to,
+  priority,
+  start_date,
+  due_date,
+  estimated_days,
+  sequence,
+  task_description
+FROM ${schema}.project_workflow
+WHERE project_management_id = $1
+ORDER BY sequence ASC
+`;
 
   const { rows } = await thirdDB.query(query, [project_id]);
 
@@ -451,11 +501,8 @@ export const fetchProjectsForDepartment = async (department, org_code) => {
   s_curr.status IS NULL
   OR s_curr.status IN ('PENDING', 'IN_PROGRESS', 'REJECTED')
 )
-      AND (
-        w.sequence = 1 OR s_prev.status = 'APPROVED'
-      )
 
-    ORDER BY p.id ASC
+    ORDER BY p.id DESC
     `,
     [department],
   );
@@ -517,4 +564,22 @@ export const findProjectById = async (project_id, org_code) => {
   const { rows } = await thirdDB.query(query, [project_id]);
 
   return rows[0];
+};
+
+export const getProjectTasks = async (
+  projectId,
+  org_code
+) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const result = await thirdDB.query(
+    `
+    SELECT *
+    FROM ${schema}.project_workflow
+     WHERE project_management_id = $1
+    `,
+    [projectId]
+  );
+
+  return result.rows;
 };
