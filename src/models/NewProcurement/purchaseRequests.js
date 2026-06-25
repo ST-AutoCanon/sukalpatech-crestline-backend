@@ -117,7 +117,7 @@ export const fetchAllPRs = async (org_code) => {
       pr.requested_by,
       pr.description,
       pr.priority,
-      pr.required_date,
+      pr.required_date::text AS required_date,
       pr.remarks,
       pr.created_at,
       pr.updated_at,
