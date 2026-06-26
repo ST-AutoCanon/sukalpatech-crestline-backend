@@ -385,6 +385,7 @@ export const getAllProjectWorkflowModel = async (org_code) => {
   const result = await thirdDB.query(`
     SELECT
       pw.project_management_id,
+      pm.bd_request_id,
       pw.task_title,
       pw.task_description,
       pw.department,
@@ -398,7 +399,9 @@ export const getAllProjectWorkflowModel = async (org_code) => {
       ps.status,
       ps.completion_percentage,
       ps.updated_at
-    FROM ${schema}.project_workflow pw
+   FROM ${schema}.project_workflow pw
+INNER JOIN ${schema}.project_management pm
+ON pm.id = pw.project_management_id
     LEFT JOIN LATERAL (
       SELECT *
       FROM ${schema}.project_management_status ps
@@ -438,6 +441,25 @@ export const getActiveProjectsModel = async (org_code) => {
 
     ORDER BY pw.due_date ASC
   `);
+
+  return result.rows;
+};
+
+// services/userService.js or ProjectManagerService.js
+
+export const getManagersModal = async (org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const result = await thirdDB.query(
+    `
+    SELECT id, first_name, last_name, role
+    FROM ${schema}.org_users
+    WHERE role='manager'
+      AND org_code = $1
+    ORDER BY first_name ASC
+    `,
+    [org_code]
+  );
 
   return result.rows;
 };

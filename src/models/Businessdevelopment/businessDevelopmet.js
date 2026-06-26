@@ -194,6 +194,7 @@ RETURNING *;
       safe(data.place),
     ];
 
+    console.log("DB INSERT DATE =", values[4]);
     const { rows } = await thirdDB.query(query, values);
     return rows[0];
   },

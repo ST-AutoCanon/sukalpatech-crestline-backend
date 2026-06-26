@@ -62,6 +62,8 @@ booleanFields.forEach((field) => {
         message: "applicant_name is required",
       });
     }
+    console.log("REQ BODY DATE =", req.body.required_date);
+console.log("PAYLOAD DATE =", payload.required_date);
     const data = await BDService.createBD(org_code, payload);
 
 
