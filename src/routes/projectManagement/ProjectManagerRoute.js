@@ -18,7 +18,8 @@ import {
   getWorkflowSummary,
   getDepartmentDetails,
   getAllProjectWorkflowController,
-  getActiveProjects
+  getActiveProjects,
+  getManagers
 } from "../../controllers/projectManagement/ProjectManagerController.js";
 
 const router = express.Router();
@@ -139,5 +140,7 @@ router.get(
   auth,
   getActiveProjects
 );
+
+router.get("/managers", auth,getManagers);
 
 export default router;

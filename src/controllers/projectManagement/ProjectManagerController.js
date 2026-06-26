@@ -16,7 +16,8 @@ import {
   getWorkflowSummaryService,
   getDepartmentDetailsService,
   getAllProjectWorkflowService,
-  getActiveProjectsService
+  getActiveProjectsService,
+  getManagersService
 } from "../../services/projectManagement/ProjectManagerService.js";
 import NotificationService from "../../services/notification/NotificationService.js";
 
@@ -564,6 +565,28 @@ export const getActiveProjects = async (req, res) => {
       success: false,
       message: "Failed to fetch active projects",
       error: error.message,
+    });
+  }
+};
+
+
+export const getManagers = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const managers = await getManagersService(org_code);
+
+    return res.status(200).json({
+      success: true,
+      data: managers,
+    });
+
+  } catch (error) {
+    console.error("getManagers error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch managers",
     });
   }
 };

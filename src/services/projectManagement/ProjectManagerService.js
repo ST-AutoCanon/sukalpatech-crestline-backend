@@ -16,7 +16,8 @@ import {
   getWorkflowSummaryModel,
   getDepartmentDetailsModel,
   getAllProjectWorkflowModel,
-  getActiveProjectsModel
+  getActiveProjectsModel,
+  getManagersModal
   
 } from "../../models/projectManagement/ProjectManagerModal.js";
 
@@ -171,4 +172,8 @@ export const getActiveProjectsService = async (
   org_code
 ) => {
   return await getActiveProjectsModel(org_code);
+};
+
+export const getManagersService = async (org_code) => {
+  return await getManagersModal(org_code);
 };
