@@ -463,3 +463,46 @@ export const getManagersModal = async (org_code) => {
 
   return result.rows;
 };
+
+export const updateWorkflowTaskModel = async (
+  projectId,
+  taskId,
+  data,
+  updatedBy,
+  org_code
+) => {
+
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+    UPDATE ${schema}.project_workflow
+    SET
+      task_title = $1,
+      department = $2,
+      assigned_to = $3,
+      priority = $4,
+      start_date = $5,
+      due_date = $6,
+      estimated_days = $7,
+      task_description = $8
+    WHERE id = $9
+      AND project_management_id = $10
+    RETURNING *;
+  `;
+
+  const values = [
+  data.task_title,
+  data.department,
+  data.assigned_to,
+  data.priority,
+  data.start_date || null,
+  data.due_date || null,
+  data.estimated_days || null,
+  data.task_description,
+  taskId,
+  projectId,
+];
+  const result = await thirdDB.query(query, values);
+
+  return result.rows[0];
+};
