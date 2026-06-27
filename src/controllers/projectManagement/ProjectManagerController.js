@@ -17,7 +17,8 @@ import {
   getDepartmentDetailsService,
   getAllProjectWorkflowService,
   getActiveProjectsService,
-  getManagersService
+  getManagersService,
+  updateWorkflowTaskService
 } from "../../services/projectManagement/ProjectManagerService.js";
 import NotificationService from "../../services/notification/NotificationService.js";
 
@@ -32,10 +33,12 @@ export const assignProjectToProjectManager = async (req, res) => {
       current_department
     } = req.body;
 
+    const safeRequiredDate = req.body.required_date?.split("T")[0];
+
    const created = await createProjectService({
   bd_request_id,
   description,
-  required_date,
+  required_date: safeRequiredDate,
   assigned_date: new Date(),
   assigned_by: req.user.first_name, // ✅ save assigned by
   assigned_project_manager: req.body.assigned_project_manager, // ✅ ADD THIS
@@ -587,6 +590,33 @@ export const getManagers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch managers",
+    });
+  }
+};
+export const updateWorkflowTask = async (req, res) => {
+  try {
+    const { projectId, taskId } = req.params;
+
+    const updated = await updateWorkflowTaskService(
+      projectId,
+      taskId,
+      req.body,
+      req.user.first_name,
+      req.user.org_code
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Workflow task updated successfully",
+      data: updated,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
