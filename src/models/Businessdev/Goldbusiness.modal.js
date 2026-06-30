@@ -1,6 +1,6 @@
 // models/Businessdev/Goldbusiness.modal.js
 
-import pool from "../../config/dborg.js";
+import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 /* ---------------- CREATE ---------------- */
@@ -8,7 +8,7 @@ export const insertGoldBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    INSERT INTO ${schema}.business_dev_2 (
+    INSERT INTO ${schema}.business_dev_gold (
       org_code,
       industry_type,
       company_name,
@@ -16,9 +16,8 @@ export const insertGoldBusiness = async (org_code, data) => {
       phone,
       email,
 
-      business_type,
+      
       gold_type,
-      product_type,
       purity_required,
       expected_quantity,
       estimated_budget,
@@ -26,7 +25,6 @@ export const insertGoldBusiness = async (org_code, data) => {
       making_charges,
       hallmark_required,
       design_type,
-      delivery_location,
       timeline,
       business_status,
       comment,
@@ -35,7 +33,7 @@ export const insertGoldBusiness = async (org_code, data) => {
     VALUES (
       $1,$2,$3,$4,$5,$6,
       $7,$8,$9,$10,$11,$12,
-      $13,$14,$15,$16,$17,$18,$19,$20,$21
+      $13,$14,$15,$16,$17,$18
     )
     RETURNING *;
   `;
@@ -48,9 +46,8 @@ export const insertGoldBusiness = async (org_code, data) => {
     data.phone,
     data.email,
 
-    data.business_type,
+   
     data.gold_type,
-    data.product_type,
     data.purity_required,
     data.expected_quantity,
     data.estimated_budget,
@@ -58,7 +55,6 @@ export const insertGoldBusiness = async (org_code, data) => {
     data.making_charges,
     data.hallmark_required,
     data.design_type,
-    data.delivery_location,
     data.timeline,
     data.business_status,
     data.comment,
@@ -66,7 +62,7 @@ export const insertGoldBusiness = async (org_code, data) => {
     data.comments
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -75,7 +71,7 @@ export const getGoldBusinesses = async (org_code, statusFilter) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   let query = `
-    SELECT * FROM ${schema}.business_dev_2
+    SELECT * FROM ${schema}.business_dev_gold
     WHERE industry_type = 'gold_business'
   `;
   const values = [];
@@ -102,7 +98,7 @@ export const getGoldBusinesses = async (org_code, statusFilter) => {
 
   query += ` ORDER BY created_at DESC;`;
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows;
 };
 
@@ -111,7 +107,7 @@ export const updateGoldBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_gold
     SET
       company_name = $1,
       contact_person = $2,
@@ -171,7 +167,7 @@ export const updateGoldBusiness = async (org_code, id, data) => {
   id                         // ✅ 22
 ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -181,12 +177,12 @@ export const deleteGoldBusiness = async (org_code, id) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    DELETE FROM ${schema}.business_dev_2
+    DELETE FROM ${schema}.business_dev_gold
     WHERE id = $1 AND industry_type = 'gold_business'
     RETURNING *;
   `;
 
-  const result = await pool.query(query, [id]);
+  const result = await thirdDB.query(query, [id]);
   return result.rows[0];
 };
 
@@ -196,7 +192,7 @@ export const reviewGoldBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_gold
     SET 
       feasibility_status = $1,
       comments = $2
@@ -210,7 +206,7 @@ export const reviewGoldBusiness = async (org_code, data) => {
     data.id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -221,14 +217,14 @@ export const getGoldFeasibilityReviewed = async (org_code) => {
 
   const query = `
     SELECT *
-    FROM ${schema}.business_dev_2
+    FROM ${schema}.business_dev_gold
     WHERE industry_type = 'gold_business'
       AND feasibility_status IS NOT NULL
       AND feasibility_status <> ''
     ORDER BY created_at DESC;
   `;
 
-  const result = await pool.query(query);
+  const result = await thirdDB.query(query);
   return result.rows;
 };
 
@@ -238,7 +234,7 @@ export const reviewFinalGoldBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_gold
     SET 
       final_status = $1,
       final_comment = $2
@@ -252,7 +248,7 @@ export const reviewFinalGoldBusiness = async (org_code, data) => {
     data.id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 

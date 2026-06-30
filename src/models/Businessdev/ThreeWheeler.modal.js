@@ -1,12 +1,12 @@
 // models/businessdev3/threeWheelerModal.js
-import pool from "../../config/dborg.js";
+import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 export const insertThreeWheelerBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-   INSERT INTO ${schema}.business_dev_2 (
+   INSERT INTO ${schema}.business_dev_3w (
       org_code,
       industry_type,
       company_name,
@@ -17,12 +17,13 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
       expected_quantity,
       estimated_budget,
       vehicle_model,
-      motor_capacity,
-      battery_type,
+      engine_capacity,
+      fuel_type,
+      load_capacity,
       business_status,
       comment
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
     RETURNING *;
   `;
 
@@ -37,14 +38,15 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
     data.expected_quantity,
     data.estimated_budget,
     data.vehicle_model,
-    data.motor_capacity,
-    data.battery_type,
+    data.engine_capacity,
+    data.fuel_type,
+    data.load_capacity,
     data.business_status,
     data.comment
    
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -52,7 +54,7 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
 export const getThreeWheelerBusinesses = async (org_code, statusFilter) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  let query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = '3W'`;
+  let query = `SELECT * FROM ${schema}.business_dev_3w WHERE industry_type = '3W'`;
   const values = [];
 
   if (statusFilter && statusFilter !== "ALL") {
@@ -72,7 +74,7 @@ export const getThreeWheelerBusinesses = async (org_code, statusFilter) => {
 
   query += ` ORDER BY created_at DESC;`;
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows;
 };
 
@@ -81,7 +83,7 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_3w
     SET 
       company_name = $1,
       contact_person = $2,
@@ -99,7 +101,6 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
       comments = $14,
       final_status = $15,
       final_comment = $16,
-      updated_at = NOW()
     WHERE id = $17
       AND industry_type = '3W'
     RETURNING *;
@@ -125,7 +126,7 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
     id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -134,12 +135,12 @@ export const deleteThreeWheelerBusiness = async (org_code, id) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    DELETE FROM ${schema}.business_dev_2
+    DELETE FROM ${schema}.business_dev_3w
     WHERE id = $1 AND industry_type = '3W'
     RETURNING *;
   `;
 
-  const result = await pool.query(query, [id]);
+  const result = await thirdDB.query(query, [id]);
   return result.rows[0];
 };
 
@@ -148,7 +149,7 @@ export const reviewThreeWheelerBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_3w
     SET 
       feasibility_status = $1,
       comments = $2
@@ -162,7 +163,7 @@ export const reviewThreeWheelerBusiness = async (org_code, data) => {
     data.id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
 
   return result.rows[0];
 };
@@ -188,16 +189,16 @@ export const getThreeWheelerFeasibilityReviewed = async (org_code) => {
       comment,
       feasibility_status,
       comments,
-      created_at,
-      updated_at
-    FROM ${schema}.business_dev_2
+      created_at
+
+    FROM ${schema}.business_dev_3w
     WHERE industry_type = '3W'
       AND feasibility_status IS NOT NULL
       AND feasibility_status <> ''
     ORDER BY created_at DESC
   `;
 
-  const result = await pool.query(query);
+  const result = await thirdDB.query(query);
   return result.rows;
 };
 
@@ -206,11 +207,10 @@ export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
     const schema = await getSchemaFromOrgCode(org_code);
 
     const query = `
-      UPDATE ${schema}.business_dev_2
+      UPDATE ${schema}.business_dev_3w
       SET
         final_status = $1,
         final_comment = $2,
-        updated_at = NOW()
       WHERE id = $3
         AND industry_type = '3W'
       RETURNING *;
@@ -222,7 +222,7 @@ export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
       payload.id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await thirdDB.query(query, values);
 
     return {
       success: true,

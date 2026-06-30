@@ -1,28 +1,36 @@
-import pool from "../../config/dborg.js";
+import thirdDB from "../../config/dborg.js";
 import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 // CREATE
 export const insertFoodBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  const query = `
-    INSERT INTO ${schema}.business_dev_2 (
-      org_code,
-      industry_type,
-      company_name,
-      contact_person,
-      phone,
-      email,
-      project_title,
-      expected_quantity,
-      estimated_budget,
-      packaging_type,
-      business_status,
-      comment
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-    RETURNING *;
-  `;
+ const query = `
+INSERT INTO ${schema}.business_dev_food (
+    org_code,
+    industry_type,
+    company_name,
+    contact_person,
+    phone,
+    email,
+    project_title,
+    expected_quantity,
+    estimated_budget,
+    product_category,
+    product_name,
+    packaging_type,
+    shelf_life,
+    storage_condition,
+    business_status,
+    comment,
+    feasibility_status,
+    comments
+)
+VALUES (
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18
+)
+RETURNING *;
+`;
 
   const values = [
     org_code,
@@ -34,12 +42,18 @@ export const insertFoodBusiness = async (org_code, data) => {
     data.project_title,
     data.expected_quantity,
     data.estimated_budget,
+    data.product_category,
+    data.product_name,
     data.packaging_type,
+    data.shelf_life,
+    data.storage_condition,
     data.business_status,
-    data.comment
-  ];
+    data.comment,
+    data.feasibility_status,
+    data.comments
+];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0]; // ✅ only return the inserted row
 };
 
@@ -47,7 +61,7 @@ export const insertFoodBusiness = async (org_code, data) => {
 export const getAllFoodBusinesses = async (org_code, status) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
-  let query = `SELECT * FROM ${schema}.business_dev_2 WHERE industry_type = 'FOOD'`;
+  let query = `SELECT * FROM ${schema}.business_dev_food WHERE industry_type = 'FOOD'`;
   const values = [];
 if (status && status !== "ALL") {
   if (status === "PENDING") {
@@ -63,7 +77,7 @@ if (status && status !== "ALL") {
 }
   query += ` ORDER BY created_at DESC`;
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows;
 };
 
@@ -71,7 +85,7 @@ if (status && status !== "ALL") {
 export const updateFoodBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
   const query = `
-  UPDATE ${schema}.business_dev_2
+  UPDATE ${schema}.business_dev_food
   SET 
     company_name = $1,
     contact_person = $2,
@@ -86,8 +100,7 @@ export const updateFoodBusiness = async (org_code, id, data) => {
     feasibility_status = $11,
     comments = $12,
     final_status = $13,
-    final_comment = $14,
-    updated_at = NOW()
+    final_comment = $14
   WHERE id = $15 
     AND industry_type = 'FOOD'
   RETURNING *;
@@ -109,15 +122,15 @@ export const updateFoodBusiness = async (org_code, id, data) => {
   data.final_comment || null,
   id,
 ];
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
 // DELETE
 export const deleteFoodBusiness = async (org_code, id) => {
   const schema = await getSchemaFromOrgCode(org_code);
-  const query = `DELETE FROM ${schema}.business_dev_2 WHERE id=$1 AND industry_type='Food' RETURNING *;`;
-  const result = await pool.query(query, [id]);
+  const query = `DELETE FROM ${schema}.business_dev_food WHERE id=$1 AND industry_type='Food' RETURNING *;`;
+  const result = await thirdDB.query(query, [id]);
   return result.rows[0];
 };
 
@@ -125,7 +138,7 @@ export const reviewFoodBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_food
     SET 
       feasibility_status = $1,
       comments = $2
@@ -139,7 +152,7 @@ export const reviewFoodBusiness = async (org_code, data) => {
     data.id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
 
@@ -148,25 +161,24 @@ export const getFoodBusinessFeasibilityReviewed = async (org_code) => {
 
   const query = `
     SELECT *
-    FROM ${schema}.business_dev_2
+    FROM ${schema}.business_dev_food
     WHERE industry_type = 'FOOD'
       AND feasibility_status IS NOT NULL
       AND feasibility_status <> ''
     ORDER BY created_at DESC;
   `;
 
-  const result = await pool.query(query);
+  const result = await thirdDB.query(query);
   return result.rows;
 };
 export const reviewFinalFoodBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    UPDATE ${schema}.business_dev_2
+    UPDATE ${schema}.business_dev_food
     SET 
   final_status = $1,
   final_comment = $2,
-  updated_at = NOW()
     WHERE id = $3 AND industry_type = 'FOOD'
     RETURNING *;
   `;
@@ -177,7 +189,7 @@ export const reviewFinalFoodBusiness = async (org_code, data) => {
     data.id
   ];
 
-  const result = await pool.query(query, values);
+  const result = await thirdDB.query(query, values);
 
   return {
     success: true,
