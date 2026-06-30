@@ -8,12 +8,10 @@ export const createTwoWheelerBusiness = async (org_code, payload) => {
 
 export const fetchTwoWheelerBusinesses = async (org_code, statusFilter) => {
   try {
-    const businesses = await getTwoWheelerBusinesses(org_code, statusFilter);
-
-    return { success: true, data: businesses };
-
+    return await getTwoWheelerBusinesses(org_code, statusFilter);
   } catch (error) {
-    return { success: false, message: "Failed to fetch" };
+    console.error(error);
+    throw error; // IMPORTANT
   }
 };
 

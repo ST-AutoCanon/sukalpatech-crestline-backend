@@ -28,21 +28,21 @@ export const createTwoWheelerBusiness = async (req, res) => {
 export const getAllTwoWheelerBusinesses = async (req, res) => {
   try {
     const org_code = req.user.org_code;
-    const status = req.query.status; // "ALL", "PENDING", "REJECTED", "COMPLETED"
+    const status = req.query.status;
 
     const data = await TwoWheelerService.fetchTwoWheelerBusinesses(org_code, status);
 
-    res.status(200).json({
+    return res.json({
       success: true,
-      data
+      data: data || []
     });
 
   } catch (error) {
-    console.error("Fetch 2W businesses error:", error);
+    console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch 2W businesses"
+      message: error.message
     });
   }
 };
