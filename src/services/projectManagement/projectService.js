@@ -199,3 +199,30 @@ export const getProjectTasksService = async (
     org_code
   );
 };
+
+export const getEmployeesByDepartment = async (
+  department,
+  org_code
+) => {
+  return await ProjectModel.getEmployeesByDepartment(
+    department,
+    org_code
+  );
+};
+
+export const assignEmployeeTasksService = async (
+  data,
+  org_code
+) => {
+  return await ProjectModel.assignEmployeeTasks(
+    data,
+    org_code
+  );
+};
+
+export const fetchEmployeeTasks = async (projectId, org_code) => {
+  return await ProjectModel.getEmployeeTasksByProject(
+    projectId,
+    org_code
+  );
+};

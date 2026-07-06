@@ -10,7 +10,10 @@ import {
   getProjectByBDId,
   getNextDepartmentController,
   updateAssignedToController,
-  getProjectTasks
+  getProjectTasks,
+  getEmployeesByDepartment,
+  assignEmployeeTasks,
+  getEmployeeTasks
 } from "../../controllers/projectManagement/projectController.js";
 
 import { auth } from "../../middleware/auth.js";
@@ -52,6 +55,19 @@ router.get(
   getProjectTasks
 );
 
+router.get(
+  "/employees/:department",auth,
+  getEmployeesByDepartment
+);
+router.post(
+  "/employee-task",
+  auth,
+  assignEmployeeTasks
+);
 
-
+router.get(
+  "/project/:projectId/employee-tasks",
+  auth,
+  getEmployeeTasks
+);
 export default router;

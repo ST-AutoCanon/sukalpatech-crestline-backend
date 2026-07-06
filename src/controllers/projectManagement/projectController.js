@@ -546,3 +546,75 @@ export const getProjectTasks = async (req, res) => {
     });
   }
 };
+
+export const getEmployeesByDepartment = async (req, res) => {
+  try {
+    const { department } = req.params;
+    const org_code = req.user.org_code;
+
+    console.log("ORG CODE:", org_code); // <-- add this
+
+    const employees = await ProjectService.getEmployeesByDepartment(
+      department,
+      org_code
+    );
+
+    res.json({
+      success: true,
+      data: employees,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const assignEmployeeTasks = async (req, res) => {
+  try {
+    const org_code = req.user.org_code;
+
+    const result = await ProjectService.assignEmployeeTasksService(
+      req.body,
+      org_code
+    );
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+
+export const getEmployeeTasks = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const org_code = req.user.org_code;
+
+    const tasks = await ProjectService.fetchEmployeeTasks(
+      projectId,
+      org_code
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: tasks,
+    });
+  } catch (error) {
+    console.error("Get Employee Tasks Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch employee tasks",
+    });
+  }
+};

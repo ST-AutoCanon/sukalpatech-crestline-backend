@@ -4,12 +4,17 @@ import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 
 /* ================= CREATE PROJECT ================= */
 export const createProject = async (data) => {
+  console.log("Required Date received:", data.required_date);
+console.log("Type:", typeof data.required_date);
   const schema = await getSchemaFromOrgCode(data.org_code);
 
   const query = `
     INSERT INTO ${schema}.project_management
     (
       bd_request_id,
+      industry_type,
+      company_name,
+      contact_person,
       description,
       required_date,
       assigned_date,
@@ -20,18 +25,21 @@ export const createProject = async (data) => {
       created_at,
       updated_at
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW())
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())
     RETURNING *
   `;
 
 const values = [
   data.bd_request_id,
+  data.industry_type,
+  data.company_name,
+  data.contact_person,
   data.description,
   data.required_date,
   data.assigned_date,
   data.assigned_by,
   data.assigned_to,
-    data.assigned_project_manager,
+  data.assigned_project_manager,
   data.current_department,
 ];
 
@@ -506,3 +514,56 @@ export const updateWorkflowTaskModel = async (
 
   return result.rows[0];
 };
+
+export const getProjectRequestDetails = async (
+    projectId,
+    org_code
+) => {
+
+   const schema = await getSchemaFromOrgCode(org_code);
+
+   const project = await thirdDB.query(
+      `SELECT bd_request_id, industry_type
+       FROM ${schema}.project_management
+       WHERE id=$1`,
+      [projectId]
+   );
+
+   if(project.rows.length===0) return null;
+
+   const { bd_request_id, industry_type } = project.rows[0];
+
+   let table="";
+   console.log("Industry Type:", industry_type);
+
+   switch(industry_type){
+
+      case "2W":
+         table="business_dev_2w";
+         break;
+
+      case "3W":
+         table="business_dev_3w";
+         break;
+
+      case "FOOD":
+         table="business_dev_food";
+         break;
+
+      case "gold_business":
+         table="business_dev_gold";
+         break;
+
+      default:
+         table="business_development";
+   }
+
+   const details = await thirdDB.query(
+      `SELECT *
+       FROM ${schema}.${table}
+       WHERE id=$1`,
+      [bd_request_id]
+   );
+
+   return details.rows[0];
+}

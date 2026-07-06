@@ -2,7 +2,11 @@ import dotenv from "dotenv";
 dotenv.config(); // must be first
 
 import pg from "pg";
-const { Pool } = pg;
+const { Pool, types } = pg;
+
+// ✅ Return PostgreSQL DATE as string instead of JS Date
+types.setTypeParser(1082, (value) => value);
+
 
 const secondDB = new Pool({
   host: process.env.DB4_HOST,

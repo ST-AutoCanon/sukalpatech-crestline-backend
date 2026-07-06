@@ -18,7 +18,8 @@ import {
   getAllProjectWorkflowModel,
   getActiveProjectsModel,
   getManagersModal,
-  updateWorkflowTaskModel
+  updateWorkflowTaskModel,
+  getProjectRequestDetails
   
 } from "../../models/projectManagement/ProjectManagerModal.js";
 
@@ -196,3 +197,10 @@ export const updateWorkflowTaskService = async (
   );
 
 };
+
+export const getProjectRequestDetailsService = async (
+   projectId,
+   org_code
+)=>{
+   return await getProjectRequestDetails(projectId,org_code);
+}

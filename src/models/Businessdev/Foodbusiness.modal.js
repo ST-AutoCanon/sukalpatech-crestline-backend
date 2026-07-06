@@ -178,7 +178,7 @@ export const reviewFinalFoodBusiness = async (org_code, data) => {
     UPDATE ${schema}.business_dev_food
     SET 
   final_status = $1,
-  final_comment = $2,
+  final_comment = $2
     WHERE id = $3 AND industry_type = 'FOOD'
     RETURNING *;
   `;

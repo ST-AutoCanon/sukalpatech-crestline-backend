@@ -20,7 +20,8 @@ import {
   getAllProjectWorkflowController,
   getActiveProjects,
   getManagers,
-  updateWorkflowTask
+  updateWorkflowTask,
+  getProjectRequestDetailsController
 } from "../../controllers/projectManagement/ProjectManagerController.js";
 
 const router = express.Router();
@@ -147,6 +148,12 @@ router.get("/managers", auth,getManagers);
 router.put(
   "/project/:projectId/workflow/:taskId",
   auth,updateWorkflowTask
+);
+
+router.get(
+   "/project/:projectId/request-details",
+   auth,
+   getProjectRequestDetailsController
 );
 
 export default router;
