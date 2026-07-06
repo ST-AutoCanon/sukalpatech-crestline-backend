@@ -18,7 +18,8 @@ import {
   getAllProjectWorkflowService,
   getActiveProjectsService,
   getManagersService,
-  updateWorkflowTaskService
+  updateWorkflowTaskService,
+  getProjectRequestDetailsService
 } from "../../services/projectManagement/ProjectManagerService.js";
 import NotificationService from "../../services/notification/NotificationService.js";
 
@@ -28,6 +29,7 @@ export const assignProjectToProjectManager = async (req, res) => {
   try {
     const {
       bd_request_id,
+      industry_type,
       description,
       required_date,
       current_department
@@ -37,6 +39,7 @@ export const assignProjectToProjectManager = async (req, res) => {
 
    const created = await createProjectService({
   bd_request_id,
+  industry_type,
   description,
   required_date: safeRequiredDate,
   assigned_date: new Date(),
@@ -620,3 +623,16 @@ export const updateWorkflowTask = async (req, res) => {
     });
   }
 };
+
+export const getProjectRequestDetailsController = async(req,res)=>{
+
+   const data = await getProjectRequestDetailsService(
+      req.params.projectId,
+      req.user.org_code
+   );
+
+   res.json({
+      success:true,
+      data
+   });
+}

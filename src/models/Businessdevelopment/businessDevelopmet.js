@@ -97,7 +97,7 @@ const BusinessDevelopmentModel = {
   create: async (data, org_code) => {
     const schema = await getSchemaFromOrgCode(org_code);
 
-    
+
 
     // ✅ Step 2: Add display_id in INSERT
 
@@ -137,14 +137,10 @@ RETURNING *;
       val === undefined || val === null || val === "" ? null : val;
 
     const values = [
-       
-
-    
-
       // ✅ FORCE DEFAULTS
       "CREATED",
       "Initial Review",
-      
+
 
       safe(data.description),
       safe(data.priority),
@@ -196,6 +192,8 @@ RETURNING *;
 
     console.log("DB INSERT DATE =", values[4]);
     const { rows } = await thirdDB.query(query, values);
+    console.log("DB row required_date:", rows[0].required_date);
+    console.log("Type:", typeof rows[0].required_date);
     return rows[0];
   },
 

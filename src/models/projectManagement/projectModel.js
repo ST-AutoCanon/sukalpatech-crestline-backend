@@ -583,3 +583,96 @@ export const getProjectTasks = async (
 
   return result.rows;
 };
+
+/* ================= GET EMPLOYEES BY DEPARTMENT ================= */
+export const getEmployeesByDepartment = async (
+  department,
+  org_code
+) => {
+  console.log("Department:", department);
+  console.log("Org Code:", org_code);
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const query = `
+  SELECT
+    id,
+    first_name,
+    last_name,
+    role
+  FROM ${schema}.org_users
+  WHERE role = 'employee'
+  ORDER BY first_name ASC;
+`;
+
+const { rows } = await thirdDB.query(query);
+return rows;
+};
+
+export const assignEmployeeTasks = async (
+  data,
+  org_code
+) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  for (const task of data.tasks) {
+    await thirdDB.query(
+      `
+      INSERT INTO ${schema}.employee_tasks
+      (
+        project_id,
+        employee_id,
+        task_title,
+        priority,
+        start_date,
+        due_date,
+        estimated_days,
+        task_description
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      `,
+      [
+        data.project_id,
+        task.employee_id,
+        task.task_title,
+        task.priority,
+        task.start_date,
+        task.due_date,
+        task.estimated_days,
+        task.task_description,
+      ]
+    );
+  }
+
+  return {
+    success: true,
+  };
+};
+
+export const getEmployeeTasksByProject = async (projectId, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
+
+  const { rows } = await thirdDB.query(
+    `
+    SELECT
+      et.id,
+      et.project_id,
+      et.employee_id,
+      et.task_title,
+      et.task_description,
+      et.priority,
+      et.start_date,
+      et.due_date,
+      et.estimated_days,
+      u.first_name,
+      u.last_name
+    FROM ${schema}.employee_tasks et
+    LEFT JOIN ${schema}.org_users u
+      ON u.id = et.employee_id
+    WHERE et.project_id = $1
+    ORDER BY et.id ASC
+    `,
+    [projectId]
+  );
+
+  return rows;
+};

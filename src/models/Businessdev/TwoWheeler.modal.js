@@ -21,7 +21,7 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
       motor_capacity,
       battery_type,
       business_status,
-      comment,
+      comment
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
     RETURNING *;
@@ -227,7 +227,7 @@ export const reviewfinalTwoWheelerBusiness = async (org_code, payload) => {
       UPDATE ${schema}.business_dev_2w
       SET
         final_status = $1,
-        final_comment = $2,
+        final_comment = $2
       WHERE id = $3
         AND industry_type = '2W'
       RETURNING *;

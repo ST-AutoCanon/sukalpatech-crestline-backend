@@ -63,7 +63,7 @@ booleanFields.forEach((field) => {
       });
     }
     console.log("REQ BODY DATE =", req.body.required_date);
-console.log("PAYLOAD DATE =", payload.required_date);
+    console.log("PAYLOAD DATE =", payload.required_date);
     const data = await BDService.createBD(org_code, payload);
 
 

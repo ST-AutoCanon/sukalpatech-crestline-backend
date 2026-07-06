@@ -93,38 +93,40 @@ export const updateThreeWheelerBusiness = async (org_code, id, data) => {
       expected_quantity = $6,
       estimated_budget = $7,
       vehicle_model = $8,
-      motor_capacity = $9,
-      battery_type = $10,
-      business_status = $11,
-      comment = $12,
-      feasibility_status = $13,
-      comments = $14,
-      final_status = $15,
-      final_comment = $16,
-    WHERE id = $17
+     engine_capacity = $9,
+fuel_type = $10,
+load_capacity = $11,
+business_status = $12,
+comment = $13,
+feasibility_status = $14,
+comments = $15,
+final_status = $16,
+final_comment = $17
+    WHERE id = $18
       AND industry_type = '3W'
     RETURNING *;
   `;
 
   const values = [
-    data.company_name,
-    data.contact_person,
-    data.phone,
-    data.email,
-    data.project_title,
-    data.expected_quantity,
-    data.estimated_budget,
-    data.vehicle_model,
-    data.motor_capacity,
-    data.battery_type,
-    data.business_status || "PENDING",
-    data.comment || null,
-    data.feasibility_status || null,
-    data.comments || null,
-    data.final_status || null,
-    data.final_comment || null,
-    id
-  ];
+  data.company_name,
+  data.contact_person,
+  data.phone,
+  data.email,
+  data.project_title,
+  data.expected_quantity,
+  data.estimated_budget,
+  data.vehicle_model,
+  data.engine_capacity,
+  data.fuel_type,
+  data.load_capacity,
+  data.business_status || "PENDING",
+  data.comment || null,
+  data.feasibility_status || null,
+  data.comments || null,
+  data.final_status || null,
+  data.final_comment || null,
+  id,
+];
 
   const result = await thirdDB.query(query, values);
   return result.rows[0];
@@ -173,29 +175,31 @@ export const getThreeWheelerFeasibilityReviewed = async (org_code) => {
 
   const query = `
     SELECT
-      id,
-      industry_type,
-      company_name,
-      contact_person,
-      phone,
-      email,
-      project_title,
-      expected_quantity,
-      estimated_budget,
-      vehicle_model,
-      motor_capacity,
-      battery_type,
-      business_status,
-      comment,
-      feasibility_status,
-      comments,
-      created_at
-
-    FROM ${schema}.business_dev_3w
-    WHERE industry_type = '3W'
-      AND feasibility_status IS NOT NULL
-      AND feasibility_status <> ''
-    ORDER BY created_at DESC
+id,
+industry_type,
+company_name,
+contact_person,
+phone,
+email,
+project_title,
+expected_quantity,
+estimated_budget,
+vehicle_model,
+engine_capacity,
+fuel_type,
+load_capacity,
+business_status,
+comment,
+feasibility_status,
+comments,
+final_status,
+final_comment,
+created_at
+FROM ${schema}.business_dev_3w
+WHERE industry_type='3W'
+AND feasibility_status IS NOT NULL
+AND feasibility_status <> ''
+ORDER BY created_at DESC;
   `;
 
   const result = await thirdDB.query(query);
@@ -210,7 +214,7 @@ export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
       UPDATE ${schema}.business_dev_3w
       SET
         final_status = $1,
-        final_comment = $2,
+        final_comment = $2
       WHERE id = $3
         AND industry_type = '3W'
       RETURNING *;

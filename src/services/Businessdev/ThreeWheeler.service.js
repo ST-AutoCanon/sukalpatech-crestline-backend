@@ -159,6 +159,7 @@ export const reviewfinalThreeWheelerBusiness = async (org_code, payload) => {
   try {
 
     const result = await reviewFinalModel(org_code, payload);
+    console.log("Updated 3W Row:", result.rows);
 
     return {
       success: true,

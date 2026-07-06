@@ -124,16 +124,15 @@ export const updateGoldBusiness = async (org_code, id, data) => {
       making_charges = $11,
       hallmark_required = $12,
       design_type = $13,
-      delivery_location = $14,
-      timeline = $15,
-      business_status=$16,
-      comment=$17,
-      feasibility_status=$18,
-      comments=$19,
-      final_status=$20,
-      final_comment=$21
+      timeline = $14,
+      business_status=$15,
+      comment=$16,
+      feasibility_status=$17,
+      comments=$18,
+      final_status=$19,
+      final_comment=$20
 
-    WHERE id = $22 AND industry_type = 'gold_business'
+    WHERE id = $21 AND industry_type = 'gold_business'
     RETURNING *;
   `;
 
@@ -152,19 +151,18 @@ export const updateGoldBusiness = async (org_code, id, data) => {
 
   data.making_charges,       //11
   data.hallmark_required,    //12
-  data.design_type,          //13
-  data.delivery_location,    //14
-  data.timeline,             //15
+  data.design_type,          //13  
+  data.timeline,             //14
 
-  data.business_status,      //16
-  data.comment,              //17
-  data.feasibility_status,   //18
-  data.comments,             //19
+  data.business_status,      //15
+  data.comment,              //16
+  data.feasibility_status,   //17
+  data.comments,             //18
 
-  data.final_status,         // ✅ 20
-  data.final_comment,        // ✅ 21
+  data.final_status,         // ✅ 19
+  data.final_comment,        // ✅ 20
 
-  id                         // ✅ 22
+  id                         // ✅ 21
 ];
 
   const result = await thirdDB.query(query, values);
