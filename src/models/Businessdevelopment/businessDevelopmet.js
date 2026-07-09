@@ -110,6 +110,7 @@ const BusinessDevelopmentModel = {
          required_date,
          requested_by_department,
          requested_by_person,
+         industry_type,
          applicant_name, contact_person, mobile_number, email, address,
          chassis_manufacturer, chassis_model, chassis_number, engine_number, wheelbase, fuel_type,
          body_type,
@@ -128,7 +129,7 @@ const BusinessDevelopmentModel = {
   $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
   $21,$22,$23,$24,$25,$26,$27,$28,$29,$30,
   $31,$32,$33,$34,$35,$36,$37,$38,$39,$40,
-  $41,$42,$43,$44,$45,$46
+  $41,$42,$43,$44,$45,$46,$47
 )
 RETURNING *;
   `;
@@ -147,6 +148,7 @@ RETURNING *;
       safe(data.required_date),
       safe(data.requested_by_department),
       safe(data.requested_by_person),
+      safe(data.industry_type),
       safe(data.applicant_name),
       safe(data.contact_person),
       safe(data.mobile_number),
@@ -293,34 +295,53 @@ RETURNING *;
 
 
   // BD UPDATE (after feasibility approval)
-  updateBD: async (id, payload, org_code) => {
-    const schema = await getSchemaFromOrgCode(org_code);
+ updateBD: async (id, payload, org_code) => {
+  const schema = await getSchemaFromOrgCode(org_code);
 
-    delete payload.created_at;
+  // Check feasibility status first
+  const check = await thirdDB.query(
+    `SELECT feasibility_status
+     FROM ${schema}.business_development
+     WHERE id = $1`,
+    [id]
+  );
 
-    const fields = [];
-    const values = [];
-    let index = 1;
+  if (!check.rows.length) {
+    throw new Error("Business Development record not found");
+  }
 
-    for (const key in payload) {
-      fields.push(`${key} = $${index}`);
-      values.push(payload[key]);
-      index++;
-    }
+  const feasibilityStatus = check.rows[0].feasibility_status;
 
-    values.push(id);
-
-    const { rows } = await thirdDB.query(
-      `UPDATE ${schema}.business_development 
-     SET ${fields.join(", ")} 
-     WHERE id = $${index} 
-     RETURNING *`,
-      values
+  if (feasibilityStatus !== "APPROVED") {
+    throw new Error(
+      `Cannot update BD. Current feasibility status is ${feasibilityStatus}`
     );
+  }
 
-    return rows[0];
-  },
+  delete payload.created_at;
 
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  for (const key in payload) {
+    fields.push(`${key} = $${index}`);
+    values.push(payload[key]);
+    index++;
+  }
+
+  values.push(id);
+
+  const { rows } = await thirdDB.query(
+    `UPDATE ${schema}.business_development
+     SET ${fields.join(", ")}
+     WHERE id = $${index}
+     RETURNING *`,
+    values
+  );
+
+  return rows[0];
+},
 };
 
 export default BusinessDevelopmentModel;

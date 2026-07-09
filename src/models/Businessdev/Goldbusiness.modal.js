@@ -8,59 +8,66 @@ export const insertGoldBusiness = async (org_code, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
 
   const query = `
-    INSERT INTO ${schema}.business_dev_gold (
-      org_code,
-      industry_type,
-      company_name,
-      contact_person,
-      phone,
-      email,
+   INSERT INTO ${schema}.business_dev_gold (
+  org_code,
+  industry_type,
+  company_name,
+  contact_person,
+  phone,
+  email,
 
-      
-      gold_type,
-      purity_required,
-      expected_quantity,
-      estimated_budget,
+  required_date,
+  description,
 
-      making_charges,
-      hallmark_required,
-      design_type,
-      timeline,
-      business_status,
-      comment,
-      feasibility_status,
-      comments)
-    VALUES (
-      $1,$2,$3,$4,$5,$6,
-      $7,$8,$9,$10,$11,$12,
-      $13,$14,$15,$16,$17,$18
-    )
-    RETURNING *;
+  gold_type,
+  purity_required,
+  expected_quantity,
+  estimated_budget,
+
+  making_charges,
+  hallmark_required,
+  design_type,
+  timeline,
+  business_status,
+  comment,
+  feasibility_status,
+  comments
+)
+VALUES (
+  $1,$2,$3,$4,$5,$6,
+  $7,$8,
+  $9,$10,$11,$12,
+  $13,$14,$15,$16,
+  $17,$18,$19,$20
+)
+RETURNING *;
   `;
 
   const values = [
-    org_code,
-    "gold_business",
-    data.company_name,
-    data.contact_person,
-    data.phone,
-    data.email,
+  org_code,
+  "gold_business",
+  data.company_name,
+  data.contact_person,
+  data.phone,
+  data.email,
 
-   
-    data.gold_type,
-    data.purity_required,
-    data.expected_quantity,
-    data.estimated_budget,
+  data.required_date,
+  data.description,
 
-    data.making_charges,
-    data.hallmark_required,
-    data.design_type,
-    data.timeline,
-    data.business_status,
-    data.comment,
-    data.feasibility_status,
-    data.comments
-  ];
+  data.gold_type,
+  data.purity_required,
+  data.expected_quantity,
+  data.estimated_budget,
+
+  data.making_charges,
+  data.hallmark_required,
+  data.design_type,
+  data.timeline,
+  data.business_status,
+  data.comment,
+  data.feasibility_status,
+  data.comments,
+];
 
   const result = await thirdDB.query(query, values);
   return result.rows[0];
@@ -108,61 +115,68 @@ export const updateGoldBusiness = async (org_code, id, data) => {
 
   const query = `
     UPDATE ${schema}.business_dev_gold
-    SET
-      company_name = $1,
-      contact_person = $2,
-      phone = $3,
-      email = $4,
+SET
+  company_name = $1,
+  contact_person = $2,
+  phone = $3,
+  email = $4,
 
-      business_type = $5,
-      gold_type = $6,
-      product_type = $7,
-      purity_required = $8,
-      expected_quantity = $9,
-      estimated_budget = $10,
+  required_date = $5,
+  description = $6,
 
-      making_charges = $11,
-      hallmark_required = $12,
-      design_type = $13,
-      timeline = $14,
-      business_status=$15,
-      comment=$16,
-      feasibility_status=$17,
-      comments=$18,
-      final_status=$19,
-      final_comment=$20
+  business_type = $7,
+  gold_type = $8,
+  product_type = $9,
+  purity_required = $10,
+  expected_quantity = $11,
+  estimated_budget = $12,
 
-    WHERE id = $21 AND industry_type = 'gold_business'
-    RETURNING *;
+  making_charges = $13,
+  hallmark_required = $14,
+  design_type = $15,
+  timeline = $16,
+  business_status = $17,
+  comment = $18,
+  feasibility_status = $19,
+  comments = $20,
+  final_status = $21,
+  final_comment = $22
+
+WHERE id = $23
+  AND industry_type = 'gold_business'
+RETURNING *;
   `;
 
   const values = [
-  data.company_name,         //1
-  data.contact_person,       //2
-  data.phone,                //3
-  data.email,                //4
+  data.company_name,        // 1
+  data.contact_person,      // 2
+  data.phone,               // 3
+  data.email,               // 4
 
-  data.business_type,        //5
-  data.gold_type,            //6
-  data.product_type,         //7
-  data.purity_required,      //8
-  data.expected_quantity,    //9
-  data.estimated_budget,     //10
+  data.required_date,       // 5
+  data.description,         // 6
 
-  data.making_charges,       //11
-  data.hallmark_required,    //12
-  data.design_type,          //13  
-  data.timeline,             //14
+  data.business_type,       // 7
+  data.gold_type,           // 8
+  data.product_type,        // 9
+  data.purity_required,     // 10
+  data.expected_quantity,   // 11
+  data.estimated_budget,    // 12
 
-  data.business_status,      //15
-  data.comment,              //16
-  data.feasibility_status,   //17
-  data.comments,             //18
+  data.making_charges,      // 13
+  data.hallmark_required,   // 14
+  data.design_type,         // 15
+  data.timeline,            // 16
 
-  data.final_status,         // ✅ 19
-  data.final_comment,        // ✅ 20
+  data.business_status,     // 17
+  data.comment,             // 18
+  data.feasibility_status,  // 19
+  data.comments,            // 20
 
-  id                         // ✅ 21
+  data.final_status,        // 21
+  data.final_comment,       // 22
+
+  id                        // 23
 ];
 
   const result = await thirdDB.query(query, values);
