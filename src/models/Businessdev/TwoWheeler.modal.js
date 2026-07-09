@@ -8,23 +8,27 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
 
   const query = `
     INSERT INTO ${schema}.business_dev_2w (
-      org_code,
-      industry_type,
-      company_name,
-      contact_person,
-      phone,
-      email,
-      project_title,
-      expected_quantity,
-      estimated_budget,
-      vehicle_model,
-      motor_capacity,
-      battery_type,
-      business_status,
-      comment
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-    RETURNING *;
+  org_code,
+  industry_type,
+  company_name,
+  contact_person,
+  phone,
+  email,
+  project_title,
+  required_date,
+  description,
+  expected_quantity,
+  estimated_budget,
+  vehicle_model,
+  motor_capacity,
+  battery_type,
+  business_status,
+  comment
+)
+VALUES (
+  $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+)
+RETURNING *;
   `;
 
   const values = [
@@ -35,13 +39,15 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
     data.phone,
     data.email,
     data.project_title,
+    data.required_date,
+    data.description,
     data.expected_quantity,
     data.estimated_budget,
     data.vehicle_model,
     data.motor_capacity,
     data.battery_type,
     data.business_status,
-    data.comment
+    data.comment,
   ];
 
   const result = await thirdDB.query(query, values);
@@ -61,6 +67,8 @@ export const getTwoWheelerBusinesses = async (org_code, statusFilter) => {
       phone,
       email,
       project_title,
+      required_date,
+      description,
       expected_quantity,
       estimated_budget,
       vehicle_model,
@@ -80,19 +88,19 @@ export const getTwoWheelerBusinesses = async (org_code, statusFilter) => {
   const values = [];
 
   if (statusFilter && statusFilter !== "ALL") {
-  if (statusFilter === "PENDING") {
-    values.push("PENDING");
-    query += ` AND business_status = $1`;
-  } 
-  else if (statusFilter === "REJECTED") {
-    values.push("REJECTED");
-    query += ` AND business_status = $1`;
-  } 
-  else if (statusFilter === "COMPLETED") {
-    values.push("APPROVED");
-    query += ` AND business_status = $1`;
+    if (statusFilter === "PENDING") {
+      values.push("PENDING");
+      query += ` AND business_status = $1`;
+    }
+    else if (statusFilter === "REJECTED") {
+      values.push("REJECTED");
+      query += ` AND business_status = $1`;
+    }
+    else if (statusFilter === "COMPLETED") {
+      values.push("APPROVED");
+      query += ` AND business_status = $1`;
+    }
   }
-}
 
   query += ` ORDER BY created_at DESC;`;
 
@@ -105,23 +113,27 @@ export const updateTwoWheelerBusiness = async (org_code, id, data) => {
 
   const query = `
     UPDATE ${schema}.business_dev_2w
-    SET
-      company_name = $1,
-      contact_person = $2,
-      phone = $3,
-      email = $4,
-      project_title = $5,
-      expected_quantity = $6,
-      estimated_budget = $7,
-      vehicle_model = $8,
-      motor_capacity = $9,
-      battery_type = $10,
-      feasibility_status = $11,
-      comments = $12,
-    WHERE id = $13
-      AND org_code = $14
-      AND industry_type = '2W'
-    RETURNING *;
+SET
+  company_name = $1,
+  contact_person = $2,
+  phone = $3,
+  email = $4,
+  project_title = $5,
+  required_date = $6,
+  description = $7,
+  expected_quantity = $8,
+  estimated_budget = $9,
+  vehicle_model = $10,
+  motor_capacity = $11,
+  battery_type = $12,
+  business_status = $13,
+  comment = $14,
+  feasibility_status = $15,
+  comments = $16
+WHERE id = $17
+  AND org_code = $18
+  AND industry_type = '2W'
+RETURNING *;
   `;
 
   const values = [
@@ -130,17 +142,20 @@ export const updateTwoWheelerBusiness = async (org_code, id, data) => {
     data.phone,
     data.email,
     data.project_title,
+    data.required_date,
+    data.description,
     data.expected_quantity,
     data.estimated_budget,
     data.vehicle_model,
     data.motor_capacity,
     data.battery_type,
+    data.business_status || "PENDING",
+    data.comment || null,
     data.feasibility_status || null,
     data.comments || null,
     id,
     org_code,
   ];
-
   const result = await thirdDB.query(query, values);
   return result.rows[0];
 };
@@ -189,30 +204,32 @@ export const getTwoWheelerFeasibilityReviewed = async (org_code) => {
 
   const query = `
     SELECT
-      id,
-      industry_type,
-      company_name,
-      contact_person,
-      phone,
-      email,
-      project_title,
-      expected_quantity,
-      estimated_budget,
-      vehicle_model,
-      motor_capacity,
-      battery_type,
-      business_status,
-      comment,
-      feasibility_status,
-      comments,
-      final_status,
-      final_comment,
-      created_at
-    FROM ${schema}.business_dev_2w
-    WHERE industry_type = '2W'
-      AND feasibility_status IS NOT NULL
-      AND feasibility_status <> ''
-    ORDER BY created_at DESC
+  id,
+  industry_type,
+  company_name,
+  contact_person,
+  phone,
+  email,
+  project_title,
+  required_date,
+  description,
+  expected_quantity,
+  estimated_budget,
+  vehicle_model,
+  motor_capacity,
+  battery_type,
+  business_status,
+  comment,
+  feasibility_status,
+  comments,
+  final_status,
+  final_comment,
+  created_at
+FROM ${schema}.business_dev_2w
+WHERE industry_type = '2W'
+  AND feasibility_status IS NOT NULL
+  AND feasibility_status <> ''
+ORDER BY created_at DESC;
   `;
 
   const result = await thirdDB.query(query);

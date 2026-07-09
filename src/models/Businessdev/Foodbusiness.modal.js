@@ -14,6 +14,8 @@ INSERT INTO ${schema}.business_dev_food (
     phone,
     email,
     project_title,
+    required_date,
+    description,
     expected_quantity,
     estimated_budget,
     product_category,
@@ -27,7 +29,7 @@ INSERT INTO ${schema}.business_dev_food (
     comments
 )
 VALUES (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20
 )
 RETURNING *;
 `;
@@ -40,6 +42,8 @@ RETURNING *;
     data.phone,
     data.email,
     data.project_title,
+    data.required_date,   // ✅
+    data.description, 
     data.expected_quantity,
     data.estimated_budget,
     data.product_category,
@@ -86,34 +90,46 @@ export const updateFoodBusiness = async (org_code, id, data) => {
   const schema = await getSchemaFromOrgCode(org_code);
   const query = `
   UPDATE ${schema}.business_dev_food
-  SET 
-    company_name = $1,
-    contact_person = $2,
-    phone = $3,
-    email = $4,
-    project_title = $5,
-    expected_quantity = $6,
-    estimated_budget = $7,
-    packaging_type = $8,
-    business_status = $9,
-    comment = $10,
-    feasibility_status = $11,
-    comments = $12,
-    final_status = $13,
-    final_comment = $14
-  WHERE id = $15 
-    AND industry_type = 'FOOD'
-  RETURNING *;
+SET
+  company_name = $1,
+  contact_person = $2,
+  phone = $3,
+  email = $4,
+  project_title = $5,
+  required_date = $6,
+  description = $7,
+  expected_quantity = $8,
+  estimated_budget = $9,
+  product_category = $10,
+  product_name = $11,
+  packaging_type = $12,
+  shelf_life = $13,
+  storage_condition = $14,
+  business_status = $15,
+  comment = $16,
+  feasibility_status = $17,
+  comments = $18,
+  final_status = $19,
+  final_comment = $20
+WHERE id = $21
+  AND industry_type = 'FOOD'
+RETURNING *;
 `;
-  const values = [
+ const values = [
   data.company_name,
   data.contact_person,
   data.phone,
   data.email,
   data.project_title,
+  data.required_date,
+  data.description,
   data.expected_quantity,
   data.estimated_budget,
+  data.product_category,
+  data.product_name,
   data.packaging_type,
+  data.shelf_life,
+  data.storage_condition,
   data.business_status || "PENDING",
   data.comment || null,
   data.feasibility_status || null,
