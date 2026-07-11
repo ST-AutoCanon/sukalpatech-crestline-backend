@@ -58,19 +58,20 @@
 // services/auth.service.js
 import bcrypt from "bcryptjs";
 import { findMasterUserByEmail } from "../models/masterUser.model.js";
-import { findOrgUserByEmail } from "../models/orgUser.model.js";
+import { findOrgUserByEmail,getAllOrganisations } from "../models/orgUser.model.js";
 
 export const loginService = async (email, password, org_code) => {
 
   // 🔹 SUPER ADMIN LOGIN
-  if (!org_code) {
-    const admin = await findMasterUserByEmail(email);
+  // 🔹 LOGIN WITHOUT ORG CODE
+if (!org_code) {
 
-    if (!admin) {
-      return { success: false, message: "Invalid email or password" };
-    }
+  // First check master users (super admin)
+  const admin = await findMasterUserByEmail(email);
 
+  if (admin) {
     const isMatch = await bcrypt.compare(password, admin.password);
+
     if (!isMatch) {
       return { success: false, message: "Invalid email or password" };
     }
@@ -81,6 +82,26 @@ export const loginService = async (email, password, org_code) => {
     };
   }
 
+  // Check whether this email belongs to any organization
+  const organisations = await getAllOrganisations();
+
+  for (const org of organisations) {
+    const user = await findOrgUserByEmail(email, org.org_code);
+
+    if (user) {
+      return {
+        success: false,
+        message: "Please select organization"
+      };
+    }
+  }
+
+  // Email doesn't exist anywhere
+  return {
+    success: false,
+    message: "Invalid email or password"
+  };
+}
   // 🔹 ORG USER LOGIN (schema from org_code)
   const orgUser = await findOrgUserByEmail(email, org_code);
 

@@ -393,6 +393,7 @@ export const getAllProjectWorkflowModel = async (org_code) => {
   const result = await thirdDB.query(`
     SELECT
       pw.project_management_id,
+       pm.industry_type, 
       pm.bd_request_id,
       pw.task_title,
       pw.task_description,
