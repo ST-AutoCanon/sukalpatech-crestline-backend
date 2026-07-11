@@ -12,3 +12,12 @@ export const findOrgUserByEmail = async (email, orgCode) => {
 
   return result.rows[0];
 };
+
+export const getAllOrganisations = async () => {
+  const result = await thirdDB.query(
+    `SELECT org_code FROM master.organisations 
+    WHERE status = 'ACTIVE' `
+  );
+
+  return result.rows;
+};
