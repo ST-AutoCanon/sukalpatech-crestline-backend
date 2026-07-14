@@ -151,6 +151,7 @@ export const assignProject = async (req, res) => {
 
   assigned_project_manager: req.body.assigned_project_manager,
 };
+console.log(req.body);
 
     const data = await ProjectService.createProjectService(payload, org_code);
 

@@ -226,17 +226,19 @@ export const createProject = async (data, org_code) => {
   const query = `
     INSERT INTO ${schema}.project_management (
       bd_request_id,
+      industry_type,
       description,
       required_date,
       assigned_date,
       assigned_by
     )
-    VALUES ($1, $2, $3, $4, $5)
+    VALUES ($1, $2, $3, $4, $5,$6)
     RETURNING *;
   `;
 
   const values = [
     data.bd_request_id,
+    data.industry_type,
     data.description,
     data.required_date,
     data.assigned_date,
