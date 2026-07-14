@@ -246,7 +246,7 @@ booleanFields.forEach((field) => {
 // ✅ REMOVE frontend-only field
 delete payload.existingAttachments;
 
-    const data = await BDService.updateBD(id, payload, org_code);
+    const data = await BDService.updateEditableBD(id, payload, org_code);
 
     res.json({
       success: true,

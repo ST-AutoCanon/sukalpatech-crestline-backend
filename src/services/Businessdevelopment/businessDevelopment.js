@@ -209,6 +209,22 @@ feasibilityReview: async (id, feasibility_status, feasibility_comments, org_code
   }
 },
 
+// Edit BD (without feasibility restriction)
+updateEditableBD: async (id, payload, org_code) => {
+  try {
+    const bd = await BDModel.findById(id, org_code);
+
+    if (!bd) {
+      throw new Error("Business request not found");
+    }
+
+    return await BDModel.updateEditableBD(id, payload, org_code);
+  } catch (err) {
+    console.error("❌ Error editing BD:", err);
+    throw err;
+  }
+},
+
   // -----------------------------
   // Update BD Status
   // -----------------------------
@@ -229,5 +245,6 @@ feasibilityReview: async (id, feasibility_status, feasibility_comments, org_code
   }
 },
 }
+
 
 export default BusinessDevelopmentService;
