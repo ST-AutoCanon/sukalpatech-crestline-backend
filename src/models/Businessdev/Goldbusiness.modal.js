@@ -15,6 +15,7 @@ export const insertGoldBusiness = async (org_code, data) => {
   contact_person,
   phone,
   email,
+  address,
 
   required_date,
   description,
@@ -38,7 +39,7 @@ VALUES (
   $7,$8,
   $9,$10,$11,$12,
   $13,$14,$15,$16,
-  $17,$18,$19,$20
+  $17,$18,$19,$20,$21
 )
 RETURNING *;
   `;
@@ -50,6 +51,7 @@ RETURNING *;
   data.contact_person,
   data.phone,
   data.email,
+  data.address,
 
   data.required_date,
   data.description,
@@ -120,29 +122,30 @@ SET
   contact_person = $2,
   phone = $3,
   email = $4,
+  address=$5
 
-  required_date = $5,
-  description = $6,
+  required_date = $6,
+  description = $7,
 
-  business_type = $7,
-  gold_type = $8,
-  product_type = $9,
-  purity_required = $10,
-  expected_quantity = $11,
-  estimated_budget = $12,
+  business_type = $8,
+  gold_type = $9,
+  product_type = $10,
+  purity_required = $11,
+  expected_quantity = $12,
+  estimated_budget = $13,
 
-  making_charges = $13,
-  hallmark_required = $14,
-  design_type = $15,
-  timeline = $16,
-  business_status = $17,
-  comment = $18,
-  feasibility_status = $19,
-  comments = $20,
-  final_status = $21,
-  final_comment = $22
+  making_charges = $14,
+  hallmark_required = $15,
+  design_type = $16,
+  timeline = $17,
+  business_status = $18,
+  comment = $19,
+  feasibility_status = $20,
+  comments = $21,
+  final_status = $22,
+  final_comment = $23
 
-WHERE id = $23
+WHERE id = $24
   AND industry_type = 'gold_business'
 RETURNING *;
   `;
@@ -151,7 +154,8 @@ RETURNING *;
   data.company_name,        // 1
   data.contact_person,      // 2
   data.phone,               // 3
-  data.email,               // 4
+  data.email, 
+  data.address,              // 4
 
   data.required_date,       // 5
   data.description,         // 6

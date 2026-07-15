@@ -13,6 +13,7 @@ INSERT INTO ${schema}.business_dev_food (
     contact_person,
     phone,
     email,
+    address,
     project_title,
     required_date,
     description,
@@ -29,7 +30,7 @@ INSERT INTO ${schema}.business_dev_food (
     comments
 )
 VALUES (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21
 )
 RETURNING *;
 `;
@@ -41,6 +42,7 @@ RETURNING *;
     data.contact_person,
     data.phone,
     data.email,
+    data.address,
     data.project_title,
     data.required_date,   // ✅
     data.description, 
@@ -95,23 +97,24 @@ SET
   contact_person = $2,
   phone = $3,
   email = $4,
-  project_title = $5,
-  required_date = $6,
-  description = $7,
-  expected_quantity = $8,
-  estimated_budget = $9,
-  product_category = $10,
-  product_name = $11,
-  packaging_type = $12,
-  shelf_life = $13,
-  storage_condition = $14,
-  business_status = $15,
-  comment = $16,
-  feasibility_status = $17,
-  comments = $18,
-  final_status = $19,
-  final_comment = $20
-WHERE id = $21
+  address=$5
+  project_title = $6,
+  required_date = $7,
+  description = $8,
+  expected_quantity = $9,
+  estimated_budget = $10,
+  product_category = $11,
+  product_name = $12,
+  packaging_type = $13,
+  shelf_life = $14,
+  storage_condition = $15,
+  business_status = $16,
+  comment = $17,
+  feasibility_status = $18,
+  comments = $19,
+  final_status = $20,
+  final_comment = $21
+WHERE id = $22
   AND industry_type = 'FOOD'
 RETURNING *;
 `;
@@ -120,6 +123,7 @@ RETURNING *;
   data.contact_person,
   data.phone,
   data.email,
+  data.address,
   data.project_title,
   data.required_date,
   data.description,

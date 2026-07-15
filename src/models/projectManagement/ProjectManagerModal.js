@@ -5,8 +5,28 @@ import { getSchemaFromOrgCode } from "../getSchemaFromOrgCode.js";
 /* ================= CREATE PROJECT ================= */
 export const createProject = async (data) => {
   console.log("Required Date received:", data.required_date);
-console.log("Type:", typeof data.required_date);
+  console.log("Type:", typeof data.required_date);
+
   const schema = await getSchemaFromOrgCode(data.org_code);
+
+  // ✅ Check if project already exists for this BD request
+  const checkQuery = `
+  SELECT id
+  FROM ${schema}.project_management
+  WHERE bd_request_id = $1
+    AND COALESCE(industry_type, '') = COALESCE($2, '')
+`;
+
+const existingProject = await thirdDB.query(checkQuery, [
+  data.bd_request_id,
+  data.industry_type,
+]);
+
+if (existingProject.rows.length > 0) {
+  throw new Error("Project has already been assigned.");
+}
+
+  // Continue with INSERT...
 
   const query = `
     INSERT INTO ${schema}.project_management
