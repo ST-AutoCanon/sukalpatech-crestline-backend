@@ -14,6 +14,7 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
   contact_person,
   phone,
   email,
+  address,
   project_title,
   required_date,
   description,
@@ -26,7 +27,7 @@ export const insertTwoWheelerBusiness = async (org_code, data) => {
   comment
 )
 VALUES (
-  $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+  $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17
 )
 RETURNING *;
   `;
@@ -38,6 +39,7 @@ RETURNING *;
     data.contact_person,
     data.phone,
     data.email,
+    data.address,
     data.project_title,
     data.required_date,
     data.description,
@@ -66,6 +68,7 @@ export const getTwoWheelerBusinesses = async (org_code, statusFilter) => {
       contact_person,
       phone,
       email,
+      address,
       project_title,
       required_date,
       description,
@@ -118,20 +121,21 @@ SET
   contact_person = $2,
   phone = $3,
   email = $4,
-  project_title = $5,
-  required_date = $6,
-  description = $7,
-  expected_quantity = $8,
-  estimated_budget = $9,
-  vehicle_model = $10,
-  motor_capacity = $11,
-  battery_type = $12,
-  business_status = $13,
-  comment = $14,
-  feasibility_status = $15,
-  comments = $16
-WHERE id = $17
-  AND org_code = $18
+  address=$5,
+  project_title = $6,
+  required_date = $7,
+  description = $8,
+  expected_quantity = $9,
+  estimated_budget = $10,
+  vehicle_model = $11,
+  motor_capacity = $12,
+  battery_type = $13,
+  business_status = $14,
+  comment = $15,
+  feasibility_status = $16,
+  comments = $17
+WHERE id = $18
+  AND org_code = $19
   AND industry_type = '2W'
 RETURNING *;
   `;
@@ -141,6 +145,7 @@ RETURNING *;
     data.contact_person,
     data.phone,
     data.email,
+    data.address,
     data.project_title,
     data.required_date,
     data.description,
@@ -210,6 +215,7 @@ export const getTwoWheelerFeasibilityReviewed = async (org_code) => {
   contact_person,
   phone,
   email,
+  address,
   project_title,
   required_date,
   description,

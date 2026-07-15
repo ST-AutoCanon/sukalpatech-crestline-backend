@@ -13,6 +13,7 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
     contact_person,
     phone,
     email,
+    address,
     project_title,
     required_date,
     description,
@@ -26,7 +27,7 @@ export const insertThreeWheelerBusiness = async (org_code, data) => {
     comment
 )
 VALUES (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18
 )
 RETURNING *;
   `;
@@ -38,6 +39,7 @@ RETURNING *;
   data.contact_person,
   data.phone,
   data.email,
+  data.address,
   data.project_title,
   data.required_date,
   data.description,
@@ -94,22 +96,23 @@ SET
   contact_person = $2,
   phone = $3,
   email = $4,
-  project_title = $5,
-  required_date = $6,
-  description = $7,
-  expected_quantity = $8,
-  estimated_budget = $9,
-  vehicle_model = $10,
-  engine_capacity = $11,
-  fuel_type = $12,
-  load_capacity = $13,
-  business_status = $14,
-  comment = $15,
-  feasibility_status = $16,
-  comments = $17,
-  final_status = $18,
-  final_comment = $19
-WHERE id = $20
+  address=$5,
+  project_title = $6,
+  required_date = $7,
+  description = $8,
+  expected_quantity = $9,
+  estimated_budget = $10,
+  vehicle_model = $11,
+  engine_capacity = $12,
+  fuel_type = $13,
+  load_capacity = $14,
+  business_status = $15,
+  comment = $16,
+  feasibility_status = $17,
+  comments = $18,
+  final_status = $19,
+  final_comment = $20
+WHERE id = $21
   AND industry_type = '3W'
 RETURNING *;
   `;
@@ -119,6 +122,7 @@ RETURNING *;
   data.contact_person,
   data.phone,
   data.email,
+  data.address,
   data.project_title,
   data.required_date,
   data.description,
@@ -190,6 +194,7 @@ company_name,
 contact_person,
 phone,
 email,
+address,
 project_title,
 required_date,
 description,
